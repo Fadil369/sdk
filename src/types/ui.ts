@@ -76,6 +76,7 @@ export interface ComponentProps {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   rtl?: boolean;
+  onClick?: (event: React.MouseEvent) => void;
 }
 
 export interface GlassMorphismProps {
@@ -110,6 +111,7 @@ export interface DashboardWidget {
   id: string;
   type: 'chart' | 'table' | 'metric' | 'list' | 'form' | 'map';
   title: string;
+  subtitle?: string;
   position: {
     x: number;
     y: number;
@@ -119,12 +121,15 @@ export interface DashboardWidget {
   dataSource: string;
   configuration: Record<string, unknown>;
   refreshInterval?: number;
+  minHeight?: string;
+  color?: string;
 }
 
 export interface DashboardFilter {
   id: string;
   name: string;
   type: 'select' | 'multiselect' | 'date' | 'daterange' | 'text' | 'number';
+  placeholder?: string;
   options?: FilterOption[];
   value?: unknown;
   required?: boolean;
@@ -132,7 +137,7 @@ export interface DashboardFilter {
 
 export interface FilterOption {
   label: string;
-  value: unknown;
+  value: string | number;
   icon?: string;
 }
 
@@ -219,7 +224,7 @@ export interface TableSelection {
 export interface NotificationConfig {
   type: 'success' | 'error' | 'warning' | 'info';
   title: string;
-  message: string;
+  message?: string;
   duration?: number;
   placement?: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'top' | 'bottom';
   rtl?: boolean;

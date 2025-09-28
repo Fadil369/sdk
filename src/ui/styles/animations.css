@@ -1,0 +1,283 @@
+/**
+ * Healthcare UI Animations for 60fps optimized components
+ */
+
+/* Keyframe animations */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slideOutLeft {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes scaleOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+/* Glass morphism base styles */
+.glass-morphism {
+  backdrop-filter: blur(var(--glass-blur, 20px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 20px));
+  background: rgba(255, 255, 255, var(--glass-opacity, 0.1));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.glass-morphism:hover {
+  background: rgba(255, 255, 255, calc(var(--glass-opacity, 0.1) + 0.05));
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Dark mode glass morphism */
+[data-theme="dark"] .glass-morphism {
+  background: rgba(0, 0, 0, calc(var(--glass-opacity, 0.1) + 0.2));
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .glass-morphism:hover {
+  background: rgba(0, 0, 0, calc(var(--glass-opacity, 0.1) + 0.3));
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Animation utility classes */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-fade-out {
+  animation: fadeOut 0.3s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.animate-slide-out-right {
+  animation: slideOutRight 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.animate-slide-out-left {
+  animation: slideOutLeft 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.animate-scale-out {
+  animation: scaleOut 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0.0, 0.6, 1) infinite;
+}
+
+/* RTL animations */
+[dir="rtl"] .animate-slide-in-right {
+  animation: slideInLeft 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+[dir="rtl"] .animate-slide-in-left {
+  animation: slideInRight 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+[dir="rtl"] .animate-slide-out-right {
+  animation: slideOutLeft 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+[dir="rtl"] .animate-slide-out-left {
+  animation: slideOutRight 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* Performance optimizations */
+.brainsait-ui-base,
+.glass-morphism,
+.healthcare-dashboard,
+.patient-card,
+.glass-button,
+.notification {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .brainsait-ui-base,
+  .glass-morphism,
+  .healthcare-dashboard,
+  .patient-card,
+  .glass-button,
+  .notification {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .glass-morphism {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 2px solid rgba(0, 0, 0, 0.8) !important;
+  }
+
+  [data-theme="dark"] .glass-morphism {
+    background: rgba(0, 0, 0, 0.95) !important;
+    border: 2px solid rgba(255, 255, 255, 0.8) !important;
+  }
+}
+
+/* Focus styles for accessibility */
+.brainsait-ui-base:focus-visible,
+.glass-button:focus-visible,
+.patient-card:focus-visible {
+  outline: 2px solid #3B82F6;
+  outline-offset: 2px;
+}
+
+/* Loading shimmer effect */
+.loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.2) 20%,
+    rgba(255, 255, 255, 0.5) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  background-size: 200px 100%;
+  background-repeat: no-repeat;
+  animation: shimmer 2s infinite;
+}
+
+[data-theme="dark"] .loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.1) 20%,
+    rgba(255, 255, 255, 0.2) 60%,
+    rgba(255, 255, 255, 0)
+  );
+}
