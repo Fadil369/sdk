@@ -1,6 +1,6 @@
 {
   "name": "@brainsait/healthcare-sdk",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "BrainSAIT Healthcare SDK for NPHIES/FHIR Integration with Arabic/HIPAA support and AI agents",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -49,6 +49,7 @@
   "devDependencies": {
     "@types/node": "^20.8.0",
     "@types/react": "^18.3.24",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^6.7.4",
     "@typescript-eslint/parser": "^6.7.4",
     "@vitest/coverage-v8": "^0.34.6",
