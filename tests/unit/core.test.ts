@@ -91,6 +91,6 @@ describe('ConfigManager', () => {
       },
     });
 
-    await expect(config.validate()).resolves.not.toThrow();
+    expect(() => config.validate()).not.toThrow();
   });
 });

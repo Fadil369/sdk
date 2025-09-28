@@ -7,7 +7,8 @@ import { Logger } from '@/core/logger';
 
 export class SecurityManager {
   constructor(
-    private config: ConfigManager,
+    // @ts-expect-error - Will be used in future implementation
+    private config: ConfigManager, // Will be used in future implementation
     private logger: Logger
   ) {}
 

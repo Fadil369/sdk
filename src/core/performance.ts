@@ -79,13 +79,13 @@ export class PerformanceMonitor {
 
   private updateMetrics(): void {
     // Update memory usage
-    if (typeof process !== 'undefined' && process.memoryUsage) {
+    if (process?.memoryUsage) {
       const memory = process.memoryUsage();
       this.metrics.memoryUsage = memory.heapUsed / 1024 / 1024; // MB
     } else if (typeof performance !== 'undefined') {
       // Use optional chaining and type assertion
       const performanceMemory = (performance as { memory?: { usedJSHeapSize: number } }).memory;
-      if (performanceMemory) {
+      if (performanceMemory?.usedJSHeapSize) {
         this.metrics.memoryUsage = performanceMemory.usedJSHeapSize / 1024 / 1024; // MB
       }
     }
@@ -149,7 +149,7 @@ export class PerformanceMonitor {
   }
 
   memoize<T extends (...args: unknown[]) => unknown>(func: T): T {
-    const cache = new Map();
+    const cache = new Map<string, unknown>();
     return ((...args: unknown[]) => {
       const key = JSON.stringify(args);
       if (cache.has(key)) {

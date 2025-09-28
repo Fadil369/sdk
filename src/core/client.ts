@@ -32,7 +32,7 @@ export class ApiClient {
   constructor(config: ConfigManager, logger: Logger) {
     this.logger = logger.child({ component: 'ApiClient' });
 
-    const apiConfig = config.get('api');
+    const apiConfig = config.get<ApiConfig>('api');
 
     this.client = axios.create({
       baseURL: apiConfig.baseUrl,
@@ -104,7 +104,7 @@ export class ApiClient {
 
       return {
         success: true,
-        data: response.data,
+        data: response.data as T,
         metadata: {
           timestamp: new Date().toISOString(),
           requestId,
@@ -122,9 +122,12 @@ export class ApiClient {
           statusText: error.response?.statusText,
         });
 
+        const errorMessage =
+          (error.response?.data as { message?: string })?.message ?? error.message;
+
         return {
           success: false,
-          error: error.response?.data?.message ?? error.message,
+          error: errorMessage,
           metadata: {
             timestamp: new Date().toISOString(),
             requestId,
@@ -133,10 +136,14 @@ export class ApiClient {
         };
       }
 
-      this.logger.error(`${method} ${url} failed with unknown error`, error, {
-        requestId,
-        responseTime,
-      });
+      this.logger.error(
+        `${method} ${url} failed with unknown error`,
+        error instanceof Error ? error : new Error(String(error)),
+        {
+          requestId,
+          responseTime,
+        }
+      );
 
       return {
         success: false,
@@ -169,7 +176,10 @@ export class ApiClient {
         return config;
       },
       error => {
-        this.logger.error('Request interceptor error', error);
+        this.logger.error(
+          'Request interceptor error',
+          error instanceof Error ? error : new Error(String(error))
+        );
         return Promise.reject(error);
       }
     );
@@ -200,7 +210,7 @@ export class ApiClient {
           };
           const responseTime = Date.now() - (configWithMetadata.metadata?.startTime ?? 0);
 
-          this.logger.error('API request failed', {
+          this.logger.error('API request failed', undefined, {
             url: error.config.url,
             method: error.config.method,
             status: error.response?.status,
@@ -216,7 +226,7 @@ export class ApiClient {
   private checkRateLimit(rateLimit: { requests: number; window: number }): void {
     const now = Date.now();
     const windowKey = Math.floor(now / (rateLimit.window * 1000));
-    const windowRequests = this.rateLimitWindow.get(String(windowKey)) || [];
+    const windowRequests = this.rateLimitWindow.get(String(windowKey)) ?? [];
 
     if (windowRequests.length >= rateLimit.requests) {
       throw new Error('Rate limit exceeded');

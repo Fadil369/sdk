@@ -79,7 +79,7 @@ describe('ConfigManager', () => {
                 sandbox: true,
             },
         });
-        await expect(config.validate()).resolves.not.toThrow();
+        expect(() => config.validate()).not.toThrow();
     });
 });
 //# sourceMappingURL=core.test.js.map

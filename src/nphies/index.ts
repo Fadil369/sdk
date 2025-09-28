@@ -8,9 +8,11 @@ import { ApiClient } from '@/core/client';
 
 export class NPHIESClient {
   constructor(
-    private config: ConfigManager,
+    // @ts-expect-error - Will be used in future implementation
+    private config: ConfigManager, // Will be used in future implementation
     private logger: Logger,
-    private apiClient: ApiClient
+    // @ts-expect-error - Will be used in future implementation
+    private apiClient: ApiClient // Will be used in future implementation
   ) {}
 
   async initialize(): Promise<void> {
