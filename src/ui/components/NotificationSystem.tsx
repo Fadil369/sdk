@@ -56,7 +56,7 @@ export const NotificationSystem: React.FC<NotificationSystemProps> = ({
 
   useEffect(() => {
     const timers: NodeJS.Timeout[] = [];
-    
+
     notifications.forEach(notification => {
       if (notification.duration !== 0) {
         const duration = notification.duration || defaultDuration;
@@ -183,11 +183,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
     pointerEvents: 'auto',
     cursor: 'default',
     transform: `translateX(${
-      isExiting 
-        ? (rtl ? '-100%' : '100%')
-        : isVisible 
-        ? '0%' 
-        : (rtl ? '-100%' : '100%')
+      isExiting ? (rtl ? '-100%' : '100%') : isVisible ? '0%' : rtl ? '-100%' : '100%'
     }) translateY(${isExiting ? '-10px' : '0px'})`,
     opacity: isExiting ? 0 : isVisible ? 1 : 0,
     transition: 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)',
@@ -242,19 +238,17 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
         <button
           onClick={handleClose}
           style={closeButtonStyle}
-          onMouseEnter={(e) => {
+          onMouseEnter={e => {
             e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
           }}
-          onMouseLeave={(e) => {
+          onMouseLeave={e => {
             e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
           }}
         >
           ×
         </button>
       </div>
-      {notification.message && (
-        <p style={messageStyle}>{notification.message}</p>
-      )}
+      {notification.message && <p style={messageStyle}>{notification.message}</p>}
     </div>
   );
 };

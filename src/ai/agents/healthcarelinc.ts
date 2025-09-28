@@ -76,33 +76,39 @@ export class HealthcareLincAgent extends BaseAgent {
   private readonly clinicalKnowledge = {
     symptoms: {
       fever: { conditions: ['infection', 'flu', 'covid-19'], urgency: 'medium' },
-      'chest_pain': { conditions: ['heart_attack', 'angina', 'pneumonia'], urgency: 'high' },
-      'shortness_of_breath': { conditions: ['asthma', 'heart_failure', 'pneumonia'], urgency: 'high' },
+      chest_pain: { conditions: ['heart_attack', 'angina', 'pneumonia'], urgency: 'high' },
+      shortness_of_breath: {
+        conditions: ['asthma', 'heart_failure', 'pneumonia'],
+        urgency: 'high',
+      },
       headache: { conditions: ['migraine', 'tension', 'hypertension'], urgency: 'low' },
-      'abdominal_pain': { conditions: ['appendicitis', 'gastritis', 'gallstones'], urgency: 'medium' },
+      abdominal_pain: {
+        conditions: ['appendicitis', 'gastritis', 'gallstones'],
+        urgency: 'medium',
+      },
     },
     medications: {
-      aspirin: { 
+      aspirin: {
         contraindications: ['bleeding_disorder', 'peptic_ulcer'],
         interactions: ['warfarin', 'methotrexate'],
-        sideEffects: ['stomach_upset', 'bleeding']
+        sideEffects: ['stomach_upset', 'bleeding'],
       },
       metformin: {
         contraindications: ['kidney_disease', 'heart_failure'],
         interactions: ['alcohol', 'contrast_dye'],
-        sideEffects: ['nausea', 'diarrhea']
+        sideEffects: ['nausea', 'diarrhea'],
       },
       lisinopril: {
         contraindications: ['pregnancy', 'angioedema_history'],
         interactions: ['potassium_supplements', 'nsaids'],
-        sideEffects: ['dry_cough', 'hyperkalemia']
-      }
+        sideEffects: ['dry_cough', 'hyperkalemia'],
+      },
     },
     procedures: {
       ecg: { indications: ['chest_pain', 'palpitations'], duration: 5 },
       xray_chest: { indications: ['cough', 'shortness_of_breath'], duration: 15 },
       blood_test: { indications: ['fever', 'fatigue'], duration: 10 },
-    }
+    },
   };
 
   constructor(logger: Logger) {
@@ -133,83 +139,95 @@ export class HealthcareLincAgent extends BaseAgent {
 
   protected initializeCapabilities(): void {
     // Clinical decision support capability
-    this.capabilities.set('clinical_decision_support', createAgentCapability(
+    this.capabilities.set(
       'clinical_decision_support',
-      'Provide evidence-based clinical decision support and recommendations',
-      {
-        type: 'object',
-        properties: {
-          patientId: { type: 'string' },
-          decisionType: { type: 'string', enum: ['diagnosis', 'treatment', 'medication', 'referral', 'discharge'] },
-          clinicalData: {
-            type: 'object',
-            properties: {
-              symptoms: { type: 'array', items: { type: 'string' } },
-              vitals: { type: 'object' },
-              labResults: { type: 'object' },
-              history: { type: 'object' },
-              currentMedications: { type: 'array', items: { type: 'string' } },
-            }
-          }
+      createAgentCapability(
+        'clinical_decision_support',
+        'Provide evidence-based clinical decision support and recommendations',
+        {
+          type: 'object',
+          properties: {
+            patientId: { type: 'string' },
+            decisionType: {
+              type: 'string',
+              enum: ['diagnosis', 'treatment', 'medication', 'referral', 'discharge'],
+            },
+            clinicalData: {
+              type: 'object',
+              properties: {
+                symptoms: { type: 'array', items: { type: 'string' } },
+                vitals: { type: 'object' },
+                labResults: { type: 'object' },
+                history: { type: 'object' },
+                currentMedications: { type: 'array', items: { type: 'string' } },
+              },
+            },
+          },
+          required: ['patientId', 'decisionType', 'clinicalData'],
         },
-        required: ['patientId', 'decisionType', 'clinicalData'],
-      },
-      {
-        type: 'object',
-        properties: {
-          decisionId: { type: 'string' },
-          recommendations: { type: 'array' },
-          confidence: { type: 'number' },
-          warnings: { type: 'array' },
+        {
+          type: 'object',
+          properties: {
+            decisionId: { type: 'string' },
+            recommendations: { type: 'array' },
+            confidence: { type: 'number' },
+            warnings: { type: 'array' },
+          },
         },
-      },
-      ['clinical:decision_support']
-    ));
+        ['clinical:decision_support']
+      )
+    );
 
     // Workflow optimization capability
-    this.capabilities.set('workflow_optimization', createAgentCapability(
+    this.capabilities.set(
       'workflow_optimization',
-      'Analyze and optimize clinical workflows for efficiency and quality',
-      {
-        type: 'object',
-        properties: {
-          workflowType: { type: 'string' },
-          currentWorkflow: { type: 'object' },
-          optimizationGoals: { type: 'array', items: { type: 'string' } },
+      createAgentCapability(
+        'workflow_optimization',
+        'Analyze and optimize clinical workflows for efficiency and quality',
+        {
+          type: 'object',
+          properties: {
+            workflowType: { type: 'string' },
+            currentWorkflow: { type: 'object' },
+            optimizationGoals: { type: 'array', items: { type: 'string' } },
+          },
+          required: ['workflowType', 'currentWorkflow'],
         },
-        required: ['workflowType', 'currentWorkflow'],
-      },
-      {
-        type: 'object',
-        properties: {
-          optimizationId: { type: 'string' },
-          improvements: { type: 'object' },
-          recommendations: { type: 'array' },
-        },
-      }
-    ));
+        {
+          type: 'object',
+          properties: {
+            optimizationId: { type: 'string' },
+            improvements: { type: 'object' },
+            recommendations: { type: 'array' },
+          },
+        }
+      )
+    );
 
     // Clinical alerts capability
-    this.capabilities.set('clinical_alerts', createAgentCapability(
+    this.capabilities.set(
       'clinical_alerts',
-      'Generate real-time clinical alerts and warnings',
-      {
-        type: 'object',
-        properties: {
-          patientId: { type: 'string' },
-          alertType: { type: 'string' },
-          clinicalContext: { type: 'object' },
+      createAgentCapability(
+        'clinical_alerts',
+        'Generate real-time clinical alerts and warnings',
+        {
+          type: 'object',
+          properties: {
+            patientId: { type: 'string' },
+            alertType: { type: 'string' },
+            clinicalContext: { type: 'object' },
+          },
+          required: ['patientId', 'alertType'],
         },
-        required: ['patientId', 'alertType'],
-      },
-      {
-        type: 'object',
-        properties: {
-          alerts: { type: 'array' },
-          urgency: { type: 'string' },
-        },
-      }
-    ));
+        {
+          type: 'object',
+          properties: {
+            alerts: { type: 'array' },
+            urgency: { type: 'string' },
+          },
+        }
+      )
+    );
 
     this.logger.info('HEALTHCARELINC capabilities initialized', {
       capabilityCount: this.capabilities.size,
@@ -294,7 +312,6 @@ export class HealthcareLincAgent extends BaseAgent {
         warnings: decision.warnings,
         reasoning: decision.reasoning,
       };
-
     } catch (error) {
       this.logger.error('Clinical decision support failed', error as Error, {
         patientId,
@@ -315,7 +332,8 @@ export class HealthcareLincAgent extends BaseAgent {
 
     // Analyze symptoms
     for (const symptom of symptoms) {
-      const symptomData = this.clinicalKnowledge.symptoms[symptom as keyof typeof this.clinicalKnowledge.symptoms];
+      const symptomData =
+        this.clinicalKnowledge.symptoms[symptom as keyof typeof this.clinicalKnowledge.symptoms];
       if (symptomData) {
         symptomData.conditions.forEach(condition => possibleConditions.add(condition));
         reasoning.push(`Symptom "${symptom}" suggests: ${symptomData.conditions.join(', ')}`);
@@ -323,22 +341,22 @@ export class HealthcareLincAgent extends BaseAgent {
     }
 
     // Analyze vitals
-    if (vitals.temperature && (vitals.temperature as number) > 38.0) {
+    if (vitals.temperature && vitals.temperature > 38.0) {
       possibleConditions.add('infection');
       reasoning.push('Elevated temperature suggests infectious process');
     }
 
-    if (vitals.blood_pressure && (vitals.blood_pressure as number) > 140) {
+    if (vitals.blood_pressure && vitals.blood_pressure > 140) {
       possibleConditions.add('hypertension');
       reasoning.push('Elevated blood pressure noted');
     }
 
     // Generate recommendations for each possible condition
     const conditions = Array.from(possibleConditions).slice(0, 5); // Top 5 conditions
-    
+
     for (let i = 0; i < conditions.length; i++) {
       const condition = conditions[i];
-      const confidence = Math.max(0.5, 0.9 - (i * 0.1)); // Decreasing confidence
+      const confidence = Math.max(0.5, 0.9 - i * 0.1); // Decreasing confidence
 
       decision.recommendations.push({
         id: `rec_${i + 1}`,
@@ -365,7 +383,11 @@ export class HealthcareLincAgent extends BaseAgent {
     const { symptoms = [], currentMedications = [] } = decision.input;
 
     // Generate treatment recommendations based on symptoms
-    const treatments: Array<{ name: string; type: ClinicalRecommendation['type']; priority: ClinicalRecommendation['priority'] }> = [];
+    const treatments: Array<{
+      name: string;
+      type: ClinicalRecommendation['type'];
+      priority: ClinicalRecommendation['priority'];
+    }> = [];
 
     if (symptoms.includes('fever')) {
       treatments.push({ name: 'fever_management', type: 'medication', priority: 'medium' });
@@ -392,7 +414,9 @@ export class HealthcareLincAgent extends BaseAgent {
       });
     });
 
-    decision.reasoning.push(`Generated ${treatments.length} treatment recommendations based on clinical presentation`);
+    decision.reasoning.push(
+      `Generated ${treatments.length} treatment recommendations based on clinical presentation`
+    );
   }
 
   /**
@@ -434,8 +458,11 @@ export class HealthcareLincAgent extends BaseAgent {
 
     // Convert to recommendations
     medicationRecommendations.forEach((med, index) => {
-      const medicationData = this.clinicalKnowledge.medications[med.medication as keyof typeof this.clinicalKnowledge.medications];
-      
+      const medicationData =
+        this.clinicalKnowledge.medications[
+          med.medication as keyof typeof this.clinicalKnowledge.medications
+        ];
+
       decision.recommendations.push({
         id: `med_${index + 1}`,
         type: 'medication',
@@ -451,7 +478,9 @@ export class HealthcareLincAgent extends BaseAgent {
       });
     });
 
-    decision.reasoning.push(`Analyzed current medications and recommended ${medicationRecommendations.length} new therapies`);
+    decision.reasoning.push(
+      `Analyzed current medications and recommended ${medicationRecommendations.length} new therapies`
+    );
   }
 
   /**
@@ -460,18 +489,34 @@ export class HealthcareLincAgent extends BaseAgent {
   private async generateReferralRecommendations(decision: ClinicalDecision): Promise<void> {
     const { symptoms = [] } = decision.input;
 
-    const referrals: Array<{ specialty: string; indication: string; urgency: ClinicalRecommendation['priority'] }> = [];
+    const referrals: Array<{
+      specialty: string;
+      indication: string;
+      urgency: ClinicalRecommendation['priority'];
+    }> = [];
 
     if (symptoms.includes('chest_pain')) {
-      referrals.push({ specialty: 'cardiology', indication: 'chest pain evaluation', urgency: 'high' });
+      referrals.push({
+        specialty: 'cardiology',
+        indication: 'chest pain evaluation',
+        urgency: 'high',
+      });
     }
 
     if (symptoms.includes('shortness_of_breath')) {
-      referrals.push({ specialty: 'pulmonology', indication: 'respiratory symptoms', urgency: 'medium' });
+      referrals.push({
+        specialty: 'pulmonology',
+        indication: 'respiratory symptoms',
+        urgency: 'medium',
+      });
     }
 
     if (symptoms.includes('abdominal_pain')) {
-      referrals.push({ specialty: 'gastroenterology', indication: 'abdominal pain workup', urgency: 'medium' });
+      referrals.push({
+        specialty: 'gastroenterology',
+        indication: 'abdominal pain workup',
+        urgency: 'medium',
+      });
     }
 
     // Convert to recommendations
@@ -487,7 +532,9 @@ export class HealthcareLincAgent extends BaseAgent {
       });
     });
 
-    decision.reasoning.push(`Recommended ${referrals.length} specialty referrals based on clinical complexity`);
+    decision.reasoning.push(
+      `Recommended ${referrals.length} specialty referrals based on clinical complexity`
+    );
   }
 
   /**
@@ -549,10 +596,13 @@ export class HealthcareLincAgent extends BaseAgent {
       for (let j = i + 1; j < currentMedications.length; j++) {
         const med1 = currentMedications[i];
         const med2 = currentMedications[j];
-        
+
         if (!med1 || !med2) continue;
-        
-        const med1Data = this.clinicalKnowledge.medications[med1 as keyof typeof this.clinicalKnowledge.medications];
+
+        const med1Data =
+          this.clinicalKnowledge.medications[
+            med1 as keyof typeof this.clinicalKnowledge.medications
+          ];
         if (med1Data?.interactions?.includes(med2)) {
           warnings.push({
             id: `interaction_${i}_${j}`,
@@ -571,12 +621,15 @@ export class HealthcareLincAgent extends BaseAgent {
       if (rec.type === 'medication' && rec.title) {
         const medicationName = rec.title.split(' ')[0]?.toLowerCase();
         if (!medicationName) return;
-        
-        const medData = this.clinicalKnowledge.medications[medicationName as keyof typeof this.clinicalKnowledge.medications];
-        
+
+        const medData =
+          this.clinicalKnowledge.medications[
+            medicationName as keyof typeof this.clinicalKnowledge.medications
+          ];
+
         if (medData?.contraindications) {
-          const contraindications = medData.contraindications.filter(contraindication => 
-            history[contraindication as keyof typeof history]
+          const contraindications = medData.contraindications.filter(
+            contraindication => history[contraindication]
           );
 
           if (contraindications.length > 0) {
@@ -601,14 +654,16 @@ export class HealthcareLincAgent extends BaseAgent {
    */
   private calculateDecisionConfidence(decision: ClinicalDecision): number {
     const recommendationConfidences = decision.recommendations.map(rec => rec.confidence);
-    
+
     if (recommendationConfidences.length === 0) {
       return 0;
     }
 
     // Average confidence, adjusted for warnings
-    const avgConfidence = recommendationConfidences.reduce((sum, conf) => sum + conf, 0) / recommendationConfidences.length;
-    
+    const avgConfidence =
+      recommendationConfidences.reduce((sum, conf) => sum + conf, 0) /
+      recommendationConfidences.length;
+
     // Reduce confidence based on critical warnings
     const criticalWarnings = decision.warnings.filter(w => w.severity === 'critical').length;
     const confidenceReduction = criticalWarnings * 0.1;
@@ -626,7 +681,10 @@ export class HealthcareLincAgent extends BaseAgent {
 
     try {
       const currentSteps = (currentWorkflow as any).steps || [];
-      const optimizedSteps = await this.analyzeAndOptimizeSteps(currentSteps, optimizationGoals as string[]);
+      const optimizedSteps = await this.analyzeAndOptimizeSteps(
+        currentSteps,
+        optimizationGoals as string[]
+      );
 
       const optimization: WorkflowOptimization = {
         workflowType: workflowType as string,
@@ -654,7 +712,6 @@ export class HealthcareLincAgent extends BaseAgent {
           steps: optimizedSteps,
         },
       };
-
     } catch (error) {
       this.logger.error('Workflow optimization failed', error as Error, { workflowType });
       throw error;
@@ -664,7 +721,10 @@ export class HealthcareLincAgent extends BaseAgent {
   /**
    * Analyze and optimize workflow steps
    */
-  private async analyzeAndOptimizeSteps(currentSteps: WorkflowStep[], goals: string[]): Promise<WorkflowStep[]> {
+  private async analyzeAndOptimizeSteps(
+    currentSteps: WorkflowStep[],
+    goals: string[]
+  ): Promise<WorkflowStep[]> {
     const optimizedSteps = [...currentSteps];
 
     // Apply optimization strategies based on goals
@@ -693,16 +753,19 @@ export class HealthcareLincAgent extends BaseAgent {
   private optimizeForTime(steps: WorkflowStep[]): void {
     // Identify steps that can be parallelized
     const parallelizableSteps = steps.filter(step => step.dependencies.length === 0);
-    
+
     // Merge similar steps
     for (let i = steps.length - 1; i > 0; i--) {
       const currentStep = steps[i];
       const previousStep = steps[i - 1];
-      
-      if (currentStep && previousStep &&
-          currentStep.type === previousStep.type && 
-          currentStep.type === 'data_entry' &&
-          currentStep.dependencies.includes(previousStep.id)) {
+
+      if (
+        currentStep &&
+        previousStep &&
+        currentStep.type === previousStep.type &&
+        currentStep.type === 'data_entry' &&
+        currentStep.dependencies.includes(previousStep.id)
+      ) {
         // Merge data entry steps
         previousStep.estimatedTime += currentStep.estimatedTime;
         previousStep.name = `${previousStep.name} & ${currentStep.name}`;
@@ -716,7 +779,8 @@ export class HealthcareLincAgent extends BaseAgent {
    */
   private optimizeForErrorReduction(steps: WorkflowStep[]): void {
     steps.forEach(step => {
-      if (step.errorRate > 0.05) { // 5% error rate threshold
+      if (step.errorRate > 0.05) {
+        // 5% error rate threshold
         // Add validation steps for high-error steps
         const validationStep: WorkflowStep = {
           id: `${step.id}_validation`,
@@ -727,7 +791,7 @@ export class HealthcareLincAgent extends BaseAgent {
           dependencies: [step.id],
           automationPotential: 70,
         };
-        
+
         // Insert validation step after the current step
         const stepIndex = steps.findIndex(s => s.id === step.id);
         if (stepIndex !== -1) {
@@ -757,7 +821,7 @@ export class HealthcareLincAgent extends BaseAgent {
   private optimizeForStandardization(steps: WorkflowStep[]): void {
     // Group similar step types and standardize their timing
     const stepsByType = new Map<string, WorkflowStep[]>();
-    
+
     steps.forEach(step => {
       if (!stepsByType.has(step.type)) {
         stepsByType.set(step.type, []);
@@ -767,9 +831,11 @@ export class HealthcareLincAgent extends BaseAgent {
 
     // Standardize timing within each type
     stepsByType.forEach((stepsOfType, type) => {
-      const averageTime = stepsOfType.reduce((sum, step) => sum + step.estimatedTime, 0) / stepsOfType.length;
-      const averageErrorRate = stepsOfType.reduce((sum, step) => sum + step.errorRate, 0) / stepsOfType.length;
-      
+      const averageTime =
+        stepsOfType.reduce((sum, step) => sum + step.estimatedTime, 0) / stepsOfType.length;
+      const averageErrorRate =
+        stepsOfType.reduce((sum, step) => sum + step.errorRate, 0) / stepsOfType.length;
+
       stepsOfType.forEach(step => {
         step.estimatedTime = Math.round(averageTime);
         step.errorRate = Number(averageErrorRate.toFixed(3));
@@ -780,20 +846,28 @@ export class HealthcareLincAgent extends BaseAgent {
   /**
    * Calculate workflow improvements
    */
-  private calculateWorkflowImprovements(currentSteps: WorkflowStep[], optimizedSteps: WorkflowStep[]): WorkflowOptimization['improvements'] {
+  private calculateWorkflowImprovements(
+    currentSteps: WorkflowStep[],
+    optimizedSteps: WorkflowStep[]
+  ): WorkflowOptimization['improvements'] {
     const currentTotalTime = currentSteps.reduce((sum, step) => sum + step.estimatedTime, 0);
     const optimizedTotalTime = optimizedSteps.reduce((sum, step) => sum + step.estimatedTime, 0);
-    
-    const currentAvgErrorRate = currentSteps.reduce((sum, step) => sum + step.errorRate, 0) / currentSteps.length;
-    const optimizedAvgErrorRate = optimizedSteps.reduce((sum, step) => sum + step.errorRate, 0) / optimizedSteps.length;
+
+    const currentAvgErrorRate =
+      currentSteps.reduce((sum, step) => sum + step.errorRate, 0) / currentSteps.length;
+    const optimizedAvgErrorRate =
+      optimizedSteps.reduce((sum, step) => sum + step.errorRate, 0) / optimizedSteps.length;
 
     const timeReduction = Math.max(0, currentTotalTime - optimizedTotalTime);
-    const errorReduction = Math.max(0, (currentAvgErrorRate - optimizedAvgErrorRate) / currentAvgErrorRate * 100);
-    
+    const errorReduction = Math.max(
+      0,
+      ((currentAvgErrorRate - optimizedAvgErrorRate) / currentAvgErrorRate) * 100
+    );
+
     return {
       timeReduction,
       errorReduction,
-      costReduction: timeReduction / currentTotalTime * 100, // Simplified cost reduction
+      costReduction: (timeReduction / currentTotalTime) * 100, // Simplified cost reduction
       qualityIncrease: errorReduction, // Quality increase roughly correlates with error reduction
     };
   }
@@ -801,11 +875,16 @@ export class HealthcareLincAgent extends BaseAgent {
   /**
    * Generate optimization reasoning
    */
-  private generateOptimizationReasoning(currentSteps: WorkflowStep[], optimizedSteps: WorkflowStep[]): string[] {
+  private generateOptimizationReasoning(
+    currentSteps: WorkflowStep[],
+    optimizedSteps: WorkflowStep[]
+  ): string[] {
     const reasoning: string[] = [];
-    
+
     if (optimizedSteps.length < currentSteps.length) {
-      reasoning.push(`Consolidated ${currentSteps.length - optimizedSteps.length} steps through merging similar activities`);
+      reasoning.push(
+        `Consolidated ${currentSteps.length - optimizedSteps.length} steps through merging similar activities`
+      );
     }
 
     const automatedSteps = optimizedSteps.filter(step => step.name.includes('Automated')).length;
@@ -815,7 +894,9 @@ export class HealthcareLincAgent extends BaseAgent {
 
     const validationSteps = optimizedSteps.filter(step => step.name.includes('Validate')).length;
     if (validationSteps > 0) {
-      reasoning.push(`Added ${validationSteps} validation steps to improve quality and reduce errors`);
+      reasoning.push(
+        `Added ${validationSteps} validation steps to improve quality and reduce errors`
+      );
     }
 
     reasoning.push('Applied evidence-based workflow optimization principles');
@@ -1002,7 +1083,7 @@ export class HealthcareLincAgent extends BaseAgent {
       message: string;
       timestamp: string;
     }> = [];
-    
+
     // General informational alert
     alerts.push({
       id: 'general_alert',

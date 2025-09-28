@@ -3,11 +3,7 @@
  * Support for creating and manipulating FHIR bundles
  */
 
-import { 
-  FHIRBundle, 
-  FHIRBundleEntry, 
-  FHIRResource 
-} from '@/types/fhir';
+import { FHIRBundle, FHIRBundleEntry, FHIRResource } from '@/types/fhir';
 import { v4 as uuidv4 } from 'uuid';
 
 // Extended entry interface for bundle operations
@@ -28,15 +24,15 @@ interface FHIRBundleEntryComplete extends FHIRBundleEntry {
   };
 }
 
-export type BundleType = 
-  | 'document' 
-  | 'message' 
-  | 'transaction' 
-  | 'transaction-response' 
-  | 'batch' 
-  | 'batch-response' 
-  | 'history' 
-  | 'searchset' 
+export type BundleType =
+  | 'document'
+  | 'message'
+  | 'transaction'
+  | 'transaction-response'
+  | 'batch'
+  | 'batch-response'
+  | 'history'
+  | 'searchset'
   | 'collection';
 
 export class FHIRBundleBuilder {
@@ -65,7 +61,7 @@ export class FHIRBundleBuilder {
 
     this.bundle.entry = this.bundle.entry || [];
     this.bundle.entry.push(entry);
-    
+
     return this;
   }
 
@@ -89,7 +85,7 @@ export class FHIRBundleBuilder {
 
     this.bundle.entry = this.bundle.entry || [];
     this.bundle.entry.push(entry);
-    
+
     return this;
   }
 
@@ -101,11 +97,7 @@ export class FHIRBundleBuilder {
       throw new Error('Resource must have resourceType for create operation');
     }
 
-    return this.addResourceWithRequest(
-      resource,
-      'POST',
-      resource.resourceType
-    );
+    return this.addResourceWithRequest(resource, 'POST', resource.resourceType);
   }
 
   /**
@@ -116,11 +108,7 @@ export class FHIRBundleBuilder {
       throw new Error('Resource must have id for update operation');
     }
 
-    return this.addResourceWithRequest(
-      resource,
-      'PUT',
-      `${resource.resourceType}/${resource.id}`
-    );
+    return this.addResourceWithRequest(resource, 'PUT', `${resource.resourceType}/${resource.id}`);
   }
 
   /**
@@ -136,7 +124,7 @@ export class FHIRBundleBuilder {
 
     this.bundle.entry = this.bundle.entry || [];
     this.bundle.entry.push(entry);
-    
+
     return this;
   }
 
@@ -144,22 +132,14 @@ export class FHIRBundleBuilder {
    * Add a conditional create request
    */
   addConditionalCreate(resource: FHIRResource, condition: string): FHIRBundleBuilder {
-    return this.addResourceWithRequest(
-      resource,
-      'POST',
-      `${resource.resourceType}?${condition}`
-    );
+    return this.addResourceWithRequest(resource, 'POST', `${resource.resourceType}?${condition}`);
   }
 
   /**
    * Add a conditional update request
    */
   addConditionalUpdate(resource: FHIRResource, condition: string): FHIRBundleBuilder {
-    return this.addResourceWithRequest(
-      resource,
-      'PUT',
-      `${resource.resourceType}?${condition}`
-    );
+    return this.addResourceWithRequest(resource, 'PUT', `${resource.resourceType}?${condition}`);
   }
 
   /**
@@ -184,7 +164,7 @@ export class FHIRBundleBuilder {
   build(): FHIRBundle {
     // Update entry count
     this.bundle.total = this.bundle.entry?.length || 0;
-    
+
     return { ...this.bundle };
   }
 
@@ -202,7 +182,7 @@ export class FHIRBundleProcessor {
    */
   static extractResources<T extends FHIRResource>(bundle: FHIRBundle): T[] {
     if (!bundle.entry) return [];
-    
+
     return bundle.entry
       .map(entry => entry.resource)
       .filter((resource): resource is T => resource !== undefined);
@@ -212,23 +192,25 @@ export class FHIRBundleProcessor {
    * Extract resources of specific type from bundle
    */
   static extractResourcesByType<T extends FHIRResource>(
-    bundle: FHIRBundle, 
+    bundle: FHIRBundle,
     resourceType: string
   ): T[] {
-    return this.extractResources<T>(bundle)
-      .filter(resource => resource.resourceType === resourceType);
+    return this.extractResources<T>(bundle).filter(
+      resource => resource.resourceType === resourceType
+    );
   }
 
   /**
    * Find resource by ID in bundle
    */
   static findResourceById<T extends FHIRResource>(
-    bundle: FHIRBundle, 
-    resourceType: string, 
+    bundle: FHIRBundle,
+    resourceType: string,
     id: string
   ): T | undefined {
-    return this.extractResources<T>(bundle)
-      .find(resource => resource.resourceType === resourceType && resource.id === id);
+    return this.extractResources<T>(bundle).find(
+      resource => resource.resourceType === resourceType && resource.id === id
+    );
   }
 
   /**
@@ -275,12 +257,11 @@ export class FHIRBundleProcessor {
       resource?: FHIRResource;
     }>
   ): FHIRBundle {
-    const responseType = requestBundle.type === 'transaction' 
-      ? 'transaction-response' 
-      : 'batch-response';
+    const responseType =
+      requestBundle.type === 'transaction' ? 'transaction-response' : 'batch-response';
 
     const builder = new FHIRBundleBuilder(responseType);
-    
+
     requestBundle.entry?.forEach((requestEntry, index) => {
       const response = responses[index];
       if (response) {
@@ -311,17 +292,17 @@ export class FHIRBundleProcessor {
     }
 
     const chunks: FHIRBundle[] = [];
-    
+
     for (let i = 0; i < bundle.entry.length; i += maxSize) {
       const chunkEntries = bundle.entry.slice(i, i + maxSize);
-      
+
       const chunkBundle: FHIRBundle = {
         ...bundle,
         id: `${bundle.id}-chunk-${Math.floor(i / maxSize) + 1}`,
         entry: chunkEntries,
         total: chunkEntries.length,
       };
-      
+
       chunks.push(chunkBundle);
     }
 
@@ -341,7 +322,7 @@ export class FHIRBundleProcessor {
     }
   ): FHIRBundle {
     const builder = new FHIRBundleBuilder('searchset');
-    
+
     resources.forEach(resource => {
       builder.addResource(resource);
     });
@@ -351,7 +332,7 @@ export class FHIRBundleProcessor {
     }
 
     const bundle = builder.build();
-    
+
     // Add search links if provided
     if (links) {
       // In a full implementation, you would add link entries to the bundle

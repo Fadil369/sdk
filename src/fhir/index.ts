@@ -14,28 +14,24 @@ export { FHIRValidator, fhirValidator } from './validation';
 export type { ValidationResult, ValidationIssue } from './validation';
 
 // Re-export bundle operations
-export { 
-  FHIRBundleBuilder, 
+export {
+  FHIRBundleBuilder,
   FHIRBundleProcessor,
   createTransactionBundle,
   createBatchBundle,
   createDocumentBundle,
-  createCollectionBundle
+  createCollectionBundle,
 } from './bundle';
 
 // Re-export Saudi Arabia extensions
-export { 
+export {
   SaudiPatientBuilder,
   SaudiExtensionHelper,
   createSaudiPatient,
   SAUDI_SYSTEMS,
-  SAUDI_REGIONS
+  SAUDI_REGIONS,
 } from './saudi-extensions';
-export type { 
-  SaudiPatientProfile,
-  SaudiRegion,
-  ResidencyType
-} from './saudi-extensions';
+export type { SaudiPatientProfile, SaudiRegion, ResidencyType } from './saudi-extensions';
 
 // Legacy FHIRClient class for backward compatibility
 // This will be removed once the main SDK is updated to use the new FHIRClient
@@ -44,7 +40,7 @@ export class LegacyFHIRClient {
     // @ts-ignore - Used for future compatibility
     private _config: ConfigManager,
     private logger: Logger,
-    // @ts-ignore - Used for future compatibility  
+    // @ts-ignore - Used for future compatibility
     private _apiClient: ApiClient
   ) {}
 

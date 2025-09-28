@@ -17,32 +17,38 @@ export const rtlAwareMargin = (rtl: boolean, left: string, right: string): React
   marginRight: rtl ? left : right,
 });
 
-export const rtlAwarePadding = (rtl: boolean, left: string, right: string): React.CSSProperties => ({
+export const rtlAwarePadding = (
+  rtl: boolean,
+  left: string,
+  right: string
+): React.CSSProperties => ({
   paddingLeft: rtl ? right : left,
   paddingRight: rtl ? left : right,
 });
 
-export const rtlAwarePosition = (rtl: boolean, leftPos?: string, rightPos?: string): React.CSSProperties => {
+export const rtlAwarePosition = (
+  rtl: boolean,
+  leftPos?: string,
+  rightPos?: string
+): React.CSSProperties => {
   if (leftPos && rightPos) {
-    return rtl
-      ? { right: leftPos, left: rightPos }
-      : { left: leftPos, right: rightPos };
+    return rtl ? { right: leftPos, left: rightPos } : { left: leftPos, right: rightPos };
   }
-  
+
   if (leftPos) {
     return rtl ? { right: leftPos } : { left: leftPos };
   }
-  
+
   if (rightPos) {
     return rtl ? { left: rightPos } : { right: rightPos };
   }
-  
+
   return {};
 };
 
 export const rtlTransform = (rtl: boolean, transform?: string): React.CSSProperties => {
   if (!transform) return {};
-  
+
   return {
     transform: rtl ? `scaleX(-1) ${transform}` : transform,
   };
@@ -56,7 +62,7 @@ export const arabicFontStack = [
   'Arabic Typesetting',
   'Tahoma',
   'Arial Unicode MS',
-  'sans-serif'
+  'sans-serif',
 ].join(', ');
 
 export const createFontStyle = (rtl: boolean): React.CSSProperties => ({

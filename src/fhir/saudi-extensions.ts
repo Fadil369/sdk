@@ -33,13 +33,13 @@ export const SAUDI_REGIONS = [
   'al-jawf',
 ] as const;
 
-export type SaudiRegion = typeof SAUDI_REGIONS[number];
+export type SaudiRegion = (typeof SAUDI_REGIONS)[number];
 export type ResidencyType = 'citizen' | 'resident' | 'visitor';
 
 export interface SaudiPatientProfile extends FHIRPatient {
   // Required Saudi identifiers
   identifier: FHIRIdentifier[];
-  
+
   // Saudi-specific extension
   extension?: Array<{
     url: typeof SAUDI_SYSTEMS.PATIENT_EXTENSION;
@@ -77,18 +77,20 @@ export class SaudiPatientBuilder {
       system: SAUDI_SYSTEMS.NATIONAL_ID,
       value: nationalId,
       type: {
-        coding: [{
-          system: 'http://terminology.hl7.org/CodeSystem/v2-0203',
-          code: 'NI',
-          display: 'National identifier',
-        }],
+        coding: [
+          {
+            system: 'http://terminology.hl7.org/CodeSystem/v2-0203',
+            code: 'NI',
+            display: 'National identifier',
+          },
+        ],
         text: 'Saudi National ID',
       },
     };
 
     this.patient.identifier = this.patient.identifier || [];
     this.patient.identifier.push(identifier);
-    
+
     return this;
   }
 
@@ -101,18 +103,20 @@ export class SaudiPatientBuilder {
       system: SAUDI_SYSTEMS.FAMILY_CARD,
       value: familyCard,
       type: {
-        coding: [{
-          system: SAUDI_SYSTEMS.FAMILY_CARD,
-          code: 'FC',
-          display: 'Family Card',
-        }],
+        coding: [
+          {
+            system: SAUDI_SYSTEMS.FAMILY_CARD,
+            code: 'FC',
+            display: 'Family Card',
+          },
+        ],
         text: 'Saudi Family Card Number',
       },
     };
 
     this.patient.identifier = this.patient.identifier || [];
     this.patient.identifier.push(identifier);
-    
+
     return this;
   }
 
@@ -125,18 +129,20 @@ export class SaudiPatientBuilder {
       system: SAUDI_SYSTEMS.SPONSOR_ID,
       value: sponsorId,
       type: {
-        coding: [{
-          system: SAUDI_SYSTEMS.SPONSOR_ID,
-          code: 'SPONSOR',
-          display: 'Sponsor ID',
-        }],
+        coding: [
+          {
+            system: SAUDI_SYSTEMS.SPONSOR_ID,
+            code: 'SPONSOR',
+            display: 'Sponsor ID',
+          },
+        ],
         text: 'Saudi Sponsor ID',
       },
     };
 
     this.patient.identifier = this.patient.identifier || [];
     this.patient.identifier.push(identifier);
-    
+
     return this;
   }
 
@@ -155,7 +161,7 @@ export class SaudiPatientBuilder {
     if (!SAUDI_REGIONS.includes(region)) {
       throw new Error(`Invalid Saudi region: ${region}`);
     }
-    
+
     this.addExtension('region', region);
     return this;
   }
@@ -172,7 +178,7 @@ export class SaudiPatientBuilder {
 
     this.patient.name = this.patient.name || [];
     this.patient.name.push(name);
-    
+
     return this;
   }
 
@@ -188,7 +194,7 @@ export class SaudiPatientBuilder {
 
     this.patient.name = this.patient.name || [];
     this.patient.name.push(name);
-    
+
     return this;
   }
 
@@ -207,10 +213,13 @@ export class SaudiPatientBuilder {
   /**
    * Set Saudi phone number
    */
-  setSaudiPhoneNumber(phoneNumber: string, use: 'home' | 'work' | 'mobile' = 'mobile'): SaudiPatientBuilder {
+  setSaudiPhoneNumber(
+    phoneNumber: string,
+    use: 'home' | 'work' | 'mobile' = 'mobile'
+  ): SaudiPatientBuilder {
     // Normalize Saudi phone number
     const normalizedPhone = this.normalizeSaudiPhoneNumber(phoneNumber);
-    
+
     const telecom = {
       system: 'phone' as const,
       value: normalizedPhone,
@@ -219,7 +228,7 @@ export class SaudiPatientBuilder {
 
     this.patient.telecom = this.patient.telecom || [];
     this.patient.telecom.push(telecom);
-    
+
     return this;
   }
 
@@ -245,7 +254,7 @@ export class SaudiPatientBuilder {
 
     this.patient.address = this.patient.address || [];
     this.patient.address.push(address);
-    
+
     return this;
   }
 
@@ -271,7 +280,7 @@ export class SaudiPatientBuilder {
 
   private addExtension(url: string, value: string): void {
     this.patient.extension = this.patient.extension || [];
-    
+
     let saudiExtension = this.patient.extension.find(
       ext => ext.url === SAUDI_SYSTEMS.PATIENT_EXTENSION
     );
@@ -293,7 +302,7 @@ export class SaudiPatientBuilder {
   private normalizeSaudiPhoneNumber(phone: string): string {
     // Remove spaces and dashes
     const cleaned = phone.replace(/[\s-]/g, '');
-    
+
     // Add +966 prefix if not present
     if (cleaned.startsWith('05')) {
       return `+966${cleaned.substring(1)}`;
@@ -304,7 +313,7 @@ export class SaudiPatientBuilder {
     } else if (!cleaned.startsWith('+966')) {
       return `+966${cleaned}`;
     }
-    
+
     return cleaned;
   }
 }
@@ -314,18 +323,14 @@ export class SaudiExtensionHelper {
    * Extract Saudi National ID from patient
    */
   static getSaudiNationalId(patient: FHIRPatient): string | undefined {
-    return patient.identifier?.find(
-      id => id.system === SAUDI_SYSTEMS.NATIONAL_ID
-    )?.value;
+    return patient.identifier?.find(id => id.system === SAUDI_SYSTEMS.NATIONAL_ID)?.value;
   }
 
   /**
    * Extract family card number from patient
    */
   static getFamilyCardNumber(patient: FHIRPatient): string | undefined {
-    return patient.identifier?.find(
-      id => id.system === SAUDI_SYSTEMS.FAMILY_CARD
-    )?.value;
+    return patient.identifier?.find(id => id.system === SAUDI_SYSTEMS.FAMILY_CARD)?.value;
   }
 
   /**
@@ -355,10 +360,12 @@ export class SaudiExtensionHelper {
    */
   static getArabicName(patient: FHIRPatient): { family?: string; given?: string[] } | undefined {
     const arabicName = patient.name?.find(name => name.use === 'official');
-    return arabicName ? {
-      family: arabicName.family,
-      given: arabicName.given,
-    } : undefined;
+    return arabicName
+      ? {
+          family: arabicName.family,
+          given: arabicName.given,
+        }
+      : undefined;
   }
 
   /**
@@ -366,10 +373,12 @@ export class SaudiExtensionHelper {
    */
   static getEnglishName(patient: FHIRPatient): { family?: string; given?: string[] } | undefined {
     const englishName = patient.name?.find(name => name.use === 'usual');
-    return englishName ? {
-      family: englishName.family,
-      given: englishName.given,
-    } : undefined;
+    return englishName
+      ? {
+          family: englishName.family,
+          given: englishName.given,
+        }
+      : undefined;
   }
 
   private static getExtensionValue(patient: FHIRPatient, url: string): string | undefined {
@@ -379,9 +388,7 @@ export class SaudiExtensionHelper {
 
     if (!saudiExtension) return undefined;
 
-    const subExtension = saudiExtension.extension?.find(
-      (ext: any) => ext.url === url
-    );
+    const subExtension = saudiExtension.extension?.find((ext: any) => ext.url === url);
 
     return subExtension?.valueString;
   }

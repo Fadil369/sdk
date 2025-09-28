@@ -30,7 +30,7 @@ export const BaseComponent: React.FC<BaseComponentProps> = ({
   ...props
 }) => {
   const glassProps = { opacity, blur, borderRadius, border, shadow };
-  
+
   const baseStyle: React.CSSProperties = {
     ...style,
     ...(glassMorphism
@@ -62,12 +62,7 @@ export const BaseComponent: React.FC<BaseComponentProps> = ({
     .join(' ');
 
   return (
-    <div
-      id={id}
-      className={combinedClassName}
-      style={baseStyle}
-      {...props}
-    >
+    <div id={id} className={combinedClassName} style={baseStyle} {...props}>
       {loading && (
         <div
           style={{

@@ -105,13 +105,13 @@ export class HIPAAAuditLogger {
   private maskPHIInDetails(details: Record<string, unknown>): Record<string, unknown> {
     const masked = { ...details };
     const phiFields = ['patientId', 'ssn', 'nationalId', 'phone', 'email', 'address'];
-    
+
     for (const field of phiFields) {
       if (masked[field] && typeof masked[field] === 'string') {
-        masked[field] = this.maskPHI(masked[field] as string);
+        masked[field] = this.maskPHI(masked[field]);
       }
     }
-    
+
     return masked;
   }
 

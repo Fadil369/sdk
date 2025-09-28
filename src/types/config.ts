@@ -62,9 +62,16 @@ export interface SDKConfig {
   /** AI configuration */
   ai?: {
     enabled: boolean;
-    provider: 'openai' | 'custom';
-    apiKey?: string;
-    models?: Record<string, string>;
+    providers: {
+      nlp?: {
+        endpoint: string;
+        model: string;
+      };
+      analytics?: {
+        endpoint: string;
+        model: string;
+      };
+    };
   };
 
   /** Analytics configuration */

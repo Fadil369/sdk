@@ -89,7 +89,7 @@ export abstract class BaseAgent {
     dueAt?: string
   ): Promise<string> {
     const taskId = `task_${Date.now()}_${Math.random().toString(36).substring(2)}`;
-    
+
     const task: AgentTask = {
       id: taskId,
       type,
@@ -163,7 +163,6 @@ export abstract class BaseAgent {
         type: task.type,
         executionTime: Date.now() - new Date(task.createdAt).getTime(),
       });
-
     } catch (error) {
       // Update task with error
       task.status = 'failed';
@@ -270,9 +269,8 @@ export abstract class BaseAgent {
       }
     }
 
-    stats.averageExecutionTime = completedCount > 0 
-      ? Math.round(totalExecutionTime / completedCount) 
-      : 0;
+    stats.averageExecutionTime =
+      completedCount > 0 ? Math.round(totalExecutionTime / completedCount) : 0;
 
     return stats;
   }
@@ -302,7 +300,10 @@ export abstract class BaseAgent {
 
     for (const [taskId, task] of this.tasks.entries()) {
       const taskTime = new Date(task.createdAt).getTime();
-      if (taskTime < cutoffTime && (task.status === 'completed' || task.status === 'failed' || task.status === 'cancelled')) {
+      if (
+        taskTime < cutoffTime &&
+        (task.status === 'completed' || task.status === 'failed' || task.status === 'cancelled')
+      ) {
         this.tasks.delete(taskId);
         cleanedCount++;
       }
@@ -340,9 +341,10 @@ export abstract class BaseAgent {
   }> {
     const stats = this.getStats();
     const tasks = Array.from(this.tasks.values());
-    const lastActivity = tasks.length > 0 
-      ? tasks.sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]?.createdAt
-      : undefined;
+    const lastActivity =
+      tasks.length > 0
+        ? tasks.sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]?.createdAt
+        : undefined;
 
     return {
       status: this.agent.status === 'active' && stats.failedTasks === 0 ? 'healthy' : 'degraded',

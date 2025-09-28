@@ -65,8 +65,9 @@ export class SessionManager {
     const existingSessions = this.getUserSessions(userId);
     if (existingSessions.length >= this.config.maxConcurrentSessions) {
       // Terminate oldest session
-      const oldestSession = existingSessions
-        .sort((a, b) => a.createdAt.localeCompare(b.createdAt))[0];
+      const oldestSession = existingSessions.sort((a, b) =>
+        a.createdAt.localeCompare(b.createdAt)
+      )[0];
       if (oldestSession) {
         await this.terminateSession(oldestSession.sessionId, 'concurrent_limit_exceeded');
       }
@@ -122,7 +123,7 @@ export class SessionManager {
    */
   async validateSession(sessionId: string, ipAddress?: string): Promise<SessionData | null> {
     const session = this.sessions.get(sessionId);
-    
+
     if (!session) {
       this.logger.warn('Session validation failed - not found', { sessionId });
       return null;
@@ -147,20 +148,25 @@ export class SessionManager {
     const idleTimeoutMs = this.config.idleTimeout * 60 * 1000;
 
     if (idleTime > idleTimeoutMs) {
-      this.logger.warn('Session validation failed - idle timeout', { 
-        sessionId, 
-        idleTime: Math.round(idleTime / 1000) 
+      this.logger.warn('Session validation failed - idle timeout', {
+        sessionId,
+        idleTime: Math.round(idleTime / 1000),
       });
       await this.terminateSession(sessionId, 'idle_timeout');
       return null;
     }
 
     // Check IP address consistency (if configured)
-    if (this.config.secureTransport && session.ipAddress && ipAddress && session.ipAddress !== ipAddress) {
-      this.logger.warn('Session validation failed - IP mismatch', { 
-        sessionId, 
-        originalIp: session.ipAddress, 
-        currentIp: ipAddress 
+    if (
+      this.config.secureTransport &&
+      session.ipAddress &&
+      ipAddress &&
+      session.ipAddress !== ipAddress
+    ) {
+      this.logger.warn('Session validation failed - IP mismatch', {
+        sessionId,
+        originalIp: session.ipAddress,
+        currentIp: ipAddress,
       });
       await this.terminateSession(sessionId, 'ip_mismatch');
       return null;
@@ -263,7 +269,7 @@ export class SessionManager {
       if (except && sessionId === except) {
         continue;
       }
-      
+
       const terminated = await this.terminateSession(sessionId, 'user_sessions_terminated');
       if (terminated) {
         terminatedCount++;
@@ -313,7 +319,7 @@ export class SessionManager {
    */
   getAllActiveSessions(): Array<Omit<SessionData, 'metadata'>> {
     const activeSessions: Array<Omit<SessionData, 'metadata'>> = [];
-    
+
     for (const session of this.sessions.values()) {
       if (session.isActive && new Date(session.expiresAt) > new Date()) {
         const { metadata, ...sessionInfo } = session;
@@ -351,7 +357,7 @@ export class SessionManager {
    */
   hasPermission(sessionId: string, permission: string): boolean {
     const session = this.sessions.get(sessionId);
-    return session?.isActive && session.permissions.includes(permission) || false;
+    return (session?.isActive && session.permissions.includes(permission)) || false;
   }
 
   /**
@@ -394,9 +400,10 @@ export class SessionManager {
       stats.sessionsPerUser[session.userId] = (stats.sessionsPerUser[session.userId] || 0) + 1;
     }
 
-    stats.averageSessionDuration = stats.totalSessions > 0 
-      ? Math.round(totalDuration / stats.totalSessions / 1000 / 60) // minutes
-      : 0;
+    stats.averageSessionDuration =
+      stats.totalSessions > 0
+        ? Math.round(totalDuration / stats.totalSessions / 1000 / 60) // minutes
+        : 0;
 
     return stats;
   }
@@ -406,9 +413,12 @@ export class SessionManager {
    */
   private startCleanupProcess(): void {
     // Run cleanup every 5 minutes
-    this.cleanupInterval = setInterval(() => {
-      this.cleanupExpiredSessions();
-    }, 5 * 60 * 1000);
+    this.cleanupInterval = setInterval(
+      () => {
+        this.cleanupExpiredSessions();
+      },
+      5 * 60 * 1000
+    );
 
     this.logger.info('Session cleanup process started');
   }
@@ -433,8 +443,9 @@ export class SessionManager {
 
     for (const [sessionId, session] of this.sessions.entries()) {
       const isExpired = new Date(session.expiresAt) < now;
-      const isIdle = (now.getTime() - new Date(session.lastActivity).getTime()) 
-        > (this.config.idleTimeout * 60 * 1000);
+      const isIdle =
+        now.getTime() - new Date(session.lastActivity).getTime() >
+        this.config.idleTimeout * 60 * 1000;
 
       if (isExpired || isIdle) {
         await this.terminateSession(sessionId, isExpired ? 'expired' : 'idle_timeout');
@@ -455,14 +466,18 @@ export class SessionManager {
     const uuid = uuidv4();
     const timestamp = Date.now().toString(36);
     const random = Math.random().toString(36).substring(2);
-    
+
     return `sess_${uuid}_${timestamp}_${random}`.substring(0, this.config.sessionTokenLength || 64);
   }
 
   /**
    * Log session events for audit
    */
-  private logSessionEvent(sessionId: string, eventType: SessionEvent['eventType'], details?: Record<string, unknown>): void {
+  private logSessionEvent(
+    sessionId: string,
+    eventType: SessionEvent['eventType'],
+    details?: Record<string, unknown>
+  ): void {
     const event: SessionEvent = {
       sessionId,
       eventType,
@@ -478,7 +493,7 @@ export class SessionManager {
    */
   async shutdown(): Promise<void> {
     this.stopCleanupProcess();
-    
+
     // Terminate all active sessions
     const activeSessions = this.getAllActiveSessions();
     for (const session of activeSessions) {
@@ -492,10 +507,7 @@ export class SessionManager {
 /**
  * Factory function to create session manager
  */
-export function createSessionManager(
-  config: SessionConfig,
-  logger: Logger
-): SessionManager {
+export function createSessionManager(config: SessionConfig, logger: Logger): SessionManager {
   return new SessionManager(config, logger);
 }
 

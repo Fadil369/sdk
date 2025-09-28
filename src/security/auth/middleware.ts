@@ -1,5 +1,5 @@
 /**
- * Permission validation middleware (placeholder)  
+ * Permission validation middleware (placeholder)
  */
 
 export interface PermissionMiddleware {

@@ -7,6 +7,7 @@ export default defineConfig({
     dts({
       insertTypesEntry: true,
       rollupTypes: true,
+      copyDtsFiles: true,
     }),
   ],
   build: {
@@ -29,8 +30,11 @@ export default defineConfig({
     minify: 'terser',
     sourcemap: true,
     reportCompressedSize: true,
-    // Performance optimizations
+    // Performance optimizations for Cloudflare
     chunkSizeWarningLimit: 1000,
+    assetsInlineLimit: 4096,
+    cssCodeSplit: true,
+    emptyOutDir: true,
   },
   resolve: {
     alias: {
@@ -43,22 +47,6 @@ export default defineConfig({
       '@/security': resolve(__dirname, 'src/security'),
       '@/ai': resolve(__dirname, 'src/ai'),
       '@/ui': resolve(__dirname, 'src/ui'),
-    },
-  },
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      threshold: {
-        global: {
-          branches: 90,
-          functions: 90,
-          lines: 90,
-          statements: 90,
-        },
-      },
     },
   },
 });

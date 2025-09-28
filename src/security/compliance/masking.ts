@@ -55,12 +55,12 @@ export class PHIDataMasker {
       { field: 'nationalId', type: 'format', preserveFormat: true, visibleChars: 4 },
       { field: 'medicalRecordNumber', type: 'partial', visibleChars: 3 },
       { field: 'accountNumber', type: 'partial', visibleChars: 4 },
-      
+
       // Contact information
       { field: 'phone', type: 'format', preserveFormat: true, visibleChars: 4 },
       { field: 'email', type: 'partial', visibleChars: 2 },
       { field: 'fax', type: 'format', preserveFormat: true, visibleChars: 4 },
-      
+
       // Names and addresses
       { field: 'firstName', type: 'partial', visibleChars: 1 },
       { field: 'lastName', type: 'partial', visibleChars: 1 },
@@ -69,13 +69,13 @@ export class PHIDataMasker {
       { field: 'city', type: 'partial', visibleChars: 2 },
       { field: 'state', type: 'full' },
       { field: 'zipCode', type: 'partial', visibleChars: 2 },
-      
+
       // Technical identifiers
       { field: 'ipAddress', type: 'format', preserveFormat: true, visibleChars: 0 },
       { field: 'webUrl', type: 'partial', visibleChars: 0 },
       { field: 'deviceId', type: 'hash' },
       { field: 'biometricId', type: 'hash' },
-      
+
       // Dates (except year)
       { field: 'dateOfBirth', type: 'format', preserveFormat: true, visibleChars: 4 }, // Show only year
       { field: 'admissionDate', type: 'format', preserveFormat: true, visibleChars: 4 },
@@ -151,12 +151,12 @@ export class PHIDataMasker {
       return obj;
     }
 
-    const masked = { ...obj } as T;
+    const masked = { ...obj };
 
     for (const [key, value] of Object.entries(masked)) {
       if (Array.isArray(value)) {
-        (masked as any)[key] = value.map(item => 
-          typeof item === 'object' && item !== null 
+        (masked as any)[key] = value.map(item =>
+          typeof item === 'object' && item !== null
             ? this.maskObject(item as Record<string, unknown>)
             : this.maskValue(item, key)
         );
@@ -194,8 +194,8 @@ export class PHIDataMasker {
 
     const start = value.substring(0, visibleChars);
     const end = value.substring(value.length - visibleChars);
-    const middle = this.config.defaultMaskChar.repeat(value.length - (visibleChars * 2));
-    
+    const middle = this.config.defaultMaskChar.repeat(value.length - visibleChars * 2);
+
     return start + middle + end;
   }
 
@@ -260,7 +260,7 @@ export class PHIDataMasker {
    */
   private maskPhone(value: string, visibleChars: number): string {
     const cleaned = value.replace(/\D/g, '');
-    
+
     if (cleaned.length === 10) {
       // US format: (XXX) XXX-1234
       if (visibleChars >= 4) {
@@ -291,21 +291,22 @@ export class PHIDataMasker {
 
     const username = value.substring(0, atIndex);
     const domain = value.substring(atIndex + 1);
-    
-    const maskedUsername = username.length > 2 
-      ? username.substring(0, 1) + '***' + username.substring(username.length - 1)
-      : '***';
-    
+
+    const maskedUsername =
+      username.length > 2
+        ? `${username.substring(0, 1)}***${username.substring(username.length - 1)}`
+        : '***';
+
     const dotIndex = domain.lastIndexOf('.');
     if (dotIndex === -1) {
-      return maskedUsername + '@***';
+      return `${maskedUsername}@***`;
     }
-    
+
     const domainName = domain.substring(0, dotIndex);
     const tld = domain.substring(dotIndex);
-    const maskedDomain = '***' + tld;
-    
-    return maskedUsername + '@' + maskedDomain;
+    const maskedDomain = `***${tld}`;
+
+    return `${maskedUsername}@${maskedDomain}`;
   }
 
   /**
@@ -316,7 +317,7 @@ export class PHIDataMasker {
     if (parts.length === 4) {
       return '***.***.***.***';
     }
-    
+
     // IPv6 or other format
     return this.applyFullMasking(value);
   }
@@ -347,10 +348,10 @@ export class PHIDataMasker {
     let hash = 0;
     for (let i = 0; i < value.length; i++) {
       const char = value.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
-    
+
     return `HASH_${Math.abs(hash).toString(16).toUpperCase()}`;
   }
 
@@ -418,10 +419,7 @@ export class PHIDataMasker {
 /**
  * Factory function to create PHI data masker
  */
-export function createPHIDataMasker(
-  config: MaskingConfig,
-  logger: Logger
-): PHIDataMasker {
+export function createPHIDataMasker(config: MaskingConfig, logger: Logger): PHIDataMasker {
   return new PHIDataMasker(config, logger);
 }
 

@@ -1,7 +1,7 @@
-# Cloudflare Pages configuration for Healthcare SDK Documentation
+# Cloudflare Pages configuration for Healthcare SDK
 [build]
-command = "npm run build:docs"
-publish = "docs/.vitepress/dist"
+command = "npm run build:pages"
+publish = "public"
 
 [build.environment]
 NODE_VERSION = "18"

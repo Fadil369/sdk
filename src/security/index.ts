@@ -25,31 +25,34 @@ export class SecurityManager {
   ) {}
 
   async initialize(): Promise<void> {
-    const securityConfig = this.config.get('security') as {
-      hipaa: { auditLevel: 'minimal' | 'standard' | 'comprehensive' };
-      audit: { endpoint?: string };
-    };
-    
+    const securityConfig = this.config.get('security') as any;
+
     // Initialize audit logger
-    this.auditLogger = createHIPAAAuditLogger({
-      hipaaLevel: securityConfig.hipaa.auditLevel,
-      retentionPeriod: 2555, // 7 years as required by HIPAA
-      automaticReporting: true,
-      endpoint: securityConfig.audit.endpoint,
-    }, this.logger);
+    this.auditLogger = createHIPAAAuditLogger(
+      {
+        hipaaLevel: securityConfig.hipaa.auditLevel,
+        retentionPeriod: 2555, // 7 years as required by HIPAA
+        automaticReporting: true,
+        endpoint: securityConfig.audit.endpoint,
+      },
+      this.logger
+    );
 
     // Initialize encryption service
-    this.encryptionService = createEncryptionService({
-      aes: {
-        keySize: 256,
-        algorithm: 'AES-256-GCM',
+    this.encryptionService = createEncryptionService(
+      {
+        aes: {
+          keySize: 256,
+          algorithm: 'AES-256-GCM',
+        },
+        rsa: {
+          keySize: 2048,
+          algorithm: 'RSA-OAEP',
+        },
+        keyRotationInterval: 90, // 90 days
       },
-      rsa: {
-        keySize: 2048,
-        algorithm: 'RSA-OAEP',
-      },
-      keyRotationInterval: 90, // 90 days
-    }, this.logger);
+      this.logger
+    );
 
     await this.encryptionService.initialize();
 
@@ -68,10 +71,10 @@ export class SecurityManager {
     this.logger.info('Security manager initialized with full compliance suite');
   }
 
-  async healthCheck(): Promise<{ 
-    status: string; 
-    encryption: string; 
-    audit: string; 
+  async healthCheck(): Promise<{
+    status: string;
+    encryption: string;
+    audit: string;
     compliance: string;
     rbac: string;
   }> {
@@ -88,8 +91,8 @@ export class SecurityManager {
 
       const allHealthy = Object.values(components).every(Boolean);
 
-      return { 
-        status: allHealthy ? 'up' : 'degraded', 
+      return {
+        status: allHealthy ? 'up' : 'degraded',
         encryption: this.encryptionService ? 'enabled' : 'disabled',
         audit: this.auditLogger ? 'enabled' : 'disabled',
         compliance: this.complianceValidator ? 'enabled' : 'disabled',
@@ -97,8 +100,8 @@ export class SecurityManager {
       };
     } catch (error) {
       this.logger.error('Security health check failed', error as Error);
-      return { 
-        status: 'down', 
+      return {
+        status: 'down',
         encryption: 'unknown',
         audit: 'unknown',
         compliance: 'unknown',

@@ -53,12 +53,13 @@ export const PatientCard: React.FC<PatientCardProps> = ({
   rtl = false,
   ...baseProps
 }) => {
-  const displayName = patient.name?.[0]?.text || 
+  const displayName =
+    patient.name?.[0]?.text ||
     `${patient.name?.[0]?.given?.join(' ') || ''} ${patient.name?.[0]?.family || ''}`.trim() ||
     'Unknown Patient';
 
-  const primaryIdentifier = patient.identifier?.find(id => id.type?.text === 'National ID') ||
-    patient.identifier?.[0];
+  const primaryIdentifier =
+    patient.identifier?.find(id => id.type?.text === 'National ID') || patient.identifier?.[0];
 
   const photoUrl = patient.photo?.[0]?.url;
   const age = patient.birthDate ? calculateAge(patient.birthDate) : null;
@@ -139,14 +140,14 @@ export const PatientCard: React.FC<PatientCardProps> = ({
 
       <div style={contentStyle}>
         <h3 style={nameStyle}>{displayName}</h3>
-        
+
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
           {patient.gender && (
             <span style={detailStyle}>
               {rtl ? 'الجنس:' : 'Gender:'} {patient.gender}
             </span>
           )}
-          
+
           {age && (
             <span style={detailStyle}>
               {rtl ? 'العمر:' : 'Age:'} {age} {rtl ? 'سنة' : 'years'}
@@ -206,20 +207,16 @@ const calculateAge = (birthDate: string): number => {
   const birth = new Date(birthDate);
   let age = today.getFullYear() - birth.getFullYear();
   const monthDiff = today.getMonth() - birth.getMonth();
-  
+
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
     age--;
   }
-  
+
   return age;
 };
 
 const formatAddress = (address: NonNullable<PatientData['address']>[0], rtl: boolean): string => {
-  const parts = [
-    ...(address.line || []),
-    address.city,
-    address.country,
-  ].filter(Boolean);
-  
+  const parts = [...(address.line || []), address.city, address.country].filter(Boolean);
+
   return parts.join(rtl ? '، ' : ', ');
 };

@@ -33,7 +33,8 @@ const securityHeaders = {
   'X-Content-Type-Options': 'nosniff',
   'X-XSS-Protection': '1; mode=block',
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://fhir.nphies.sa https://nphies.sa",
+  'Content-Security-Policy':
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://fhir.nphies.sa https://nphies.sa",
   'Referrer-Policy': 'strict-origin-when-cross-origin',
 };
 
@@ -117,10 +118,10 @@ export default {
     try {
       // Cache warmup and cleanup
       await cacheMaintenanceTask(env);
-      
+
       // Health metrics collection
       await collectHealthMetrics(env);
-      
+
       console.log('Scheduled task completed successfully');
     } catch (error) {
       console.error('Scheduled task error:', error);
@@ -129,7 +130,11 @@ export default {
 };
 
 // API request handler
-async function handleAPIRequest(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+async function handleAPIRequest(
+  request: Request,
+  env: Env,
+  ctx: ExecutionContext
+): Promise<Response> {
   const url = new URL(request.url);
   const apiPath = url.pathname.replace('/api/', '');
 
@@ -162,7 +167,7 @@ async function handleAPIRequest(request: Request, env: Env, ctx: ExecutionContex
     // Cache check
     const cacheKey = `api:${apiPath}:${request.method}:${url.search}`;
     const cached = await env.SDK_CACHE.get(cacheKey);
-    
+
     if (cached && request.method === 'GET') {
       return new Response(cached, {
         status: 200,
@@ -181,7 +186,7 @@ async function handleAPIRequest(request: Request, env: Env, ctx: ExecutionContex
       case 'health':
         response = await sdk.getHealthStatus();
         break;
-      
+
       case 'config':
         response = {
           version: env.SDK_VERSION,
@@ -233,7 +238,11 @@ async function handleAPIRequest(request: Request, env: Env, ctx: ExecutionContex
 }
 
 // FHIR request handler
-async function handleFHIRRequest(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+async function handleFHIRRequest(
+  request: Request,
+  env: Env,
+  ctx: ExecutionContext
+): Promise<Response> {
   // Proxy FHIR requests to the actual FHIR server
   const url = new URL(request.url);
   const fhirPath = url.pathname.replace('/fhir/', '');
@@ -258,7 +267,11 @@ async function handleFHIRRequest(request: Request, env: Env, ctx: ExecutionConte
 }
 
 // NPHIES request handler
-async function handleNPHIESRequest(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+async function handleNPHIESRequest(
+  request: Request,
+  env: Env,
+  ctx: ExecutionContext
+): Promise<Response> {
   // Proxy NPHIES requests
   const url = new URL(request.url);
   const nphiesPath = url.pathname.replace('/nphies/', '');
@@ -312,7 +325,7 @@ async function handleAssetRequest(request: Request, env: Env): Promise<Response>
 
   try {
     const object = await env.SDK_ASSETS.get(assetPath);
-    
+
     if (!object) {
       return new Response('Asset not found', { status: 404 });
     }
@@ -321,7 +334,7 @@ async function handleAssetRequest(request: Request, env: Env): Promise<Response>
       headers: {
         'Content-Type': object.httpMetadata?.contentType || 'application/octet-stream',
         'Cache-Control': 'public, max-age=31536000',
-        'ETag': object.httpEtag,
+        ETag: object.httpEtag,
         ...corsHeaders,
       },
     });
@@ -344,7 +357,7 @@ async function collectHealthMetrics(env: Env): Promise<void> {
     environment: env.ENVIRONMENT,
     version: env.SDK_VERSION,
   };
-  
+
   // Store metrics in KV for later analysis
   await env.SDK_CONFIG.put('health_metrics', JSON.stringify(metrics));
 }

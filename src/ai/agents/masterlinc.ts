@@ -57,7 +57,7 @@ export class MasterLincAgent extends BaseAgent {
       status: 'active',
       capabilities: [
         'workflow_execution',
-        'task_prioritization', 
+        'task_prioritization',
         'resource_allocation',
         'performance_monitoring',
         'load_balancing',
@@ -80,69 +80,78 @@ export class MasterLincAgent extends BaseAgent {
 
   protected initializeCapabilities(): void {
     // Workflow execution capability
-    this.capabilities.set('workflow_execution', createAgentCapability(
+    this.capabilities.set(
       'workflow_execution',
-      'Execute complex multi-step workflows with dependencies',
-      {
-        type: 'object',
-        properties: {
-          workflowDefinition: { type: 'object' },
-          parameters: { type: 'object' },
-          priority: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
+      createAgentCapability(
+        'workflow_execution',
+        'Execute complex multi-step workflows with dependencies',
+        {
+          type: 'object',
+          properties: {
+            workflowDefinition: { type: 'object' },
+            parameters: { type: 'object' },
+            priority: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
+          },
+          required: ['workflowDefinition'],
         },
-        required: ['workflowDefinition'],
-      },
-      {
-        type: 'object',
-        properties: {
-          executionId: { type: 'string' },
-          status: { type: 'string' },
-          result: { type: 'object' },
+        {
+          type: 'object',
+          properties: {
+            executionId: { type: 'string' },
+            status: { type: 'string' },
+            result: { type: 'object' },
+          },
         },
-      },
-      ['workflow:execute']
-    ));
+        ['workflow:execute']
+      )
+    );
 
     // Task prioritization capability
-    this.capabilities.set('task_prioritization', createAgentCapability(
+    this.capabilities.set(
       'task_prioritization',
-      'Intelligently prioritize and queue tasks based on multiple factors',
-      {
-        type: 'object',
-        properties: {
-          tasks: { type: 'array' },
-          criteria: { type: 'object' },
+      createAgentCapability(
+        'task_prioritization',
+        'Intelligently prioritize and queue tasks based on multiple factors',
+        {
+          type: 'object',
+          properties: {
+            tasks: { type: 'array' },
+            criteria: { type: 'object' },
+          },
         },
-      },
-      {
-        type: 'object',
-        properties: {
-          prioritizedTasks: { type: 'array' },
-          scores: { type: 'object' },
-        },
-      }
-    ));
+        {
+          type: 'object',
+          properties: {
+            prioritizedTasks: { type: 'array' },
+            scores: { type: 'object' },
+          },
+        }
+      )
+    );
 
     // Resource allocation capability
-    this.capabilities.set('resource_allocation', createAgentCapability(
+    this.capabilities.set(
       'resource_allocation',
-      'Allocate tasks to available agents based on capacity and performance',
-      {
-        type: 'object',
-        properties: {
-          agentPool: { type: 'array' },
-          tasks: { type: 'array' },
-          strategy: { type: 'string' },
+      createAgentCapability(
+        'resource_allocation',
+        'Allocate tasks to available agents based on capacity and performance',
+        {
+          type: 'object',
+          properties: {
+            agentPool: { type: 'array' },
+            tasks: { type: 'array' },
+            strategy: { type: 'string' },
+          },
         },
-      },
-      {
-        type: 'object',
-        properties: {
-          allocations: { type: 'array' },
-          efficiency: { type: 'number' },
-        },
-      }
-    ));
+        {
+          type: 'object',
+          properties: {
+            allocations: { type: 'array' },
+            efficiency: { type: 'number' },
+          },
+        }
+      )
+    );
 
     this.logger.info('MASTERLINC capabilities initialized', {
       capabilityCount: this.capabilities.size,
@@ -167,9 +176,9 @@ export class MasterLincAgent extends BaseAgent {
    */
   private async executeWorkflow(task: AgentTask): Promise<Record<string, unknown>> {
     const { workflowDefinition, parameters, priority } = task.data;
-    
+
     const executionId = `workflow_${Date.now()}_${Math.random().toString(36).substring(2)}`;
-    
+
     const execution: WorkflowExecution = {
       id: executionId,
       name: (workflowDefinition as any).name || 'Unnamed Workflow',
@@ -183,9 +192,9 @@ export class MasterLincAgent extends BaseAgent {
       // Start workflow execution
       execution.status = 'running';
       execution.startedAt = new Date().toISOString();
-      
+
       const result = await this.runWorkflowSteps(execution, parameters as Record<string, unknown>);
-      
+
       execution.status = 'completed';
       execution.completedAt = new Date().toISOString();
       execution.result = result;
@@ -201,7 +210,6 @@ export class MasterLincAgent extends BaseAgent {
         status: 'completed',
         result,
       };
-
     } catch (error) {
       execution.status = 'failed';
       execution.error = (error as Error).message;
@@ -238,37 +246,40 @@ export class MasterLincAgent extends BaseAgent {
    * Run workflow steps with dependency resolution
    */
   private async runWorkflowSteps(
-    execution: WorkflowExecution, 
+    execution: WorkflowExecution,
     parameters: Record<string, unknown>
   ): Promise<Record<string, unknown>> {
     const stepResults: Record<string, unknown> = {};
     const completedSteps = new Set<string>();
-    
+
     // Continue until all steps are completed or failed
     while (completedSteps.size < execution.steps.length) {
-      const readySteps = execution.steps.filter(step => 
-        step.status === 'pending' && 
-        this.areStepDependenciesMet(step, completedSteps)
+      const readySteps = execution.steps.filter(
+        step => step.status === 'pending' && this.areStepDependenciesMet(step, completedSteps)
       );
 
       if (readySteps.length === 0) {
         // Check if we have failed steps that are blocking progress
         const failedSteps = execution.steps.filter(step => step.status === 'failed');
         if (failedSteps.length > 0) {
-          throw new Error(`Workflow blocked by failed steps: ${failedSteps.map(s => s.id).join(', ')}`);
+          throw new Error(
+            `Workflow blocked by failed steps: ${failedSteps.map(s => s.id).join(', ')}`
+          );
         }
-        
+
         // Check for circular dependencies
         const pendingSteps = execution.steps.filter(step => step.status === 'pending');
         if (pendingSteps.length > 0) {
           throw new Error('Circular dependency detected in workflow');
         }
-        
+
         break;
       }
 
       // Execute ready steps (can be done in parallel)
-      const stepPromises = readySteps.map(step => this.executeWorkflowStep(step, stepResults, parameters));
+      const stepPromises = readySteps.map(step =>
+        this.executeWorkflowStep(step, stepResults, parameters)
+      );
       const results = await Promise.allSettled(stepPromises);
 
       // Process results
@@ -286,12 +297,12 @@ export class MasterLincAgent extends BaseAgent {
         } else {
           step.status = 'failed';
           step.error = result.reason?.message || 'Unknown error';
-          
+
           // For critical steps, fail the entire workflow
           if (step.configuration.required !== false) {
             throw new Error(`Critical step failed: ${step.id} - ${step.error}`);
           }
-          
+
           // For optional steps, mark as completed to continue workflow
           completedSteps.add(step.id);
         }
@@ -304,11 +315,14 @@ export class MasterLincAgent extends BaseAgent {
   /**
    * Check if step dependencies are met
    */
-  private areStepDependenciesMet(step: WorkflowExecutionStep, completedSteps: Set<string>): boolean {
+  private areStepDependenciesMet(
+    step: WorkflowExecutionStep,
+    completedSteps: Set<string>
+  ): boolean {
     if (!step.dependencies || step.dependencies.length === 0) {
       return true;
     }
-    
+
     return step.dependencies.every(depId => completedSteps.has(depId));
   }
 
@@ -348,7 +362,7 @@ export class MasterLincAgent extends BaseAgent {
   ): Promise<Record<string, unknown>> {
     // For now, simulate agent task execution
     await new Promise(resolve => setTimeout(resolve, 100 + Math.random() * 500));
-    
+
     return {
       agentId: step.agentId,
       executedAt: new Date().toISOString(),
@@ -366,7 +380,7 @@ export class MasterLincAgent extends BaseAgent {
   ): Promise<Record<string, unknown>> {
     // Simulate human approval (in real implementation, this would wait for actual approval)
     await new Promise(resolve => setTimeout(resolve, 200));
-    
+
     return {
       approved: true,
       approvedAt: new Date().toISOString(),
@@ -384,7 +398,7 @@ export class MasterLincAgent extends BaseAgent {
   ): Promise<Record<string, unknown>> {
     // Simulate data validation
     await new Promise(resolve => setTimeout(resolve, 50));
-    
+
     return {
       validated: true,
       validatedAt: new Date().toISOString(),
@@ -402,7 +416,7 @@ export class MasterLincAgent extends BaseAgent {
   ): Promise<Record<string, unknown>> {
     // Simulate external API call
     await new Promise(resolve => setTimeout(resolve, 300));
-    
+
     return {
       apiResponse: { status: 'success', data: {} },
       calledAt: new Date().toISOString(),
@@ -420,7 +434,7 @@ export class MasterLincAgent extends BaseAgent {
     // Simple conditional logic evaluation
     const condition = step.configuration.condition as string;
     const conditionResult = this.evaluateCondition(condition, stepResults, parameters);
-    
+
     return {
       condition,
       result: conditionResult,
@@ -440,22 +454,22 @@ export class MasterLincAgent extends BaseAgent {
     try {
       // Replace variables in condition with actual values
       let evalCondition = condition;
-      
+
       // Replace step result references
       for (const [stepId, result] of Object.entries(stepResults)) {
         evalCondition = evalCondition.replace(`{{${stepId}}}`, JSON.stringify(result));
       }
-      
+
       // Replace parameter references
       for (const [paramName, value] of Object.entries(parameters)) {
         evalCondition = evalCondition.replace(`{{${paramName}}}`, JSON.stringify(value));
       }
-      
+
       // For safety, only allow simple comparisons
       if (!/^[^;{}()]*$/.test(evalCondition)) {
         throw new Error('Invalid condition expression');
       }
-      
+
       // Simple evaluation (in production, use a safe expression evaluator)
       return evalCondition.includes('true') || evalCondition === 'true';
     } catch (error) {
@@ -470,16 +484,21 @@ export class MasterLincAgent extends BaseAgent {
   private async prioritizeTasks(task: AgentTask): Promise<Record<string, unknown>> {
     const { tasks, criteria } = task.data;
     const taskList = tasks as AgentTask[];
-    
-    const prioritizedTasks = taskList.map(t => ({
-      task: t,
-      score: this.calculateTaskPriority(t, criteria as Record<string, unknown>),
-    })).sort((a, b) => b.score - a.score);
 
-    const scores = prioritizedTasks.reduce((acc, item) => {
-      acc[item.task.id] = item.score;
-      return acc;
-    }, {} as Record<string, number>);
+    const prioritizedTasks = taskList
+      .map(t => ({
+        task: t,
+        score: this.calculateTaskPriority(t, criteria as Record<string, unknown>),
+      }))
+      .sort((a, b) => b.score - a.score);
+
+    const scores = prioritizedTasks.reduce(
+      (acc, item) => {
+        acc[item.task.id] = item.score;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     this.logger.info('Tasks prioritized', {
       taskCount: taskList.length,
@@ -503,7 +522,7 @@ export class MasterLincAgent extends BaseAgent {
     // Factor in due date urgency
     if (task.dueAt) {
       const timeUntilDue = new Date(task.dueAt).getTime() - Date.now();
-      const urgencyBonus = Math.max(0, 50 - (timeUntilDue / (60 * 60 * 1000))); // Hour-based urgency
+      const urgencyBonus = Math.max(0, 50 - timeUntilDue / (60 * 60 * 1000)); // Hour-based urgency
       score += urgencyBonus;
     }
 
@@ -527,10 +546,10 @@ export class MasterLincAgent extends BaseAgent {
     const { agentPool, tasks: tasksToAllocate, strategy } = task.data;
     const agents = agentPool as Array<{ id: string; capacity: number; currentLoad: number }>;
     const tasks = tasksToAllocate as AgentTask[];
-    
+
     const allocations: Array<{ agentId: string; taskId: string; estimatedLoad: number }> = [];
     const agentLoads = new Map<string, number>();
-    
+
     // Initialize agent loads
     agents.forEach(agent => {
       agentLoads.set(agent.id, agent.currentLoad || 0);
@@ -541,13 +560,13 @@ export class MasterLincAgent extends BaseAgent {
       const selectedAgent = this.selectAgentForTask(agents, agentLoads, strategy as string);
       if (selectedAgent) {
         const estimatedLoad = this.estimateTaskLoad(taskToAllocate);
-        
+
         allocations.push({
           agentId: selectedAgent.id,
           taskId: taskToAllocate.id,
           estimatedLoad,
         });
-        
+
         // Update agent load
         const currentLoad = agentLoads.get(selectedAgent.id) || 0;
         agentLoads.set(selectedAgent.id, currentLoad + estimatedLoad);
@@ -592,7 +611,7 @@ export class MasterLincAgent extends BaseAgent {
       case 'round_robin':
         // Simple round-robin selection
         return availableAgents[Math.floor(Math.random() * availableAgents.length)] || null;
-      
+
       case 'least_loaded':
         // Select agent with lowest current load
         return availableAgents.reduce((best, agent) => {
@@ -600,7 +619,7 @@ export class MasterLincAgent extends BaseAgent {
           const bestLoad = agentLoads.get(best.id) || best.currentLoad || 0;
           return agentLoad < bestLoad ? agent : best;
         });
-      
+
       case 'performance_based':
         // Select based on performance metrics (simplified)
         return availableAgents.reduce((best, agent) => {
@@ -608,7 +627,7 @@ export class MasterLincAgent extends BaseAgent {
           const bestPerf = this.getAgentPerformance(best.id);
           return agentPerf.successRate > bestPerf.successRate ? agent : best;
         });
-      
+
       default:
         return availableAgents[0] || null;
     }
@@ -619,12 +638,13 @@ export class MasterLincAgent extends BaseAgent {
    */
   private estimateTaskLoad(task: AgentTask): number {
     // Simple load estimation based on task type and priority
-    const baseLoad = {
-      low: 1,
-      medium: 2,
-      high: 3,
-      critical: 4,
-    }[task.priority] || 2;
+    const baseLoad =
+      {
+        low: 1,
+        medium: 2,
+        high: 3,
+        critical: 4,
+      }[task.priority] || 2;
 
     // Factor in task complexity (simplified)
     const complexity = Object.keys(task.data).length;
@@ -636,10 +656,12 @@ export class MasterLincAgent extends BaseAgent {
    */
   private getAgentPerformance(agentId: string): { successRate: number; averageTime: number } {
     const allocation = this.resourceAllocations.get(agentId);
-    return allocation?.performance ? {
-      successRate: allocation.performance.successRate,
-      averageTime: allocation.performance.averageExecutionTime,
-    } : { successRate: 0.9, averageTime: 1000 };
+    return allocation?.performance
+      ? {
+          successRate: allocation.performance.successRate,
+          averageTime: allocation.performance.averageExecutionTime,
+        }
+      : { successRate: 0.9, averageTime: 1000 };
   }
 
   /**
@@ -667,12 +689,14 @@ export class MasterLincAgent extends BaseAgent {
     averagePerformance: number;
   } {
     const allocations = Array.from(this.resourceAllocations.values());
-    
+
     const totalCapacity = allocations.reduce((sum, alloc) => sum + alloc.capacity, 0);
     const totalAllocated = allocations.reduce((sum, alloc) => sum + alloc.allocated, 0);
-    const averagePerformance = allocations.length > 0 
-      ? allocations.reduce((sum, alloc) => sum + alloc.performance.successRate, 0) / allocations.length
-      : 0;
+    const averagePerformance =
+      allocations.length > 0
+        ? allocations.reduce((sum, alloc) => sum + alloc.performance.successRate, 0) /
+          allocations.length
+        : 0;
 
     return {
       totalAgents: allocations.length,

@@ -13,22 +13,14 @@ export interface GlassStyle extends React.CSSProperties {
 }
 
 export const createGlassMorphismStyle = (props: GlassMorphismProps = {}): GlassStyle => {
-  const {
-    opacity = 0.1,
-    blur = 20,
-    borderRadius = '12px',
-    border = true,
-    shadow = true,
-  } = props;
+  const { opacity = 0.1, blur = 20, borderRadius = '12px', border = true, shadow = true } = props;
 
   return {
     backdropFilter: `blur(${blur}px)`,
     backgroundColor: `rgba(255, 255, 255, ${opacity})`,
     border: border ? '1px solid rgba(255, 255, 255, 0.2)' : 'none',
     borderRadius,
-    boxShadow: shadow
-      ? '0 8px 32px 0 rgba(31, 38, 135, 0.37)'
-      : 'none',
+    boxShadow: shadow ? '0 8px 32px 0 rgba(31, 38, 135, 0.37)' : 'none',
   };
 };
 
@@ -64,21 +56,13 @@ export const glassMorphismPresets = {
 } as const;
 
 export const darkModeGlassStyle = (props: GlassMorphismProps = {}): GlassStyle => {
-  const {
-    opacity = 0.1,
-    blur = 20,
-    borderRadius = '12px',
-    border = true,
-    shadow = true,
-  } = props;
+  const { opacity = 0.1, blur = 20, borderRadius = '12px', border = true, shadow = true } = props;
 
   return {
     backdropFilter: `blur(${blur}px)`,
     backgroundColor: `rgba(0, 0, 0, ${opacity + 0.2})`,
     border: border ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
     borderRadius,
-    boxShadow: shadow
-      ? '0 8px 32px 0 rgba(0, 0, 0, 0.5)'
-      : 'none',
+    boxShadow: shadow ? '0 8px 32px 0 rgba(0, 0, 0, 0.5)' : 'none',
   };
 };

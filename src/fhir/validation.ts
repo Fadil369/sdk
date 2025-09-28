@@ -3,7 +3,12 @@
  * Including Saudi Arabia specific validation rules
  */
 
-import { FHIRResource, FHIRPatient, FHIROperationOutcome, SaudiPatientExtension } from '@/types/fhir';
+import {
+  FHIRResource,
+  FHIRPatient,
+  FHIROperationOutcome,
+  SaudiPatientExtension,
+} from '@/types/fhir';
 import { validateSaudiID } from '@/utils/validation';
 
 export interface ValidationResult {
@@ -52,8 +57,12 @@ export class FHIRValidator {
     return {
       resourceType: 'OperationOutcome',
       issue: result.issues.map(issue => ({
-        severity: issue.severity === 'error' ? 'error' : 
-                 issue.severity === 'warning' ? 'warning' : 'information',
+        severity:
+          issue.severity === 'error'
+            ? 'error'
+            : issue.severity === 'warning'
+              ? 'warning'
+              : 'information',
         code: issue.code,
         diagnostics: issue.message,
         expression: issue.path ? [issue.path] : undefined,
@@ -110,8 +119,10 @@ export class FHIRValidator {
         }
 
         // Saudi National ID validation
-        if (identifier.system === 'https://fhir.nphies.sa/CodeSystem/identifier' && 
-            identifier.value) {
+        if (
+          identifier.system === 'https://fhir.nphies.sa/CodeSystem/identifier' &&
+          identifier.value
+        ) {
           if (!validateSaudiID(identifier.value)) {
             issues.push({
               severity: 'error',
@@ -233,8 +244,10 @@ export class FHIRValidator {
 
   private validateSaudiExtensions(resource: FHIRResource, issues: ValidationIssue[]): void {
     if (resource.resourceType === 'Patient') {
-      const patient = resource as FHIRPatient & { extension?: Array<{ url: string; valueString?: string }> };
-      
+      const patient = resource as FHIRPatient & {
+        extension?: Array<{ url: string; valueString?: string }>;
+      };
+
       if (patient.extension) {
         patient.extension.forEach((ext, index) => {
           if (ext.url === 'https://fhir.nphies.sa/StructureDefinition/saudi-patient') {
@@ -242,7 +255,7 @@ export class FHIRValidator {
             if (ext.valueString) {
               try {
                 const saudiExt = JSON.parse(ext.valueString) as SaudiPatientExtension;
-                
+
                 if (saudiExt.saudiNationalId && !validateSaudiID(saudiExt.saudiNationalId)) {
                   issues.push({
                     severity: 'error',
@@ -252,8 +265,10 @@ export class FHIRValidator {
                   });
                 }
 
-                if (saudiExt.residencyType && 
-                    !['citizen', 'resident', 'visitor'].includes(saudiExt.residencyType)) {
+                if (
+                  saudiExt.residencyType &&
+                  !['citizen', 'resident', 'visitor'].includes(saudiExt.residencyType)
+                ) {
                   issues.push({
                     severity: 'error',
                     code: 'invalid',
@@ -315,7 +330,7 @@ export class FHIRValidator {
     // Check for mixed scripts (Arabic + Latin) which might indicate data quality issues
     const hasArabic = this.containsArabic(text);
     const hasLatin = /[a-zA-Z]/.test(text);
-    
+
     if (hasArabic && hasLatin && text.length > 20) {
       issues.push({
         severity: 'warning',

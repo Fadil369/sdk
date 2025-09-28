@@ -83,7 +83,7 @@ export class ComplianceValidator {
         category: 'administrative',
         severity: 'critical',
         required: true,
-        validate: async (context) => {
+        validate: async context => {
           if (!context.user?.id) {
             return {
               passed: false,
@@ -101,7 +101,7 @@ export class ComplianceValidator {
         category: 'administrative',
         severity: 'high',
         required: true,
-        validate: async (context) => {
+        validate: async context => {
           if (!context.user?.role || !context.user?.permissions?.length) {
             return {
               passed: false,
@@ -119,8 +119,11 @@ export class ComplianceValidator {
         category: 'administrative',
         severity: 'medium',
         required: true,
-        validate: async (context) => {
-          if (context.operation?.type === 'export' && !context.user?.permissions.includes('export')) {
+        validate: async context => {
+          if (
+            context.operation?.type === 'export' &&
+            !context.user?.permissions.includes('export')
+          ) {
             return {
               passed: false,
               message: 'User lacks permission for data export',
@@ -139,7 +142,7 @@ export class ComplianceValidator {
         category: 'physical',
         severity: 'medium',
         required: false,
-        validate: async (context) => {
+        validate: async context => {
           // In a real implementation, this would check workstation certificates or other security measures
           return { passed: true, message: 'Workstation security assumed compliant' };
         },
@@ -153,7 +156,7 @@ export class ComplianceValidator {
         category: 'technical',
         severity: 'critical',
         required: true,
-        validate: async (context) => {
+        validate: async context => {
           // Check if connection is secure (HTTPS)
           const userAgent = context.session?.userAgent || '';
           if (userAgent.includes('http:') && !userAgent.includes('localhost')) {
@@ -173,7 +176,7 @@ export class ComplianceValidator {
         category: 'technical',
         severity: 'critical',
         required: true,
-        validate: async (context) => {
+        validate: async context => {
           if (context.operation && !context.metadata?.auditLogged) {
             return {
               passed: false,
@@ -191,7 +194,7 @@ export class ComplianceValidator {
         category: 'technical',
         severity: 'medium',
         required: true,
-        validate: async (context) => {
+        validate: async context => {
           // In a real implementation, check session timeout configuration
           return { passed: true, message: 'Session timeout configured' };
         },
@@ -203,7 +206,7 @@ export class ComplianceValidator {
         category: 'technical',
         severity: 'high',
         required: true,
-        validate: async (context) => {
+        validate: async context => {
           if (context.data && typeof context.data === 'object') {
             const dataStr = JSON.stringify(context.data);
             // Check for common PHI patterns that should be masked
@@ -212,7 +215,7 @@ export class ComplianceValidator {
               /\b\d{10}\b/, // Saudi National ID
               /\b[\w._%+-]+@[\w.-]+\.[A-Z|a-z]{2,}\b/, // Email
             ];
-            
+
             for (const pattern of phiPatterns) {
               if (pattern.test(dataStr)) {
                 return {
@@ -233,15 +236,13 @@ export class ComplianceValidator {
         category: 'technical',
         severity: 'critical',
         required: true,
-        validate: async (context) => {
+        validate: async context => {
           if (context.operation && context.user) {
             const requiredPermission = `${context.operation.resource}:${context.operation.type}`;
-            const hasPermission = context.user.permissions.some(p => 
-              p === requiredPermission || 
-              p === `${context.operation!.resource}:*` || 
-              p === '*'
+            const hasPermission = context.user.permissions.some(
+              p => p === requiredPermission || p === `${context.operation!.resource}:*` || p === '*'
             );
-            
+
             if (!hasPermission) {
               return {
                 passed: false,
@@ -296,7 +297,7 @@ export class ComplianceValidator {
     for (const rule of this.rules.values()) {
       try {
         const result = await rule.validate(context);
-        
+
         results.push({
           ruleId: rule.id,
           ruleName: rule.name,
@@ -313,7 +314,7 @@ export class ComplianceValidator {
           if (rule.severity === 'critical') {
             criticalFailures++;
           }
-          
+
           // Add recommendations
           if (result.recommendations) {
             result.recommendations.forEach(rec => recommendations.add(rec));
@@ -321,7 +322,7 @@ export class ComplianceValidator {
         }
       } catch (error) {
         this.logger.error('Validation rule execution failed', error as Error, { ruleId: rule.id });
-        
+
         results.push({
           ruleId: rule.id,
           ruleName: rule.name,
@@ -331,7 +332,7 @@ export class ComplianceValidator {
           message: `Rule execution failed: ${(error as Error).message}`,
           recommendations: ['Review and fix validation rule implementation'],
         });
-        
+
         if (rule.severity === 'critical') {
           criticalFailures++;
         }
@@ -354,7 +355,7 @@ export class ComplianceValidator {
     };
 
     const validationTime = Date.now() - startTime;
-    
+
     this.logger.info('Compliance validation completed', {
       overallCompliance,
       passedRules,
@@ -370,12 +371,14 @@ export class ComplianceValidator {
    * Validate specific rule categories
    */
   async validateCategory(
-    context: ValidationContext, 
+    context: ValidationContext,
     category: 'administrative' | 'physical' | 'technical'
   ): Promise<ComplianceReport> {
-    const categoryRules = Array.from(this.rules.values()).filter(rule => rule.category === category);
+    const categoryRules = Array.from(this.rules.values()).filter(
+      rule => rule.category === category
+    );
     const originalRules = new Map(this.rules);
-    
+
     // Temporarily set rules to only category rules
     this.rules.clear();
     for (const rule of categoryRules) {
@@ -383,7 +386,7 @@ export class ComplianceValidator {
     }
 
     const report = await this.validateCompliance(context);
-    
+
     // Restore original rules
     this.rules = originalRules;
 
@@ -398,8 +401,8 @@ export class ComplianceValidator {
     criticalFailures: number;
     failedRules: string[];
   }> {
-    const criticalRules = Array.from(this.rules.values()).filter(rule => 
-      rule.severity === 'critical' && rule.required
+    const criticalRules = Array.from(this.rules.values()).filter(
+      rule => rule.severity === 'critical' && rule.required
     );
 
     let criticalFailures = 0;
@@ -475,15 +478,15 @@ export class ComplianceValidator {
    */
   generateReportSummary(report: ComplianceReport): string {
     const summary = [];
-    
+
     summary.push(`HIPAA Compliance Report - ${report.timestamp}`);
     summary.push(`Overall Compliance: ${report.overallCompliance}%`);
     summary.push(`Passed Rules: ${report.passedRules}/${report.totalRules}`);
-    
+
     if (report.criticalFailures > 0) {
       summary.push(`⚠️  CRITICAL FAILURES: ${report.criticalFailures}`);
     }
-    
+
     if (report.failedRules > 0) {
       summary.push(`Failed Rules: ${report.failedRules}`);
     }
@@ -525,21 +528,28 @@ export function createValidationContext(options: {
 }): ValidationContext {
   return {
     data: options.data,
-    user: options.userId ? {
-      id: options.userId,
-      role: options.userRole || 'user',
-      permissions: options.permissions || [],
-    } : undefined,
-    session: options.sessionId ? {
-      id: options.sessionId,
-      ipAddress: options.ipAddress,
-      userAgent: options.userAgent,
-    } : undefined,
-    operation: options.operationType && options.resource ? {
-      type: options.operationType,
-      resource: options.resource,
-      resourceId: options.resourceId,
-    } : undefined,
+    user: options.userId
+      ? {
+          id: options.userId,
+          role: options.userRole || 'user',
+          permissions: options.permissions || [],
+        }
+      : undefined,
+    session: options.sessionId
+      ? {
+          id: options.sessionId,
+          ipAddress: options.ipAddress,
+          userAgent: options.userAgent,
+        }
+      : undefined,
+    operation:
+      options.operationType && options.resource
+        ? {
+            type: options.operationType,
+            resource: options.resource,
+            resourceId: options.resourceId,
+          }
+        : undefined,
     metadata: {
       auditLogged: options.auditLogged,
       ...options.additionalMetadata,

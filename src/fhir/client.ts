@@ -31,17 +31,17 @@ export class FHIRClient {
 
   async initialize(): Promise<void> {
     this.logger.info('Initializing FHIR client...');
-    
+
     try {
       // Check server capability statement
       await this.getCapabilityStatement();
-      
+
       // Authenticate if credentials provided
       const fhirConfig = this.config.get<FHIRClientConfig>('fhir');
       if (fhirConfig.authentication) {
         await this.authenticate();
       }
-      
+
       this.logger.info('FHIR client initialized successfully');
     } catch (error) {
       this.logger.error('Failed to initialize FHIR client', error as Error);
@@ -51,18 +51,18 @@ export class FHIRClient {
 
   async healthCheck(): Promise<{ status: string; responseTime: number }> {
     const startTime = Date.now();
-    
+
     try {
       await this.getCapabilityStatement();
-      return { 
-        status: 'up', 
-        responseTime: Date.now() - startTime 
+      return {
+        status: 'up',
+        responseTime: Date.now() - startTime,
       };
     } catch (error) {
       this.logger.error('FHIR server health check failed', error as Error);
-      return { 
-        status: 'down', 
-        responseTime: Date.now() - startTime 
+      return {
+        status: 'down',
+        responseTime: Date.now() - startTime,
       };
     }
   }
@@ -80,9 +80,9 @@ export class FHIRClient {
    */
   async create<T extends FHIRResource>(resource: T): Promise<FHIRResponse<T>> {
     this.validateResource(resource);
-    
+
     const url = `${this.serverUrl}/${resource.resourceType}`;
-    
+
     try {
       const response = await this.apiClient.post<T>(url, resource, {
         headers: this.getHeaders(),
@@ -99,8 +99,8 @@ export class FHIRClient {
    * Read a FHIR resource by ID
    */
   async read<T extends FHIRResource>(
-    resourceType: string, 
-    id: string, 
+    resourceType: string,
+    id: string,
     versionId?: string
   ): Promise<FHIRResponse<T>> {
     let url = `${this.serverUrl}/${resourceType}/${id}`;
@@ -129,9 +129,9 @@ export class FHIRClient {
     }
 
     this.validateResource(resource);
-    
+
     const url = `${this.serverUrl}/${resource.resourceType}/${resource.id}`;
-    
+
     try {
       const response = await this.apiClient.put<T>(url, resource, {
         headers: this.getHeaders(),
@@ -149,7 +149,7 @@ export class FHIRClient {
    */
   async delete(resourceType: string, id: string): Promise<void> {
     const url = `${this.serverUrl}/${resourceType}/${id}`;
-    
+
     try {
       await this.apiClient.delete(url, {
         headers: this.getHeaders(),
@@ -170,7 +170,7 @@ export class FHIRClient {
     parameters: FHIRSearchParameters = {}
   ): Promise<FHIRSearchResponse<T>> {
     const url = this.buildSearchUrl(resourceType, parameters);
-    
+
     try {
       const response = await this.apiClient.get<FHIRBundle>(url, {
         headers: this.getHeaders(),
@@ -194,7 +194,7 @@ export class FHIRClient {
     }
 
     const url = `${this.serverUrl}`;
-    
+
     try {
       const response = await this.apiClient.post<FHIRBundle>(url, bundle, {
         headers: this.getHeaders(),
@@ -216,7 +216,7 @@ export class FHIRClient {
     }
 
     const url = `${this.serverUrl}`;
-    
+
     try {
       const response = await this.apiClient.post<FHIRBundle>(url, bundle, {
         headers: this.getHeaders(),
@@ -236,10 +236,10 @@ export class FHIRClient {
    */
   async getCapabilityStatement(): Promise<FHIRResponse<FHIRResource>> {
     const url = `${this.serverUrl}/metadata`;
-    
+
     try {
       const response = await this.apiClient.get<FHIRResource>(url, {
-        headers: { 'Accept': 'application/fhir+json' },
+        headers: { Accept: 'application/fhir+json' },
         timeout: this.config.get('api.timeout'),
       });
 
@@ -261,7 +261,7 @@ export class FHIRClient {
   private getHeaders(): Record<string, string> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/fhir+json',
-      'Accept': 'application/fhir+json',
+      Accept: 'application/fhir+json',
     };
 
     if (this.authToken) {
@@ -312,7 +312,9 @@ export class FHIRClient {
     };
   }
 
-  private processSearchResponse<T extends FHIRResource>(response: ApiResponse<FHIRBundle>): FHIRSearchResponse<T> {
+  private processSearchResponse<T extends FHIRResource>(
+    response: ApiResponse<FHIRBundle>
+  ): FHIRSearchResponse<T> {
     if (!response.success || !response.data) {
       throw new Error(`FHIR search failed: ${response.error || 'Unknown error'}`);
     }
@@ -325,7 +327,7 @@ export class FHIRClient {
     // Extract pagination links
     const links: FHIRSearchResponse<T>['links'] = {};
     // In a real implementation, you would parse Link headers or bundle links
-    
+
     return {
       data: bundle,
       total: bundle.total,
@@ -335,7 +337,9 @@ export class FHIRClient {
   }
 
   private handleError(error: Error, operation: string, resourceType: string): FHIRError {
-    const fhirError = new Error(`FHIR ${operation} operation failed: ${error.message}`) as FHIRError;
+    const fhirError = new Error(
+      `FHIR ${operation} operation failed: ${error.message}`
+    ) as FHIRError;
     fhirError.name = 'FHIRError';
     fhirError.status = 500; // Default status
     fhirError.operation = operation;

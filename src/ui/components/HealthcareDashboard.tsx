@@ -131,7 +131,7 @@ export const HealthcareDashboard: React.FC<HealthcareDashboardProps> = ({
               key={filter.id}
               filter={filter}
               value={activeFilters[filter.id]}
-              onChange={(value) => handleFilterChange(filter.id, value)}
+              onChange={value => handleFilterChange(filter.id, value)}
               rtl={rtl}
             />
           ))}
@@ -182,11 +182,7 @@ const DashboardFilterComponent: React.FC<DashboardFilterComponentProps> = ({
   switch (filter.type) {
     case 'select':
       return (
-        <select
-          value={value || ''}
-          onChange={(e) => onChange(e.target.value)}
-          style={filterStyle}
-        >
+        <select value={value || ''} onChange={e => onChange(e.target.value)} style={filterStyle}>
           <option value="">{filter.placeholder}</option>
           {filter.options?.map(option => (
             <option key={option.value} value={option.value}>
@@ -195,24 +191,24 @@ const DashboardFilterComponent: React.FC<DashboardFilterComponentProps> = ({
           ))}
         </select>
       );
-    
+
     case 'date':
       return (
         <input
           type="date"
           value={value || ''}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={e => onChange(e.target.value)}
           placeholder={filter.placeholder}
           style={filterStyle}
         />
       );
-    
+
     default:
       return (
         <input
           type="text"
           value={value || ''}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={e => onChange(e.target.value)}
           placeholder={filter.placeholder}
           style={filterStyle}
         />
@@ -280,22 +276,20 @@ const DashboardWidgetComponent: React.FC<DashboardWidgetComponentProps> = ({
       className={`dashboard-widget dashboard-widget-${widget.type}`}
     >
       <h3 style={titleStyle}>{widget.title}</h3>
-      
+
       {widget.type === 'metric' && data && (
         <>
           <div style={valueStyle}>{data.value || '---'}</div>
           <div style={subtitleStyle}>{data.subtitle || widget.subtitle}</div>
         </>
       )}
-      
+
       {widget.type === 'chart' && (
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={subtitleStyle}>
-            {rtl ? 'الرسم البياني' : 'Chart visualization'}
-          </div>
+          <div style={subtitleStyle}>{rtl ? 'الرسم البياني' : 'Chart visualization'}</div>
         </div>
       )}
-      
+
       {widget.type === 'list' && data?.items && (
         <div style={{ flex: 1, overflow: 'auto' }}>
           {data.items.slice(0, 5).map((item: any, index: number) => (
@@ -303,7 +297,8 @@ const DashboardWidgetComponent: React.FC<DashboardWidgetComponentProps> = ({
               key={index}
               style={{
                 padding: '8px 0',
-                borderBottom: index < data.items.length - 1 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
+                borderBottom:
+                  index < data.items.length - 1 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
                 fontSize: '14px',
               }}
             >

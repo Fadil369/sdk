@@ -326,7 +326,10 @@ export class RBACManager {
   /**
    * Update an existing role
    */
-  async updateRole(roleId: string, updates: Partial<Omit<Role, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Role | null> {
+  async updateRole(
+    roleId: string,
+    updates: Partial<Omit<Role, 'id' | 'createdAt' | 'updatedAt'>>
+  ): Promise<Role | null> {
     const existingRole = this.roles.get(roleId);
     if (!existingRole) {
       return null;
@@ -353,7 +356,7 @@ export class RBACManager {
    */
   async deleteRole(roleId: string): Promise<boolean> {
     const deleted = this.roles.delete(roleId);
-    
+
     if (deleted) {
       // Remove role from all users
       for (const user of this.users.values()) {
@@ -418,7 +421,7 @@ export class RBACManager {
    */
   async removeUser(userId: string): Promise<boolean> {
     const deleted = this.users.delete(userId);
-    
+
     if (deleted) {
       this.logger.info('User removed', { userId });
     }
@@ -455,7 +458,7 @@ export class RBACManager {
       for (const permission of role.permissions) {
         if (this.matchesPermission(permission, context)) {
           matchedPermissions.push(permission);
-          
+
           // Check permission conditions
           if (!permission.conditions || this.evaluateConditions(permission.conditions, context)) {
             hasPermission = true;
@@ -580,7 +583,8 @@ export class RBACManager {
       // Handle nested field access
       contextValue = this.getNestedValue(context.data || {}, condition.field);
     } else {
-      contextValue = (context.data as any)?.[condition.field] || (context.environment as any)?.[condition.field];
+      contextValue =
+        (context.data as any)?.[condition.field] || (context.environment as any)?.[condition.field];
     }
 
     switch (condition.operator) {
@@ -589,9 +593,11 @@ export class RBACManager {
       case 'not_equals':
         return contextValue !== condition.value;
       case 'contains':
-        return typeof contextValue === 'string' && 
-               typeof condition.value === 'string' && 
-               contextValue.includes(condition.value);
+        return (
+          typeof contextValue === 'string' &&
+          typeof condition.value === 'string' &&
+          contextValue.includes(condition.value)
+        );
       case 'in':
         return Array.isArray(condition.value) && condition.value.includes(contextValue);
       case 'not_in':
@@ -632,33 +638,35 @@ export class RBACManager {
         // This would typically check if user is the attending physician
         // For now, we'll assume this check passes
         return null;
-      
+
       case 'assigned_patients_only':
         // This would check if patient is assigned to the user
         // For now, we'll assume this check passes
         return null;
-      
+
       case 'no_clinical_data':
         // Check if trying to access clinical data
         if (context.data && this.containsClinicalData(context.data)) {
           return 'Access to clinical data is restricted';
         }
         return null;
-      
+
       case 'read_only':
         if (context.action !== 'read' && context.action !== 'search') {
           return 'Only read access is permitted';
         }
         return null;
-      
+
       case 'own_data_only':
         // For patient role, ensure they can only access their own data
-        if (context.userId !== context.resourceId && 
-            !this.isSelfReference(context.data, context.userId)) {
+        if (
+          context.userId !== context.resourceId &&
+          !this.isSelfReference(context.data, context.userId)
+        ) {
           return 'Can only access own health information';
         }
         return null;
-      
+
       default:
         return null;
     }
@@ -669,14 +677,18 @@ export class RBACManager {
    */
   private containsClinicalData(data: Record<string, unknown>): boolean {
     const clinicalFields = [
-      'diagnosis', 'procedure', 'medication', 'allergy', 
-      'condition', 'observation', 'labResult', 'vitalSigns'
+      'diagnosis',
+      'procedure',
+      'medication',
+      'allergy',
+      'condition',
+      'observation',
+      'labResult',
+      'vitalSigns',
     ];
-    
+
     const dataKeys = Object.keys(data).map(key => key.toLowerCase());
-    return clinicalFields.some(field => 
-      dataKeys.some(key => key.includes(field))
-    );
+    return clinicalFields.some(field => dataKeys.some(key => key.includes(field)));
   }
 
   /**
@@ -684,7 +696,7 @@ export class RBACManager {
    */
   private isSelfReference(data: Record<string, unknown> | undefined, userId: string): boolean {
     if (!data) return false;
-    
+
     const subjectRef = (data as any)?.subject?.reference;
     return subjectRef === `Patient/${userId}` || subjectRef === userId;
   }
@@ -702,10 +714,10 @@ export class RBACManager {
   } {
     const activeRoles = this.listRoles(true).length;
     const activeUsers = Array.from(this.users.values()).filter(user => user.isActive).length;
-    
+
     let totalPermissions = 0;
     let totalRestrictions = 0;
-    
+
     for (const role of this.roles.values()) {
       totalPermissions += role.permissions.length;
       totalRestrictions += role.restrictions?.length || 0;

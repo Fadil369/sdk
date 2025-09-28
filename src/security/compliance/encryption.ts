@@ -42,7 +42,7 @@ export class EncryptionService {
   async initialize(): Promise<void> {
     // Generate default AES key
     await this.generateAESKey('default-aes');
-    
+
     // Generate default RSA key pair
     await this.generateRSAKeyPair('default-rsa');
 
@@ -56,11 +56,11 @@ export class EncryptionService {
    */
   async generateAESKey(keyId?: string): Promise<string> {
     const id = keyId || uuidv4();
-    
+
     // In a real implementation, this would use Node.js crypto or Web Crypto API
     // For now, we'll simulate key generation
     const key = this.generateRandomBase64(32); // 256 bits = 32 bytes
-    
+
     const encryptionKey: EncryptionKey = {
       id,
       algorithm: this.config.aes.algorithm,
@@ -76,7 +76,7 @@ export class EncryptionService {
     }
 
     this.keys.set(id, encryptionKey);
-    
+
     this.logger.info('AES key generated', { keyId: id });
     return id;
   }
@@ -231,7 +231,10 @@ export class EncryptionService {
   /**
    * Encrypt PHI data with additional compliance checks
    */
-  async encryptPHI(data: string, metadata?: { patientId?: string; dataType?: string }): Promise<EncryptedData> {
+  async encryptPHI(
+    data: string,
+    metadata?: { patientId?: string; dataType?: string }
+  ): Promise<EncryptedData> {
     // Log PHI encryption for audit trail
     this.logger.info('PHI data encryption requested', {
       dataType: metadata?.dataType,
@@ -245,7 +248,10 @@ export class EncryptionService {
   /**
    * Decrypt PHI data with additional compliance checks
    */
-  async decryptPHI(encryptedData: EncryptedData, metadata?: { patientId?: string; dataType?: string }): Promise<string> {
+  async decryptPHI(
+    encryptedData: EncryptedData,
+    metadata?: { patientId?: string; dataType?: string }
+  ): Promise<string> {
     // Log PHI decryption for audit trail
     this.logger.info('PHI data decryption requested', {
       dataType: metadata?.dataType,
@@ -272,7 +278,9 @@ export class EncryptionService {
             this.keys.delete(keyId);
           } else if (key.algorithm.includes('RSA')) {
             const baseName = keyId.replace(/-public|-private$/, '');
-            const { publicKeyId, privateKeyId } = await this.generateRSAKeyPair(baseName + '-rotated');
+            const { publicKeyId, privateKeyId } = await this.generateRSAKeyPair(
+              `${baseName}-rotated`
+            );
             rotated.push(`${keyId} -> ${keyId.includes('public') ? publicKeyId : privateKeyId}`);
             this.keys.delete(keyId);
           }
@@ -283,7 +291,10 @@ export class EncryptionService {
       }
     }
 
-    this.logger.info('Key rotation completed', { rotatedCount: rotated.length, failedCount: failed.length });
+    this.logger.info('Key rotation completed', {
+      rotatedCount: rotated.length,
+      failedCount: failed.length,
+    });
 
     return { rotated, failed };
   }

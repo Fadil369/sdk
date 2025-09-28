@@ -114,7 +114,7 @@ export const useHealthcareTheme = (initialConfig?: Partial<UIConfig>): UseHealth
   useEffect(() => {
     if (typeof document !== 'undefined') {
       const root = document.documentElement;
-      
+
       // Theme colors
       if (isDark) {
         root.style.setProperty('--bg-primary', 'rgba(17, 24, 39, 0.95)');

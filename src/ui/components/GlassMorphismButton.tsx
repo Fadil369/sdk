@@ -82,15 +82,17 @@ export const GlassMorphismButton: React.FC<GlassMorphismButtonProps> = ({
     width: fullWidth ? '100%' : 'auto',
     transition: animate ? 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)' : 'none',
     backdropFilter: 'blur(20px)',
-    ...(animate && !disabled && !loading && {
-      '&:hover': {
-        transform: 'translateY(-2px)',
-        boxShadow: '0 12px 40px 0 rgba(59, 130, 246, 0.4)',
-      },
-      '&:active': {
-        transform: 'translateY(0px)',
-      },
-    }),
+    ...(animate &&
+      !disabled &&
+      !loading && {
+        '&:hover': {
+          transform: 'translateY(-2px)',
+          boxShadow: '0 12px 40px 0 rgba(59, 130, 246, 0.4)',
+        },
+        '&:active': {
+          transform: 'translateY(0px)',
+        },
+      }),
     ...(disabled && {
       opacity: 0.6,
       pointerEvents: 'none',
@@ -116,7 +118,7 @@ export const GlassMorphismButton: React.FC<GlassMorphismButtonProps> = ({
     if (!children) return iconElement;
 
     const isIconLeft = (!rtl && iconPosition === 'left') || (rtl && iconPosition === 'right');
-    
+
     return isIconLeft ? (
       <>
         {iconElement}
@@ -164,7 +166,7 @@ export const GlassMorphismButton: React.FC<GlassMorphismButtonProps> = ({
       >
         {renderContent()}
       </button>
-      
+
       {/* Ripple effect */}
       {animate && (
         <div

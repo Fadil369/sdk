@@ -1,0 +1,7 @@
+# Redirects for Cloudflare Pages
+/docs/* /:splat 301
+/api/* https://workers.brainsait.com/sdk/:splat 200
+/sdk/* https://workers.brainsait.com/sdk/:splat 200
+
+# Fallback for SPA
+/* /index.html 200

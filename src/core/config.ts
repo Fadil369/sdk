@@ -198,7 +198,16 @@ export class ConfigManager {
       },
       ai: {
         enabled: false,
-        providers: {},
+        providers: {
+          nlp: {
+            endpoint: 'https://api.openai.com/v1',
+            model: 'gpt-3.5-turbo',
+          },
+          analytics: {
+            endpoint: 'https://api.openai.com/v1',
+            model: 'gpt-3.5-turbo',
+          },
+        },
       },
       ui: {
         theme: 'light',
