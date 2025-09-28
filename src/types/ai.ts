@@ -23,7 +23,7 @@ export interface AIAgent {
   version: string;
   status: 'active' | 'inactive' | 'training' | 'error';
   capabilities: string[];
-  configuration: Record<string, any>;
+  configuration: Record<string, unknown>;
 }
 
 export interface NLPRequest {
@@ -55,7 +55,7 @@ export interface ExtractedEntity {
   confidence: number;
   startIndex: number;
   endIndex: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface SentimentScore {
@@ -73,8 +73,23 @@ export interface TranslationResult {
   confidence: number;
 }
 
+// Define a more specific type for patient data
+export interface PatientData {
+  id: string;
+  demographics?: {
+    age?: number;
+    gender?: string;
+    dateOfBirth?: string;
+  };
+  vitals?: Record<string, number>;
+  conditions?: string[];
+  medications?: string[];
+  allergies?: string[];
+  labResults?: Record<string, unknown>;
+}
+
 export interface ClinicalDecisionSupport {
-  patientData: any;
+  patientData: PatientData;
   context: {
     symptoms?: string[];
     vitals?: Record<string, number>;
@@ -103,7 +118,7 @@ export interface ClinicalAlert {
 
 export interface PredictiveAnalytics {
   modelType: 'risk-assessment' | 'readmission' | 'outcome-prediction' | 'resource-planning';
-  inputData: Record<string, any>;
+  inputData: Record<string, unknown>;
   predictions: Prediction[];
   modelMetrics: {
     accuracy: number;
@@ -123,7 +138,7 @@ export interface Prediction {
 export interface PredictionFactor {
   name: string;
   importance: number;
-  value: any;
+  value: unknown;
   impact: 'positive' | 'negative' | 'neutral';
 }
 
@@ -140,11 +155,11 @@ export interface WorkflowStep {
   id: string;
   name: string;
   type: 'data-input' | 'ai-processing' | 'human-review' | 'action' | 'notification';
-  configuration: Record<string, any>;
+  configuration: Record<string, unknown>;
   dependencies?: string[];
 }
 
 export interface WorkflowTrigger {
   type: 'schedule' | 'event' | 'manual' | 'data-change';
-  configuration: Record<string, any>;
+  configuration: Record<string, unknown>;
 }

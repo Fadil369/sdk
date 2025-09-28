@@ -101,13 +101,13 @@ export class ConfigManager {
   /**
    * Get configuration value by path
    */
-  get<T = any>(path: string): T {
+  get<T = unknown>(path: string): T {
     const keys = path.split('.');
-    let value: any = this.config;
+    let value: unknown = this.config;
 
     for (const key of keys) {
-      if (value && typeof value === 'object' && key in value) {
-        value = value[key];
+      if (value && typeof value === 'object' && value !== null && key in value) {
+        value = (value as Record<string, unknown>)[key];
       } else {
         throw new Error(`Configuration key '${path}' not found`);
       }
@@ -126,7 +126,7 @@ export class ConfigManager {
   /**
    * Validate configuration
    */
-  async validate(): Promise<void> {
+  validate(): void {
     try {
       const { error, value } = configSchema.validate(this.config, {
         abortEarly: false,

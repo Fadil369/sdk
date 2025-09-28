@@ -38,7 +38,7 @@ export interface AuditLog {
   ipAddress?: string;
   userAgent?: string;
   sessionId?: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
 
 export interface HIPAACompliance {
@@ -103,7 +103,7 @@ export interface Permission {
 export interface PermissionCondition {
   field: string;
   operator: 'equals' | 'not_equals' | 'contains' | 'in' | 'not_in';
-  value: any;
+  value: unknown;
 }
 
 export interface Restriction {
@@ -113,6 +113,6 @@ export interface Restriction {
 
 export interface RestrictionRule {
   condition: string;
-  value: any;
+  value: unknown;
   effect: 'allow' | 'deny';
 }

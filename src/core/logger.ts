@@ -37,19 +37,19 @@ export class Logger {
     );
   }
 
-  debug(message: string, ...args: any[]): void {
+  debug(message: string, ...args: unknown[]): void {
     this.logger.debug(message, ...args);
   }
 
-  info(message: string, ...args: any[]): void {
+  info(message: string, ...args: unknown[]): void {
     this.logger.info(message, ...args);
   }
 
-  warn(message: string, ...args: any[]): void {
+  warn(message: string, ...args: unknown[]): void {
     this.logger.warn(message, ...args);
   }
 
-  error(message: string, error?: Error | any, ...args: any[]): void {
+  error(message: string, error?: Error | unknown, ...args: unknown[]): void {
     if (error instanceof Error) {
       this.logger.error({ err: error, ...args }, message);
     } else {
@@ -57,7 +57,7 @@ export class Logger {
     }
   }
 
-  child(bindings: Record<string, any>): Logger {
+  child(bindings: Record<string, unknown>): Logger {
     const childLogger = new Logger({ level: 'info', format: 'json', outputs: ['console'] });
     childLogger.logger = this.logger.child(bindings);
     return childLogger;

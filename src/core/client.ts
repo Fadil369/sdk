@@ -12,6 +12,17 @@ import { ConfigManager } from './config';
 import { Logger } from './logger';
 import { ApiResponse } from '@/types/common';
 
+interface ApiConfig {
+  baseUrl: string;
+  timeout: number;
+  retries?: number;
+  rateLimit?: {
+    requests: number;
+    window: number;
+  };
+  metadata?: unknown;
+}
+
 export class ApiClient {
   private client: AxiosInstance;
   private logger: Logger;
@@ -40,11 +51,11 @@ export class ApiClient {
     return this.request<T>('GET', url, undefined, config);
   }
 
-  async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  async post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     return this.request<T>('POST', url, data, config);
   }
 
-  async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  async put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     return this.request<T>('PUT', url, data, config);
   }
 
@@ -52,14 +63,18 @@ export class ApiClient {
     return this.request<T>('DELETE', url, undefined, config);
   }
 
-  async patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  async patch<T>(
+    url: string,
+    data?: unknown,
+    config?: AxiosRequestConfig
+  ): Promise<ApiResponse<T>> {
     return this.request<T>('PATCH', url, data, config);
   }
 
   private async request<T>(
     method: string,
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
     const startTime = Date.now();
@@ -109,7 +124,7 @@ export class ApiClient {
 
         return {
           success: false,
-          error: error.response?.data?.message || error.message,
+          error: error.response?.data?.message ?? error.message,
           metadata: {
             timestamp: new Date().toISOString(),
             requestId,
@@ -135,7 +150,7 @@ export class ApiClient {
     }
   }
 
-  private setupInterceptors(apiConfig: any): void {
+  private setupInterceptors(apiConfig: ApiConfig): void {
     // Request interceptor for rate limiting and logging
     this.client.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
@@ -145,7 +160,10 @@ export class ApiClient {
         }
 
         // Add request timestamp
-        (config as any).metadata = { startTime: Date.now() };
+        const configWithMetadata = config as InternalAxiosRequestConfig & {
+          metadata?: { startTime: number };
+        };
+        configWithMetadata.metadata = { startTime: Date.now() };
         this.requestCount++;
 
         return config;
@@ -159,7 +177,10 @@ export class ApiClient {
     // Response interceptor for performance monitoring
     this.client.interceptors.response.use(
       (response: AxiosResponse) => {
-        const responseTime = Date.now() - ((response.config as any).metadata?.startTime || 0);
+        const configWithMetadata = response.config as InternalAxiosRequestConfig & {
+          metadata?: { startTime: number };
+        };
+        const responseTime = Date.now() - (configWithMetadata.metadata?.startTime ?? 0);
 
         // Log slow responses (>2.5s target)
         if (responseTime > 2500) {
@@ -174,7 +195,10 @@ export class ApiClient {
       },
       error => {
         if (axios.isAxiosError(error) && error.config) {
-          const responseTime = Date.now() - ((error.config as any).metadata?.startTime || 0);
+          const configWithMetadata = error.config as InternalAxiosRequestConfig & {
+            metadata?: { startTime: number };
+          };
+          const responseTime = Date.now() - (configWithMetadata.metadata?.startTime ?? 0);
 
           this.logger.error('API request failed', {
             url: error.config.url,
