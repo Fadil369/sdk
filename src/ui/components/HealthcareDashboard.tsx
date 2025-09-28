@@ -3,19 +3,29 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import type { ChangeEvent, KeyboardEvent, ReactElement, ReactNode } from 'react';
 import { BaseComponent, BaseComponentProps } from './Base';
 import { HealthcareDashboard as DashboardType, DashboardWidget, DashboardFilter } from '@/types/ui';
+
+const resolveListItemContent = (item: unknown): ReactNode => {
+  if (typeof item === 'object' && item !== null) {
+    const objectItem = item as { label?: ReactNode; name?: ReactNode };
+    return objectItem.label ?? objectItem.name ?? String(item);
+  }
+
+  return String(item);
+};
 
 export interface HealthcareDashboardProps extends BaseComponentProps {
   dashboard: DashboardType;
   onWidgetClick?: (widget: DashboardWidget) => void;
-  onFilterChange?: (filters: Record<string, any>) => void;
-  data?: Record<string, any>;
+  onFilterChange?: (filters: Record<string, unknown>) => void;
+  data?: Record<string, unknown>;
   refreshInterval?: number;
   isLoading?: boolean;
 }
 
-export const HealthcareDashboard: React.FC<HealthcareDashboardProps> = ({
+export const HealthcareDashboard = ({
   dashboard,
   onWidgetClick,
   onFilterChange,
@@ -24,23 +34,23 @@ export const HealthcareDashboard: React.FC<HealthcareDashboardProps> = ({
   isLoading = false,
   rtl = false,
   ...baseProps
-}) => {
-  const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
-  const [refreshKey, setRefreshKey] = useState(0);
+}: HealthcareDashboardProps): ReactElement => {
+  const [activeFilters, setActiveFilters] = useState<Record<string, unknown>>({});
+  const [, setRefreshTick] = useState(0);
 
   useEffect(() => {
-    if (refreshInterval && refreshInterval > 0) {
-      const interval = setInterval(() => {
-        setRefreshKey(prev => prev + 1);
-      }, refreshInterval * 1000);
-
-      return () => clearInterval(interval);
+    if (!refreshInterval || refreshInterval <= 0) {
+      return undefined;
     }
-    // No cleanup needed for the else case
-    return undefined;
+
+    const interval = setInterval(() => {
+      setRefreshTick(prev => prev + 1);
+    }, refreshInterval * 1000);
+
+    return () => clearInterval(interval);
   }, [refreshInterval]);
 
-  const handleFilterChange = (filterId: string, value: any) => {
+  const handleFilterChange = (filterId: string, value: unknown) => {
     const newFilters = {
       ...activeFilters,
       [filterId]: value,
@@ -86,89 +96,109 @@ export const HealthcareDashboard: React.FC<HealthcareDashboardProps> = ({
     flex: 1,
   };
 
-  return (
-    <BaseComponent
-      {...baseProps}
-      style={dashboardStyle}
-      rtl={rtl}
-      loading={isLoading}
-      className={`healthcare-dashboard ${baseProps.className || ''}`}
-    >
-      {/* Header */}
-      <div style={headerStyle}>
-        <h1 style={titleStyle}>{dashboard.title}</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {refreshInterval && (
-            <div
-              style={{
-                fontSize: '14px',
-                color: 'rgba(0, 0, 0, 0.6)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}
-            >
-              <div
-                style={{
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  backgroundColor: '#10B981',
-                  animation: 'pulse 2s infinite',
-                }}
-              />
-              {rtl ? `تحديث كل ${refreshInterval} ثانية` : `Auto-refresh: ${refreshInterval}s`}
-            </div>
-          )}
-        </div>
-      </div>
+  const refreshInfo = refreshInterval
+    ? React.createElement(
+        'div',
+        {
+          style: {
+            fontSize: '14px',
+            color: 'rgba(0, 0, 0, 0.6)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          },
+        },
+        React.createElement('div', {
+          style: {
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            backgroundColor: '#10B981',
+            animation: 'pulse 2s infinite',
+          },
+        }),
+        rtl ? `تحديث كل ${refreshInterval} ثانية` : `Auto-refresh: ${refreshInterval}s`
+      )
+    : null;
 
-      {/* Filters */}
-      {dashboard.filters && dashboard.filters.length > 0 && (
-        <div style={filtersStyle}>
-          {dashboard.filters.map(filter => (
-            <DashboardFilterComponent
-              key={filter.id}
-              filter={filter}
-              value={activeFilters[filter.id]}
-              onChange={value => handleFilterChange(filter.id, value)}
-              rtl={rtl}
-            />
-          ))}
-        </div>
-      )}
+  const header = React.createElement(
+    'div',
+    { style: headerStyle },
+    React.createElement('h1', { style: titleStyle }, dashboard.title),
+    React.createElement(
+      'div',
+      { style: { display: 'flex', alignItems: 'center', gap: '12px' } },
+      refreshInfo
+    )
+  );
 
-      {/* Widgets Grid */}
-      <div style={gridStyle}>
-        {dashboard.widgets.map(widget => (
-          <DashboardWidgetComponent
-            key={widget.id}
-            widget={widget}
-            data={data[widget.id]}
-            onClick={() => onWidgetClick?.(widget)}
-            rtl={rtl}
-            refreshKey={refreshKey}
-          />
-        ))}
-      </div>
-    </BaseComponent>
+  const filtersNode =
+    dashboard.filters && dashboard.filters.length > 0
+      ? React.createElement(
+          'div',
+          { style: filtersStyle },
+          ...dashboard.filters.map(filter =>
+            React.createElement(DashboardFilterComponent, {
+              key: filter.id,
+              filter,
+              value: activeFilters[filter.id],
+              onChange: value => handleFilterChange(filter.id, value),
+              rtl,
+            })
+          )
+        )
+      : null;
+
+  const widgets = React.createElement(
+    'div',
+    { style: gridStyle },
+    ...dashboard.widgets.map(widget =>
+      React.createElement(DashboardWidgetComponent, {
+        key: widget.id,
+        widget,
+        data: data[widget.id],
+        onClick: () => onWidgetClick?.(widget),
+        rtl,
+      })
+    )
+  );
+
+  const className = ['healthcare-dashboard', baseProps.className].filter(Boolean).join(' ');
+
+  const baseChildren: ReactNode[] = [header];
+  if (filtersNode) {
+    baseChildren.push(filtersNode);
+  }
+  baseChildren.push(widgets);
+
+  return React.createElement(
+    BaseComponent,
+    {
+      ...baseProps,
+      style: {
+        ...dashboardStyle,
+        ...baseProps.style,
+      },
+      rtl,
+      loading: isLoading,
+      className,
+    },
+    ...baseChildren
   );
 };
 
-// Filter Component
 interface DashboardFilterComponentProps {
   filter: DashboardFilter;
-  value: any;
-  onChange: (value: any) => void;
+  value: unknown;
+  onChange: (value: unknown) => void;
   rtl: boolean;
 }
 
-const DashboardFilterComponent: React.FC<DashboardFilterComponentProps> = ({
+const DashboardFilterComponent = ({
   filter,
   value,
   onChange,
-  rtl,
-}) => {
+}: DashboardFilterComponentProps): ReactElement => {
   const filterStyle: React.CSSProperties = {
     padding: '8px 16px',
     borderRadius: '8px',
@@ -179,58 +209,58 @@ const DashboardFilterComponent: React.FC<DashboardFilterComponentProps> = ({
     minWidth: '120px',
   };
 
-  switch (filter.type) {
-    case 'select':
-      return (
-        <select value={value || ''} onChange={e => onChange(e.target.value)} style={filterStyle}>
-          <option value="">{filter.placeholder}</option>
-          {filter.options?.map(option => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      );
+  const handleSelectChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    onChange(event.target.value);
+  };
 
-    case 'date':
-      return (
-        <input
-          type="date"
-          value={value || ''}
-          onChange={e => onChange(e.target.value)}
-          placeholder={filter.placeholder}
-          style={filterStyle}
-        />
-      );
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    onChange(event.target.value);
+  };
 
-    default:
-      return (
-        <input
-          type="text"
-          value={value || ''}
-          onChange={e => onChange(e.target.value)}
-          placeholder={filter.placeholder}
-          style={filterStyle}
-        />
-      );
+  if (filter.type === 'select') {
+    const options = [
+      React.createElement('option', { key: 'placeholder', value: '' }, filter.placeholder ?? ''),
+      ...(filter.options?.map(option =>
+        React.createElement('option', { key: option.value, value: option.value }, option.label)
+      ) ?? []),
+    ];
+
+    return React.createElement(
+      'select',
+      {
+        value: (value as string) ?? '',
+        onChange: handleSelectChange,
+        style: filterStyle,
+      },
+      ...options
+    );
   }
+
+  const inputProps = {
+    value: (value as string) ?? '',
+    onChange: handleInputChange,
+    placeholder: filter.placeholder,
+    style: filterStyle,
+  };
+
+  const inputType = filter.type === 'date' ? 'date' : 'text';
+
+  return React.createElement('input', { ...inputProps, type: inputType });
 };
 
-// Widget Component
 interface DashboardWidgetComponentProps {
   widget: DashboardWidget;
-  data?: any;
+  data?: unknown;
   onClick?: () => void;
   rtl: boolean;
-  refreshKey: number;
 }
 
-const DashboardWidgetComponent: React.FC<DashboardWidgetComponentProps> = ({
+const DashboardWidgetComponent = ({
   widget,
   data,
   onClick,
   rtl,
-}) => {
+}: DashboardWidgetComponentProps): ReactElement => {
   const widgetStyle: React.CSSProperties = {
     padding: '20px',
     borderRadius: '16px',
@@ -241,13 +271,7 @@ const DashboardWidgetComponent: React.FC<DashboardWidgetComponentProps> = ({
     transition: 'all 0.3s ease',
     display: 'flex',
     flexDirection: 'column',
-    minHeight: widget.minHeight || '200px',
-    ...(onClick && {
-      '&:hover': {
-        transform: 'translateY(-4px)',
-        boxShadow: '0 12px 40px 0 rgba(31, 38, 135, 0.4)',
-      },
-    }),
+    minHeight: widget.minHeight ?? '200px',
   };
 
   const titleStyle: React.CSSProperties = {
@@ -260,7 +284,7 @@ const DashboardWidgetComponent: React.FC<DashboardWidgetComponentProps> = ({
   const valueStyle: React.CSSProperties = {
     fontSize: '32px',
     fontWeight: '700',
-    color: widget.color || '#3B82F6',
+    color: widget.color ?? '#3B82F6',
     marginBottom: '8px',
   };
 
@@ -269,44 +293,91 @@ const DashboardWidgetComponent: React.FC<DashboardWidgetComponentProps> = ({
     color: 'rgba(0, 0, 0, 0.6)',
   };
 
-  return (
-    <div
-      style={widgetStyle}
-      onClick={onClick}
-      className={`dashboard-widget dashboard-widget-${widget.type}`}
-    >
-      <h3 style={titleStyle}>{widget.title}</h3>
+  const metricNodes: ReactNode[] = [];
+  if (widget.type === 'metric' && data && typeof data === 'object' && data !== null) {
+    const metricData = data as { value?: ReactNode; subtitle?: ReactNode };
+    metricNodes.push(
+      React.createElement('div', { key: 'value', style: valueStyle }, metricData.value ?? '---')
+    );
+    metricNodes.push(
+      React.createElement(
+        'div',
+        { key: 'subtitle', style: subtitleStyle },
+        metricData.subtitle ?? widget.subtitle
+      )
+    );
+  }
 
-      {widget.type === 'metric' && data && (
-        <>
-          <div style={valueStyle}>{data.value || '---'}</div>
-          <div style={subtitleStyle}>{data.subtitle || widget.subtitle}</div>
-        </>
-      )}
+  let body: ReactNode = null;
 
-      {widget.type === 'chart' && (
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={subtitleStyle}>{rtl ? 'الرسم البياني' : 'Chart visualization'}</div>
-        </div>
-      )}
+  if (widget.type === 'metric') {
+    body = React.createElement(React.Fragment, null, ...metricNodes);
+  } else if (widget.type === 'chart') {
+    body = React.createElement(
+      'div',
+      {
+        style: {
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+      },
+      React.createElement(
+        'div',
+        { style: subtitleStyle },
+        rtl ? 'الرسم البياني' : 'Chart visualization'
+      )
+    );
+  } else if (widget.type === 'list' && data && typeof data === 'object' && data !== null) {
+    const items = (data as { items?: Array<unknown> }).items ?? [];
+    body = React.createElement(
+      'div',
+      { style: { flex: 1, overflow: 'auto' } },
+      ...items.slice(0, 5).map((item, index) =>
+        React.createElement(
+          'div',
+          {
+            key: index,
+            style: {
+              padding: '8px 0',
+              borderBottom:
+                index < items.length - 1 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
+              fontSize: '14px',
+            },
+          },
+          resolveListItemContent(item)
+        )
+      )
+    );
+  }
 
-      {widget.type === 'list' && data?.items && (
-        <div style={{ flex: 1, overflow: 'auto' }}>
-          {data.items.slice(0, 5).map((item: any, index: number) => (
-            <div
-              key={index}
-              style={{
-                padding: '8px 0',
-                borderBottom:
-                  index < data.items.length - 1 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
-                fontSize: '14px',
-              }}
-            >
-              {item.label || item.name || item.toString()}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+  const cardChildren: ReactNode[] = [
+    React.createElement('h3', { key: 'title', style: titleStyle }, widget.title),
+  ];
+  if (body) {
+    cardChildren.push(body);
+  }
+
+  const handleKeyDown = onClick
+    ? (event: KeyboardEvent<HTMLDivElement>) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick();
+        }
+      }
+    : undefined;
+
+  return React.createElement(
+    'div',
+    {
+      style: widgetStyle,
+      onClick,
+      className: `dashboard-widget dashboard-widget-${widget.type}`,
+      role: onClick ? 'button' : undefined,
+      tabIndex: onClick ? 0 : undefined,
+      onKeyDown: handleKeyDown,
+    },
+    ...cardChildren
   );
 };

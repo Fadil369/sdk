@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import dts from 'vite-plugin-dts';
 import { resolve } from 'path';
 
@@ -48,5 +48,11 @@ export default defineConfig({
       '@/ai': resolve(__dirname, 'src/ai'),
       '@/ui': resolve(__dirname, 'src/ui'),
     },
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./tests/setup.ts'],
+    restoreMocks: true,
   },
 });

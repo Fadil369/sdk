@@ -27,7 +27,7 @@
     "isolatedModules": true,
     "noEmit": false,
     "jsx": "react-jsx",
-    "types": ["@cloudflare/workers-types", "node"],
+  "types": ["@cloudflare/workers-types", "node", "react"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],

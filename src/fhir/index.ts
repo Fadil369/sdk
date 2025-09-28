@@ -37,10 +37,8 @@ export type { SaudiPatientProfile, SaudiRegion, ResidencyType } from './saudi-ex
 // This will be removed once the main SDK is updated to use the new FHIRClient
 export class LegacyFHIRClient {
   constructor(
-    // @ts-ignore - Used for future compatibility
     private _config: ConfigManager,
     private logger: Logger,
-    // @ts-ignore - Used for future compatibility
     private _apiClient: ApiClient
   ) {}
 

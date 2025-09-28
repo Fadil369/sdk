@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import type { CSSProperties, ReactElement, ReactNode } from 'react';
 import { BaseComponent, BaseComponentProps } from './Base';
 
 export interface PatientData {
@@ -43,7 +44,7 @@ export interface PatientCardProps extends BaseComponentProps {
   compact?: boolean;
 }
 
-export const PatientCard: React.FC<PatientCardProps> = ({
+export const PatientCard = ({
   patient,
   showPhoto = true,
   showIdentifiers = true,
@@ -52,14 +53,18 @@ export const PatientCard: React.FC<PatientCardProps> = ({
   compact = false,
   rtl = false,
   ...baseProps
-}) => {
+}: PatientCardProps): ReactElement => {
+  const primaryName = patient.name?.[0];
+  const givenName = primaryName?.given?.join(' ') ?? '';
+  const familyName = primaryName?.family ?? '';
+  const textName = primaryName?.text;
+  const fallbackName = `${givenName} ${familyName}`.trim();
   const displayName =
-    patient.name?.[0]?.text ||
-    `${patient.name?.[0]?.given?.join(' ') || ''} ${patient.name?.[0]?.family || ''}`.trim() ||
-    'Unknown Patient';
+    textName ?? (fallbackName.length > 0 ? fallbackName : undefined) ?? 'Unknown Patient';
 
   const primaryIdentifier =
-    patient.identifier?.find(id => id.type?.text === 'National ID') || patient.identifier?.[0];
+    patient.identifier?.find(identifier => identifier.type?.text === 'National ID') ??
+    patient.identifier?.[0];
 
   const photoUrl = patient.photo?.[0]?.url;
   const age = patient.birthDate ? calculateAge(patient.birthDate) : null;
@@ -71,7 +76,7 @@ export const PatientCard: React.FC<PatientCardProps> = ({
     }
   };
 
-  const cardStyle: React.CSSProperties = {
+  const cardStyle: CSSProperties = {
     padding: compact ? '12px' : '20px',
     cursor: onPatientClick ? 'pointer' : 'default',
     minHeight: compact ? '80px' : '120px',
@@ -87,117 +92,209 @@ export const PatientCard: React.FC<PatientCardProps> = ({
     }),
   };
 
-  const contentStyle: React.CSSProperties = {
+  const contentStyle: CSSProperties = {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
     gap: compact ? '4px' : '8px',
   };
 
-  const nameStyle: React.CSSProperties = {
+  const nameStyle: CSSProperties = {
     fontSize: compact ? '16px' : '18px',
     fontWeight: '600',
     color: 'rgba(0, 0, 0, 0.9)',
     margin: 0,
   };
 
-  const detailStyle: React.CSSProperties = {
+  const detailStyle: CSSProperties = {
     fontSize: '14px',
     color: 'rgba(0, 0, 0, 0.7)',
     margin: 0,
   };
+  const metadataContainerStyle: CSSProperties = {
+    display: 'flex',
+    gap: '16px',
+    flexWrap: 'wrap',
+  };
 
-  return (
-    <BaseComponent
-      {...baseProps}
-      style={cardStyle}
-      rtl={rtl}
-      className={`patient-card ${baseProps.className || ''}`}
-      onClick={handleClick}
-    >
-      {showPhoto && photoUrl && (
-        <div
-          style={{
+  const contactContainerStyle: CSSProperties = {
+    display: 'flex',
+    gap: '16px',
+    flexWrap: 'wrap',
+  };
+
+  const { style: incomingStyle, className: incomingClassName, ...restBaseProps } = baseProps;
+  const mergedStyle: CSSProperties = {
+    ...cardStyle,
+    ...(incomingStyle ?? {}),
+  };
+
+  const combinedClassName = ['patient-card', incomingClassName].filter(Boolean).join(' ');
+
+  const children: ReactNode[] = [];
+
+  if (showPhoto && photoUrl) {
+    children.push(
+      React.createElement(
+        'div',
+        {
+          key: 'photo',
+          style: {
             width: compact ? '40px' : '60px',
             height: compact ? '40px' : '60px',
             borderRadius: '50%',
             overflow: 'hidden',
             flexShrink: 0,
             backgroundColor: 'rgba(255, 255, 255, 0.2)',
-          }}
-        >
-          <img
-            src={photoUrl}
-            alt={displayName}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-            }}
-          />
-        </div>
-      )}
+          },
+        },
+        React.createElement('img', {
+          src: photoUrl,
+          alt: displayName,
+          style: {
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          },
+        })
+      )
+    );
+  }
 
-      <div style={contentStyle}>
-        <h3 style={nameStyle}>{displayName}</h3>
+  const contentChildren: ReactNode[] = [
+    React.createElement('h3', { key: 'name', style: nameStyle }, displayName),
+  ];
 
-        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-          {patient.gender && (
-            <span style={detailStyle}>
-              {rtl ? 'الجنس:' : 'Gender:'} {patient.gender}
-            </span>
-          )}
+  const metadataChildren: ReactNode[] = [];
 
-          {age && (
-            <span style={detailStyle}>
-              {rtl ? 'العمر:' : 'Age:'} {age} {rtl ? 'سنة' : 'years'}
-            </span>
-          )}
-        </div>
+  if (patient.gender) {
+    metadataChildren.push(
+      React.createElement(
+        'span',
+        { key: 'gender', style: detailStyle },
+        rtl ? 'الجنس:' : 'Gender:',
+        ' ',
+        patient.gender
+      )
+    );
+  }
 
-        {showIdentifiers && primaryIdentifier && (
-          <div style={detailStyle}>
-            {primaryIdentifier.type?.text || (rtl ? 'المعرف' : 'ID')}: {primaryIdentifier.value}
-          </div>
-        )}
+  if (age) {
+    metadataChildren.push(
+      React.createElement(
+        'span',
+        { key: 'age', style: detailStyle },
+        rtl ? 'العمر:' : 'Age:',
+        ' ',
+        age,
+        ' ',
+        rtl ? 'سنة' : 'years'
+      )
+    );
+  }
 
-        {showContact && (patient.phone || patient.email) && !compact && (
-          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-            {patient.phone && (
-              <span style={detailStyle}>
-                {rtl ? 'الهاتف:' : 'Phone:'} {patient.phone}
-              </span>
-            )}
-            {patient.email && (
-              <span style={detailStyle}>
-                {rtl ? 'البريد:' : 'Email:'} {patient.email}
-              </span>
-            )}
-          </div>
-        )}
+  if (metadataChildren.length > 0) {
+    contentChildren.push(
+      React.createElement(
+        'div',
+        { key: 'metadata', style: metadataContainerStyle },
+        ...metadataChildren
+      )
+    );
+  }
 
-        {primaryAddress && !compact && (
-          <div style={detailStyle}>
-            {rtl ? 'العنوان:' : 'Address:'} {formatAddress(primaryAddress, rtl)}
-          </div>
-        )}
-      </div>
+  if (showIdentifiers && primaryIdentifier) {
+    contentChildren.push(
+      React.createElement(
+        'div',
+        { key: 'identifier', style: detailStyle },
+        primaryIdentifier.type?.text ?? (rtl ? 'المعرف' : 'ID'),
+        ': ',
+        primaryIdentifier.value
+      )
+    );
+  }
 
-      {patient.gender && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '8px',
-            right: rtl ? 'auto' : '8px',
-            left: rtl ? '8px' : 'auto',
-            width: '8px',
-            height: '8px',
-            borderRadius: '50%',
-            backgroundColor: patient.gender === 'male' ? '#3B82F6' : '#EC4899',
-          }}
-        />
-      )}
-    </BaseComponent>
+  const contactChildren: ReactNode[] = [];
+
+  if (patient.phone) {
+    contactChildren.push(
+      React.createElement(
+        'span',
+        { key: 'phone', style: detailStyle },
+        rtl ? 'الهاتف:' : 'Phone:',
+        ' ',
+        patient.phone
+      )
+    );
+  }
+
+  if (patient.email) {
+    contactChildren.push(
+      React.createElement(
+        'span',
+        { key: 'email', style: detailStyle },
+        rtl ? 'البريد:' : 'Email:',
+        ' ',
+        patient.email
+      )
+    );
+  }
+
+  if (showContact && !compact && contactChildren.length > 0) {
+    contentChildren.push(
+      React.createElement(
+        'div',
+        { key: 'contact', style: contactContainerStyle },
+        ...contactChildren
+      )
+    );
+  }
+
+  if (primaryAddress && !compact) {
+    contentChildren.push(
+      React.createElement(
+        'div',
+        { key: 'address', style: detailStyle },
+        rtl ? 'العنوان:' : 'Address:',
+        ' ',
+        formatAddress(primaryAddress, rtl)
+      )
+    );
+  }
+
+  children.push(
+    React.createElement('div', { key: 'content', style: contentStyle }, ...contentChildren)
+  );
+
+  if (patient.gender) {
+    children.push(
+      React.createElement('div', {
+        key: 'indicator',
+        style: {
+          position: 'absolute',
+          top: '8px',
+          right: rtl ? 'auto' : '8px',
+          left: rtl ? '8px' : 'auto',
+          width: '8px',
+          height: '8px',
+          borderRadius: '50%',
+          backgroundColor: patient.gender === 'male' ? '#3B82F6' : '#EC4899',
+        },
+      })
+    );
+  }
+
+  return React.createElement(
+    BaseComponent,
+    {
+      ...restBaseProps,
+      style: mergedStyle,
+      rtl,
+      className: combinedClassName,
+      onClick: onPatientClick ? handleClick : undefined,
+    },
+    ...children
   );
 };
 
@@ -216,7 +313,7 @@ const calculateAge = (birthDate: string): number => {
 };
 
 const formatAddress = (address: NonNullable<PatientData['address']>[0], rtl: boolean): string => {
-  const parts = [...(address.line || []), address.city, address.country].filter(Boolean);
+  const parts = [...(address.line ?? []), address.city, address.country].filter(Boolean);
 
   return parts.join(rtl ? '، ' : ', ');
 };

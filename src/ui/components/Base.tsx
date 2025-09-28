@@ -2,17 +2,19 @@
  * Base component with glass morphism and RTL support
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
+import type { ReactElement } from 'react';
 import { ComponentProps, GlassMorphismProps } from '@/types/ui';
 import { createGlassMorphismStyle, darkModeGlassStyle } from '../styles/glassMorphism';
 import { createRTLStyle, createFontStyle } from '../utils/rtl';
+import { ensureGlobalUIStyles } from '../styles/global';
 
 export interface BaseComponentProps extends ComponentProps, GlassMorphismProps {
   theme?: 'light' | 'dark';
   glassMorphism?: boolean;
 }
 
-export const BaseComponent: React.FC<BaseComponentProps> = ({
+export const BaseComponent = ({
   id,
   className = '',
   style = {},
@@ -28,16 +30,21 @@ export const BaseComponent: React.FC<BaseComponentProps> = ({
   border,
   shadow,
   ...props
-}) => {
-  const glassProps = { opacity, blur, borderRadius, border, shadow };
+}: BaseComponentProps): ReactElement => {
+  ensureGlobalUIStyles();
+
+  const glassProps = useMemo(
+    () => ({ opacity, blur, borderRadius, border, shadow }),
+    [opacity, blur, borderRadius, border, shadow]
+  );
 
   const baseStyle: React.CSSProperties = {
-    ...style,
-    ...(glassMorphism
-      ? theme === 'dark'
+    position: 'relative',
+    ...(!glassMorphism
+      ? {}
+      : theme === 'dark'
         ? darkModeGlassStyle(glassProps)
-        : createGlassMorphismStyle(glassProps)
-      : {}),
+        : createGlassMorphismStyle(glassProps)),
     ...createRTLStyle(rtl),
     ...createFontStyle(rtl),
     transition: 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)',
@@ -46,13 +53,15 @@ export const BaseComponent: React.FC<BaseComponentProps> = ({
       pointerEvents: 'none' as const,
     }),
     ...(loading && {
-      cursor: 'wait' as const,
+      cursor: 'progress' as const,
     }),
+    ...style,
   };
 
   const combinedClassName = [
     'brainsait-ui-base',
     glassMorphism && 'glass-morphism',
+    theme === 'dark' && 'glass-dark',
     rtl && 'rtl',
     disabled && 'disabled',
     loading && 'loading',
@@ -61,31 +70,31 @@ export const BaseComponent: React.FC<BaseComponentProps> = ({
     .filter(Boolean)
     .join(' ');
 
-  return (
-    <div id={id} className={combinedClassName} style={baseStyle} {...props}>
-      {loading && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 10,
-          }}
-        >
-          <div
-            style={{
-              width: '20px',
-              height: '20px',
-              border: '2px solid rgba(255, 255, 255, 0.3)',
-              borderTop: '2px solid rgba(255, 255, 255, 0.8)',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite',
-            }}
-          />
-        </div>
-      )}
-      {children}
-    </div>
+  const renderedChildren: React.ReactNode[] = [];
+
+  if (loading) {
+    renderedChildren.push(
+      React.createElement(
+        'div',
+        { className: 'brainsait-loading-overlay', 'aria-hidden': true },
+        React.createElement('div', { className: 'brainsait-spinner' })
+      )
+    );
+  }
+
+  renderedChildren.push(children);
+
+  return React.createElement(
+    'div',
+    {
+      id,
+      className: combinedClassName,
+      style: baseStyle,
+      'aria-busy': loading || undefined,
+      'aria-disabled': disabled || undefined,
+      'data-theme': theme,
+      ...props,
+    },
+    ...renderedChildren
   );
 };
