@@ -14,42 +14,48 @@ export class Logger {
   private logger: pino.Logger;
 
   constructor(config: LoggingConfig) {
-    const transport =
-      config.format === 'text'
-        ? pino.transport({
-            target: 'pino-pretty',
-            options: {
-              colorize: true,
-              translateTime: 'SYS:standard',
-            },
-          })
-        : undefined;
-
-    this.logger = pino(
-      {
+    // Create logger with optional transport
+    if (config.format === 'text') {
+      this.logger = pino(
+        {
+          level: config.level,
+          timestamp: pino.stdTimeFunctions.isoTime,
+          formatters: {
+            level: label => ({ level: label }),
+          },
+        },
+        pino.transport({
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+            translateTime: 'SYS:standard',
+          },
+        }) as pino.DestinationStream
+      );
+    } else {
+      this.logger = pino({
         level: config.level,
         timestamp: pino.stdTimeFunctions.isoTime,
         formatters: {
           level: label => ({ level: label }),
         },
-      },
-      transport
-    );
+      });
+    }
   }
 
-  debug(message: string, ...args: any[]): void {
+  debug(message: string, ...args: unknown[]): void {
     this.logger.debug(message, ...args);
   }
 
-  info(message: string, ...args: any[]): void {
+  info(message: string, ...args: unknown[]): void {
     this.logger.info(message, ...args);
   }
 
-  warn(message: string, ...args: any[]): void {
+  warn(message: string, ...args: unknown[]): void {
     this.logger.warn(message, ...args);
   }
 
-  error(message: string, error?: Error | any, ...args: any[]): void {
+  error(message: string, error?: Error, ...args: unknown[]): void {
     if (error instanceof Error) {
       this.logger.error({ err: error, ...args }, message);
     } else {
@@ -57,7 +63,7 @@ export class Logger {
     }
   }
 
-  child(bindings: Record<string, any>): Logger {
+  child(bindings: Record<string, unknown>): Logger {
     const childLogger = new Logger({ level: 'info', format: 'json', outputs: ['console'] });
     childLogger.logger = this.logger.child(bindings);
     return childLogger;

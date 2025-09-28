@@ -18,6 +18,18 @@ export interface NPHIESAuthToken {
   issued_at: number;
 }
 
+// Define specific types for NPHIES data structures
+export interface FHIRResource {
+  resourceType: string;
+  id?: string;
+  meta?: {
+    versionId?: string;
+    lastUpdated?: string;
+    profile?: string[];
+  };
+  [key: string]: unknown;
+}
+
 export interface NPHIESSubmissionRequest {
   submissionId: string;
   resourceType:
@@ -25,7 +37,7 @@ export interface NPHIESSubmissionRequest {
     | 'ClaimResponse'
     | 'CoverageEligibilityRequest'
     | 'CoverageEligibilityResponse';
-  data: any;
+  data: FHIRResource;
   priority?: 'routine' | 'urgent' | 'asap' | 'stat';
 }
 
@@ -34,7 +46,7 @@ export interface NPHIESSubmissionResponse {
   status: 'accepted' | 'rejected' | 'pending';
   outcomeCode?: string;
   outcomeDescription?: string;
-  responseData?: any;
+  responseData?: FHIRResource;
   errors?: NPHIESError[];
   warnings?: NPHIESWarning[];
 }

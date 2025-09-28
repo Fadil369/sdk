@@ -4,8 +4,20 @@
 
 export * from './config';
 export * from './fhir';
-export * from './nphies';
 export * from './common';
 export * from './security';
 export * from './ai';
 export type { UIConfig, ComponentProps, GlassMorphismProps } from './ui';
+// Re-export NPHIES types individually to avoid conflicts
+export type {
+  NPHIESConfig,
+  NPHIESAuthToken,
+  NPHIESSubmissionRequest,
+  NPHIESSubmissionResponse,
+  NPHIESError,
+  NPHIESWarning,
+  NPHIESClaim,
+  NPHIESClaimItem,
+  NPHIESCoverageEligibilityRequest,
+  NPHIESEligibilityItem,
+} from './nphies';

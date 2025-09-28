@@ -56,7 +56,7 @@ export class BrainSAITHealthcareSDK {
       this.logger.info('Initializing BrainSAIT Healthcare SDK...');
 
       // Validate configuration
-      await this.config.validate();
+      this.config.validate();
 
       // Initialize performance monitoring
       this.performanceMonitor.start();
@@ -76,7 +76,10 @@ export class BrainSAITHealthcareSDK {
       this.initialized = true;
       this.logger.info('SDK initialized successfully');
     } catch (error) {
-      this.logger.error('Failed to initialize SDK', error);
+      this.logger.error(
+        'Failed to initialize SDK',
+        error instanceof Error ? error : new Error(String(error))
+      );
       throw error;
     }
   }
@@ -131,7 +134,14 @@ export class BrainSAITHealthcareSDK {
   /**
    * Get health status of the SDK and connected services
    */
-  async healthCheck(): Promise<any> {
+  async healthCheck(): Promise<{
+    status: string;
+    timestamp: string;
+    version: string;
+    responseTime: number;
+    services: Record<string, unknown>;
+    error?: string;
+  }> {
     const startTime = Date.now();
 
     try {
@@ -149,24 +159,28 @@ export class BrainSAITHealthcareSDK {
           fhir:
             fhirHealth.status === 'fulfilled'
               ? fhirHealth.value
-              : { status: 'down', error: fhirHealth.reason },
+              : { status: 'down', error: String(fhirHealth.reason) },
           nphies:
             nphiesHealth.status === 'fulfilled'
               ? nphiesHealth.value
-              : { status: 'down', error: nphiesHealth.reason },
+              : { status: 'down', error: String(nphiesHealth.reason) },
           security: await this.securityManager.healthCheck(),
-          ai: this.config.get('ai.enabled')
+          ai: this.config.get<{ enabled: boolean }>('ai')?.enabled
             ? await this.aiManager.healthCheck()
             : { status: 'disabled' },
         },
       };
     } catch (error) {
-      this.logger.error('Health check failed', error);
+      this.logger.error(
+        'Health check failed',
+        error instanceof Error ? error : new Error(String(error))
+      );
       return {
         status: 'unhealthy',
         timestamp: new Date().toISOString(),
         version: '1.0.0',
         responseTime: Date.now() - startTime,
+        services: {},
         error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
@@ -192,7 +206,10 @@ export class BrainSAITHealthcareSDK {
       this.initialized = false;
       this.logger.info('SDK shutdown completed');
     } catch (error) {
-      this.logger.error('Error during shutdown', error);
+      this.logger.error(
+        'Error during shutdown',
+        error instanceof Error ? error : new Error(String(error))
+      );
       throw error;
     }
   }

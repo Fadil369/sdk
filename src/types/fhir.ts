@@ -103,5 +103,5 @@ export interface FHIRSearchParameters {
   _sort?: string;
   _include?: string[];
   _revinclude?: string[];
-  [key: string]: any;
+  [key: string]: unknown;
 }

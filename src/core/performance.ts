@@ -79,18 +79,19 @@ export class PerformanceMonitor {
 
   private updateMetrics(): void {
     // Update memory usage
-    if (typeof process !== 'undefined' && process.memoryUsage) {
+    if (process?.memoryUsage) {
       const memory = process.memoryUsage();
       this.metrics.memoryUsage = memory.heapUsed / 1024 / 1024; // MB
-    } else if (typeof performance !== 'undefined' && (performance as any).memory) {
-      const memory = (performance as any).memory;
-      this.metrics.memoryUsage = memory.usedJSHeapSize / 1024 / 1024; // MB
+    } else if (typeof performance !== 'undefined') {
+      // Use optional chaining and type assertion
+      const performanceMemory = (performance as { memory?: { usedJSHeapSize: number } }).memory;
+      if (performanceMemory?.usedJSHeapSize) {
+        this.metrics.memoryUsage = performanceMemory.usedJSHeapSize / 1024 / 1024; // MB
+      }
     }
 
     // Emit metrics if callback is provided
-    if (this.onMetric) {
-      this.onMetric(this.metrics);
-    }
+    this.onMetric?.(this.metrics);
   }
 
   private startFpsMonitoring(): void {
@@ -128,17 +129,17 @@ export class PerformanceMonitor {
   }
 
   // Performance optimization utilities
-  debounce<T extends (...args: any[]) => void>(func: T, wait: number): T {
+  debounce<T extends (...args: unknown[]) => void>(func: T, wait: number): T {
     let timeout: NodeJS.Timeout;
-    return ((...args: any[]) => {
+    return ((...args: unknown[]) => {
       clearTimeout(timeout);
       timeout = setTimeout(() => func.apply(this, args), wait);
     }) as T;
   }
 
-  throttle<T extends (...args: any[]) => void>(func: T, limit: number): T {
+  throttle<T extends (...args: unknown[]) => void>(func: T, limit: number): T {
     let inThrottle: boolean;
-    return ((...args: any[]) => {
+    return ((...args: unknown[]) => {
       if (!inThrottle) {
         func.apply(this, args);
         inThrottle = true;
@@ -147,9 +148,9 @@ export class PerformanceMonitor {
     }) as T;
   }
 
-  memoize<T extends (...args: any[]) => any>(func: T): T {
-    const cache = new Map();
-    return ((...args: any[]) => {
+  memoize<T extends (...args: unknown[]) => unknown>(func: T): T {
+    const cache = new Map<string, unknown>();
+    return ((...args: unknown[]) => {
       const key = JSON.stringify(args);
       if (cache.has(key)) {
         return cache.get(key);

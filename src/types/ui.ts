@@ -117,7 +117,7 @@ export interface DashboardWidget {
     height: number;
   };
   dataSource: string;
-  configuration: Record<string, any>;
+  configuration: Record<string, unknown>;
   refreshInterval?: number;
 }
 
@@ -126,13 +126,13 @@ export interface DashboardFilter {
   name: string;
   type: 'select' | 'multiselect' | 'date' | 'daterange' | 'text' | 'number';
   options?: FilterOption[];
-  value?: any;
+  value?: unknown;
   required?: boolean;
 }
 
 export interface FilterOption {
   label: string;
-  value: any;
+  value: unknown;
   icon?: string;
 }
 
@@ -165,12 +165,12 @@ export interface FieldValidation {
   pattern?: string;
   min?: number;
   max?: number;
-  custom?: (value: any) => string | null;
+  custom?: (value: unknown) => string | null;
 }
 
 export interface DataTable {
   columns: TableColumn[];
-  data: any[];
+  data: unknown[];
   pagination?: TablePagination;
   sorting?: TableSorting;
   filtering?: TableFiltering;
@@ -185,7 +185,7 @@ export interface TableColumn {
   width?: string;
   sortable?: boolean;
   filterable?: boolean;
-  render?: (value: any, row: any) => React.ReactNode;
+  render?: (value: unknown, row: unknown) => React.ReactNode;
   align?: 'left' | 'center' | 'right';
 }
 
@@ -205,7 +205,7 @@ export interface TableSorting {
 }
 
 export interface TableFiltering {
-  filters: Record<string, any>;
+  filters: Record<string, unknown>;
   searchText?: string;
   searchColumns?: string[];
 }

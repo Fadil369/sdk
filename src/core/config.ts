@@ -101,13 +101,13 @@ export class ConfigManager {
   /**
    * Get configuration value by path
    */
-  get<T = any>(path: string): T {
+  get<T = unknown>(path: string): T {
     const keys = path.split('.');
-    let value: any = this.config;
+    let value: unknown = this.config;
 
     for (const key of keys) {
-      if (value && typeof value === 'object' && key in value) {
-        value = value[key];
+      if (value && typeof value === 'object' && value !== null && key in value) {
+        value = (value as Record<string, unknown>)[key];
       } else {
         throw new Error(`Configuration key '${path}' not found`);
       }
@@ -120,24 +120,27 @@ export class ConfigManager {
    * Update configuration
    */
   update(newConfig: Partial<SDKConfig>): void {
-    this.config = this.mergeConfig(this.config, newConfig);
+    this.config = this.mergeConfig(
+      this.config as unknown as Record<string, unknown>,
+      newConfig as Record<string, unknown>
+    );
   }
 
   /**
    * Validate configuration
    */
-  async validate(): Promise<void> {
+  validate(): void {
     try {
-      const { error, value } = configSchema.validate(this.config, {
+      const result = configSchema.validate(this.config, {
         abortEarly: false,
         allowUnknown: false,
       });
 
-      if (error) {
-        throw new Error(`Configuration validation failed: ${error.message}`);
+      if (result.error) {
+        throw new Error(`Configuration validation failed: ${result.error.message}`);
       }
 
-      this.config = value;
+      this.config = result.value as SDKConfig;
 
       // Custom validation if provided
       if (this.validator && !this.validator(this.config)) {
@@ -218,23 +221,32 @@ export class ConfigManager {
     };
   }
 
-  private mergeConfig(base: any, override: any): any {
-    const result = { ...base };
+  private mergeConfig(base: Record<string, unknown>, override: Record<string, unknown>): SDKConfig {
+    const result = { ...base } as Record<string, unknown>;
 
     for (const key in override) {
       if (override[key] !== undefined) {
+        const overrideValue = override[key];
+        const baseValue = result[key];
+
         if (
-          typeof override[key] === 'object' &&
-          !Array.isArray(override[key]) &&
-          override[key] !== null
+          typeof overrideValue === 'object' &&
+          !Array.isArray(overrideValue) &&
+          overrideValue !== null &&
+          typeof baseValue === 'object' &&
+          !Array.isArray(baseValue) &&
+          baseValue !== null
         ) {
-          result[key] = this.mergeConfig(base[key] || {}, override[key]);
+          result[key] = this.mergeConfig(
+            baseValue as Record<string, unknown>,
+            overrideValue as Record<string, unknown>
+          );
         } else {
-          result[key] = override[key];
+          result[key] = overrideValue;
         }
       }
     }
 
-    return result;
+    return result as unknown as SDKConfig;
   }
 }
