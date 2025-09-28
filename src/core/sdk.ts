@@ -7,7 +7,7 @@ import { ConfigManager } from './config';
 import { Logger } from './logger';
 import { ApiClient } from './client';
 import { PerformanceMonitor } from './performance';
-import { FHIRClient } from '@/fhir';
+import { LegacyFHIRClient as FHIRClient } from '@/fhir';
 import { NPHIESClient } from '@/nphies';
 import { SecurityManager } from '@/security';
 import { AIAgentManager } from '@/ai';

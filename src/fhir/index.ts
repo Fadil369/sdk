@@ -1,35 +1,65 @@
 /**
- * FHIR client and utilities (placeholder)
+ * FHIR client and utilities - Phase 3 Implementation
  */
 
 import { ConfigManager } from '@/core/config';
 import { Logger } from '@/core/logger';
 import { ApiClient } from '@/core/client';
 
-export class FHIRClient {
+// Re-export the full FHIR client implementation
+export { FHIRClient } from './client';
+
+// Re-export validation utilities
+export { FHIRValidator, fhirValidator } from './validation';
+export type { ValidationResult, ValidationIssue } from './validation';
+
+// Re-export bundle operations
+export { 
+  FHIRBundleBuilder, 
+  FHIRBundleProcessor,
+  createTransactionBundle,
+  createBatchBundle,
+  createDocumentBundle,
+  createCollectionBundle
+} from './bundle';
+
+// Re-export Saudi Arabia extensions
+export { 
+  SaudiPatientBuilder,
+  SaudiExtensionHelper,
+  createSaudiPatient,
+  SAUDI_SYSTEMS,
+  SAUDI_REGIONS
+} from './saudi-extensions';
+export type { 
+  SaudiPatientProfile,
+  SaudiRegion,
+  ResidencyType
+} from './saudi-extensions';
+
+// Legacy FHIRClient class for backward compatibility
+// This will be removed once the main SDK is updated to use the new FHIRClient
+export class LegacyFHIRClient {
   constructor(
-    // @ts-expect-error - Will be used in future implementation
-    private config: ConfigManager, // Will be used in future implementation
+    // @ts-ignore - Used for future compatibility
+    private _config: ConfigManager,
     private logger: Logger,
-    // @ts-expect-error - Will be used in future implementation
-    private apiClient: ApiClient // Will be used in future implementation
+    // @ts-ignore - Used for future compatibility  
+    private _apiClient: ApiClient
   ) {}
 
   async initialize(): Promise<void> {
     this.logger.info('FHIR client initialized');
-    // Simulate async initialization work
     await new Promise(resolve => setTimeout(resolve, 1));
   }
 
   async healthCheck(): Promise<{ status: string; responseTime: number }> {
-    // Simulate async health check
     await new Promise(resolve => setTimeout(resolve, 1));
     return { status: 'up', responseTime: 100 };
   }
 
   async shutdown(): Promise<void> {
     this.logger.info('FHIR client shutdown');
-    // Simulate async shutdown work
     await new Promise(resolve => setTimeout(resolve, 1));
   }
 }
