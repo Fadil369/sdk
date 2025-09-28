@@ -276,6 +276,8 @@ export class MasterLincAgent extends BaseAgent {
         const step = readySteps[i];
         const result = results[i];
 
+        if (!step || !result) continue;
+
         if (result.status === 'fulfilled') {
           step.status = 'completed';
           step.output = result.value;
@@ -589,7 +591,7 @@ export class MasterLincAgent extends BaseAgent {
     switch (strategy) {
       case 'round_robin':
         // Simple round-robin selection
-        return availableAgents[Math.floor(Math.random() * availableAgents.length)];
+        return availableAgents[Math.floor(Math.random() * availableAgents.length)] || null;
       
       case 'least_loaded':
         // Select agent with lowest current load
@@ -608,7 +610,7 @@ export class MasterLincAgent extends BaseAgent {
         });
       
       default:
-        return availableAgents[0];
+        return availableAgents[0] || null;
     }
   }
 
@@ -634,7 +636,10 @@ export class MasterLincAgent extends BaseAgent {
    */
   private getAgentPerformance(agentId: string): { successRate: number; averageTime: number } {
     const allocation = this.resourceAllocations.get(agentId);
-    return allocation?.performance || { successRate: 0.9, averageTime: 1000 };
+    return allocation?.performance ? {
+      successRate: allocation.performance.successRate,
+      averageTime: allocation.performance.averageExecutionTime,
+    } : { successRate: 0.9, averageTime: 1000 };
   }
 
   /**

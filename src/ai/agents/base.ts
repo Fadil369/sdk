@@ -341,7 +341,7 @@ export abstract class BaseAgent {
     const stats = this.getStats();
     const tasks = Array.from(this.tasks.values());
     const lastActivity = tasks.length > 0 
-      ? tasks.sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0].createdAt
+      ? tasks.sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]?.createdAt
       : undefined;
 
     return {
