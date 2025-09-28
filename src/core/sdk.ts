@@ -11,6 +11,8 @@ import { LegacyFHIRClient as FHIRClient } from '@/fhir';
 import { NPHIESClient } from '@/nphies';
 import { SecurityManager } from '@/security';
 import { AIAgentManager } from '@/ai';
+import { AnalyticsManager } from './analytics';
+import { CacheManager } from './cache';
 
 export class BrainSAITHealthcareSDK {
   private config: ConfigManager;
@@ -21,6 +23,8 @@ export class BrainSAITHealthcareSDK {
   private nphiesClient: NPHIESClient;
   private securityManager: SecurityManager;
   private aiManager: AIAgentManager;
+  private analyticsManager: AnalyticsManager;
+  private cacheManager: CacheManager;
   private initialized = false;
 
   constructor(options: SDKInitOptions = {}) {
@@ -37,6 +41,8 @@ export class BrainSAITHealthcareSDK {
     this.nphiesClient = new NPHIESClient(this.config, this.logger, this.apiClient);
     this.securityManager = new SecurityManager(this.config, this.logger);
     this.aiManager = new AIAgentManager(this.config, this.logger);
+    this.analyticsManager = new AnalyticsManager(this.config.getAll(), this.logger);
+    this.cacheManager = new CacheManager(this.config.getAll(), this.logger);
 
     // Set error handler
     if (options.onError) {
@@ -93,9 +99,25 @@ export class BrainSAITHealthcareSDK {
   }
 
   /**
+   * Get FHIR client instance (alternative method)
+   */
+  getFHIRClient(): FHIRClient {
+    this.ensureInitialized();
+    return this.fhirClient;
+  }
+
+  /**
    * Get NPHIES client instance
    */
   get nphies(): NPHIESClient {
+    this.ensureInitialized();
+    return this.nphiesClient;
+  }
+
+  /**
+   * Get NPHIES client instance (alternative method)
+   */
+  getNPHIESClient(): NPHIESClient {
     this.ensureInitialized();
     return this.nphiesClient;
   }
@@ -109,11 +131,59 @@ export class BrainSAITHealthcareSDK {
   }
 
   /**
+   * Get security manager instance (alternative method)
+   */
+  getSecurityManager(): SecurityManager {
+    this.ensureInitialized();
+    return this.securityManager;
+  }
+
+  /**
    * Get AI agent manager instance
    */
   get ai(): AIAgentManager {
     this.ensureInitialized();
     return this.aiManager;
+  }
+
+  /**
+   * Get AI agent manager instance (alternative method)
+   */
+  getAIAgentManager(): AIAgentManager {
+    this.ensureInitialized();
+    return this.aiManager;
+  }
+
+  /**
+   * Get analytics manager instance
+   */
+  get analytics(): AnalyticsManager {
+    this.ensureInitialized();
+    return this.analyticsManager;
+  }
+
+  /**
+   * Get analytics manager instance (alternative method)
+   */
+  getAnalyticsManager(): AnalyticsManager {
+    this.ensureInitialized();
+    return this.analyticsManager;
+  }
+
+  /**
+   * Get cache manager instance
+   */
+  get cache(): CacheManager {
+    this.ensureInitialized();
+    return this.cacheManager;
+  }
+
+  /**
+   * Get cache manager instance (alternative method)
+   */
+  getCacheManager(): CacheManager {
+    this.ensureInitialized();
+    return this.cacheManager;
   }
 
   /**
@@ -168,6 +238,8 @@ export class BrainSAITHealthcareSDK {
           ai: this.config.get<{ enabled: boolean }>('ai')?.enabled
             ? await this.aiManager.healthCheck()
             : { status: 'disabled' },
+          analytics: this.analyticsManager.healthCheck(),
+          cache: this.cacheManager.healthCheck(),
         },
       };
     } catch (error) {

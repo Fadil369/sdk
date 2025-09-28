@@ -60,18 +60,20 @@ export interface SDKConfig {
   };
 
   /** AI configuration */
-  ai: {
+  ai?: {
     enabled: boolean;
-    providers: {
-      nlp?: {
-        endpoint: string;
-        model: string;
-      };
-      analytics?: {
-        endpoint: string;
-        model: string;
-      };
-    };
+    provider: 'openai' | 'custom';
+    apiKey?: string;
+    models?: Record<string, string>;
+  };
+
+  /** Analytics configuration */
+  analytics?: {
+    enabled: boolean;
+  };
+  caching?: {
+    enabled: boolean;
+    defaultTTL: number;
   };
 
   /** UI configuration */

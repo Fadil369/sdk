@@ -2,8 +2,10 @@
  * Core SDK modules
  */
 
-export * from './sdk';
+export * from './client';
 export * from './config';
 export * from './logger';
-export * from './client';
 export * from './performance';
+export * from './sdk';
+export * from './analytics';
+export * from './cache';
