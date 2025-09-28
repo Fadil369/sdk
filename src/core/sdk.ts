@@ -31,7 +31,7 @@ export class BrainSAITHealthcareSDK {
       this.config.get('ui.performance'),
       options.onPerformanceMetric
     );
-    
+
     // Initialize specialized clients
     this.fhirClient = new FHIRClient(this.config, this.logger, this.apiClient);
     this.nphiesClient = new NPHIESClient(this.config, this.logger, this.apiClient);
@@ -54,20 +54,20 @@ export class BrainSAITHealthcareSDK {
 
     try {
       this.logger.info('Initializing BrainSAIT Healthcare SDK...');
-      
+
       // Validate configuration
       await this.config.validate();
-      
+
       // Initialize performance monitoring
       this.performanceMonitor.start();
-      
+
       // Initialize security manager
       await this.securityManager.initialize();
-      
+
       // Initialize clients
       await this.fhirClient.initialize();
       await this.nphiesClient.initialize();
-      
+
       // Initialize AI agents if enabled
       if (this.config.get('ai.enabled')) {
         await this.aiManager.initialize();
@@ -75,7 +75,6 @@ export class BrainSAITHealthcareSDK {
 
       this.initialized = true;
       this.logger.info('SDK initialized successfully');
-      
     } catch (error) {
       this.logger.error('Failed to initialize SDK', error);
       throw error;
@@ -134,7 +133,7 @@ export class BrainSAITHealthcareSDK {
    */
   async healthCheck(): Promise<any> {
     const startTime = Date.now();
-    
+
     try {
       const [fhirHealth, nphiesHealth] = await Promise.allSettled([
         this.fhirClient.healthCheck(),
@@ -147,10 +146,18 @@ export class BrainSAITHealthcareSDK {
         version: '1.0.0',
         responseTime: Date.now() - startTime,
         services: {
-          fhir: fhirHealth.status === 'fulfilled' ? fhirHealth.value : { status: 'down', error: fhirHealth.reason },
-          nphies: nphiesHealth.status === 'fulfilled' ? nphiesHealth.value : { status: 'down', error: nphiesHealth.reason },
+          fhir:
+            fhirHealth.status === 'fulfilled'
+              ? fhirHealth.value
+              : { status: 'down', error: fhirHealth.reason },
+          nphies:
+            nphiesHealth.status === 'fulfilled'
+              ? nphiesHealth.value
+              : { status: 'down', error: nphiesHealth.reason },
           security: await this.securityManager.healthCheck(),
-          ai: this.config.get('ai.enabled') ? await this.aiManager.healthCheck() : { status: 'disabled' },
+          ai: this.config.get('ai.enabled')
+            ? await this.aiManager.healthCheck()
+            : { status: 'disabled' },
         },
       };
     } catch (error) {
@@ -174,14 +181,14 @@ export class BrainSAITHealthcareSDK {
     }
 
     this.logger.info('Shutting down SDK...');
-    
+
     try {
       await this.performanceMonitor.stop();
       await this.aiManager.shutdown();
       await this.securityManager.shutdown();
       await this.nphiesClient.shutdown();
       await this.fhirClient.shutdown();
-      
+
       this.initialized = false;
       this.logger.info('SDK shutdown completed');
     } catch (error) {

@@ -14,23 +14,27 @@ export class Logger {
   private logger: pino.Logger;
 
   constructor(config: LoggingConfig) {
-    const transport = config.format === 'text' 
-      ? pino.transport({
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-            translateTime: 'SYS:standard',
-          }
-        })
-      : undefined;
+    const transport =
+      config.format === 'text'
+        ? pino.transport({
+            target: 'pino-pretty',
+            options: {
+              colorize: true,
+              translateTime: 'SYS:standard',
+            },
+          })
+        : undefined;
 
-    this.logger = pino({
-      level: config.level,
-      timestamp: pino.stdTimeFunctions.isoTime,
-      formatters: {
-        level: (label) => ({ level: label }),
+    this.logger = pino(
+      {
+        level: config.level,
+        timestamp: pino.stdTimeFunctions.isoTime,
+        formatters: {
+          level: label => ({ level: label }),
+        },
       },
-    }, transport);
+      transport
+    );
   }
 
   debug(message: string, ...args: any[]): void {
