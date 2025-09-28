@@ -178,12 +178,19 @@ export class BrainSAITHealthcareSDK {
       return {
         status: 'unhealthy',
         timestamp: new Date().toISOString(),
-        version: '1.0.0',
+        version: '1.2.0',
         responseTime: Date.now() - startTime,
         services: {},
         error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
+  }
+
+  /**
+   * Alias for health check (for compatibility)
+   */
+  async getHealthStatus() {
+    return this.healthCheck();
   }
 
   /**

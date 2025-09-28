@@ -1,0 +1,92 @@
+# Cloudflare Workers configuration for BrainSAIT Healthcare SDK
+name = "brainsait-healthcare-sdk"
+main = "./dist/worker.js"
+compatibility_date = "2023-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Environment settings
+[env.production]
+name = "brainsait-healthcare-sdk-prod"
+account_id = "${CLOUDFLARE_ACCOUNT_ID}"
+workers_dev = false
+route = "sdk.brainsait.com/*"
+
+[env.staging]
+name = "brainsait-healthcare-sdk-staging" 
+account_id = "${CLOUDFLARE_ACCOUNT_ID}"
+workers_dev = false
+route = "sdk-staging.brainsait.com/*"
+
+[env.development]
+name = "brainsait-healthcare-sdk-dev"
+account_id = "${CLOUDFLARE_ACCOUNT_ID}"
+workers_dev = true
+
+# Build settings
+[build]
+command = "npm run build:worker"
+cwd = "."
+watch_dir = ["src", "assets"]
+
+# Assets configuration
+[assets]
+directory = "./assets"
+serve_single_page_app = false
+
+# KV namespaces for caching and config
+[[kv_namespaces]]
+binding = "SDK_CACHE"
+id = "${SDK_CACHE_KV_ID}"
+preview_id = "${SDK_CACHE_KV_PREVIEW_ID}"
+
+[[kv_namespaces]]
+binding = "SDK_CONFIG"
+id = "${SDK_CONFIG_KV_ID}"
+preview_id = "${SDK_CONFIG_KV_PREVIEW_ID}"
+
+# R2 buckets for large assets
+[[r2_buckets]]
+binding = "SDK_ASSETS"
+bucket_name = "brainsait-sdk-assets"
+preview_bucket_name = "brainsait-sdk-assets-preview"
+
+# Durable Objects for real-time features
+[[durable_objects.bindings]]
+name = "FHIR_SESSION"
+class_name = "FhirSessionDO"
+script_name = "brainsait-healthcare-sdk"
+
+# Environment variables
+[vars]
+ENVIRONMENT = "production"
+SDK_VERSION = "1.2.0"
+FHIR_BASE_URL = "https://fhir.nphies.sa"
+NPHIES_BASE_URL = "https://nphies.sa"
+LOG_LEVEL = "info"
+
+# Limits and optimization
+limits = { cpu_ms = 50000 }
+placement = { mode = "smart" }
+
+# Triggers
+[[triggers]]
+crons = ["0 */4 * * *"]  # Cache refresh every 4 hours
+
+# Analytics and observability
+observability = { enabled = true }
+logpush = true
+
+# Security headers
+[vars.SECURITY_HEADERS]
+X_FRAME_OPTIONS = "DENY"
+X_CONTENT_TYPE_OPTIONS = "nosniff"
+X_XSS_PROTECTION = "1; mode=block"
+STRICT_TRANSPORT_SECURITY = "max-age=31536000; includeSubDomains"
+CONTENT_SECURITY_POLICY = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://fhir.nphies.sa https://nphies.sa"
+
+# CORS settings
+[vars.CORS]
+ALLOWED_ORIGINS = "https://brainsait.com,https://app.brainsait.com,https://dashboard.brainsait.com"
+ALLOWED_METHODS = "GET,POST,PUT,DELETE,OPTIONS"
+ALLOWED_HEADERS = "Content-Type,Authorization,X-Requested-With"
+MAX_AGE = "86400"

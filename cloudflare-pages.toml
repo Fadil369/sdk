@@ -1,0 +1,77 @@
+# Cloudflare Pages configuration for Healthcare SDK Documentation
+[build]
+command = "npm run build:docs"
+publish = "docs/.vitepress/dist"
+
+[build.environment]
+NODE_VERSION = "18"
+NPM_VERSION = "8"
+
+# Environment variables for different deployments
+[env.production.vars]
+ENVIRONMENT = "production"
+BASE_URL = "https://sdk-docs.brainsait.com"
+API_BASE_URL = "https://api.brainsait.com"
+FHIR_BASE_URL = "https://fhir.nphies.sa"
+ANALYTICS_ID = "${ANALYTICS_ID}"
+
+[env.preview.vars]
+ENVIRONMENT = "preview"
+BASE_URL = "https://sdk-docs-preview.brainsait.com"
+API_BASE_URL = "https://api-staging.brainsait.com"
+FHIR_BASE_URL = "https://fhir-staging.nphies.sa"
+
+[env.development.vars]
+ENVIRONMENT = "development"
+BASE_URL = "http://localhost:5173"
+API_BASE_URL = "http://localhost:3000"
+FHIR_BASE_URL = "https://fhir-sandbox.nphies.sa"
+
+# Redirects and rewrites
+[[redirects]]
+from = "/docs/*"
+to = "/:splat"
+status = 301
+
+[[redirects]]
+from = "/api/*"
+to = "https://api.brainsait.com/sdk/:splat"
+status = 200
+
+# Headers for security and performance
+[[headers]]
+for = "/*"
+
+[headers.values]
+X-Frame-Options = "DENY"
+X-Content-Type-Options = "nosniff"
+X-XSS-Protection = "1; mode=block"
+Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.brainsait.com"
+Referrer-Policy = "strict-origin-when-cross-origin"
+Permissions-Policy = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+
+# Cache control for static assets
+[[headers]]
+for = "/assets/*"
+
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+for = "*.css"
+
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+for = "*.js"
+
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+# API routes for SPA
+[[redirects]]
+from = "/api/v1/*"
+to = "https://workers.brainsait.com/sdk/:splat"
+status = 200
