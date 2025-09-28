@@ -107,8 +107,10 @@ export interface PermissionCondition {
 }
 
 export interface Restriction {
-  type: 'time' | 'location' | 'network' | 'device';
-  rules: RestrictionRule[];
+  type: 'time' | 'location' | 'network' | 'device' | 'data_access' | 'field_access' | 'access_mode';
+  rule: string;
+  description: string;
+  rules?: RestrictionRule[];
 }
 
 export interface RestrictionRule {
