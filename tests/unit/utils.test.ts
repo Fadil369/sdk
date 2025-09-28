@@ -53,15 +53,15 @@ describe('Encryption Utils', () => {
 
 describe('Internationalization Utils', () => {
   it('should translate keys correctly', () => {
-    expect(t('welcome', 'en')).toBe('Welcome');
-    expect(t('welcome', 'ar')).toBe('مرحباً');
-    expect(t('patient', 'en')).toBe('Patient');
-    expect(t('patient', 'ar')).toBe('مريض');
+    expect(t('welcome', undefined, 'en')).toBe('Welcome');
+    expect(t('welcome', undefined, 'ar')).toBe('مرحباً');
+    expect(t('patient', undefined, 'en')).toBe('Patient');
+    expect(t('patient', undefined, 'ar')).toBe('مريض');
   });
 
   it('should return key for unknown translations', () => {
-    expect(t('unknown_key', 'en')).toBe('unknown_key');
-    expect(t('unknown_key', 'ar')).toBe('unknown_key');
+    expect(t('unknown_key', undefined, 'en')).toBe('unknown_key');
+    expect(t('unknown_key', undefined, 'ar')).toBe('unknown_key');
   });
 
   it('should default to Arabic', () => {

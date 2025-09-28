@@ -1,8 +1,9 @@
 /**
- * Configuration management for the SDK
+ * Enhanced configuration management for the SDK
  */
 
 import { SDKConfig, SDKInitOptions } from '@/types/config';
+import { ConfigurationError } from './errors';
 import Joi from 'joi';
 
 const configSchema = Joi.object({
@@ -86,6 +87,9 @@ const configSchema = Joi.object({
 export class ConfigManager {
   private config: SDKConfig;
   private validator: ((config: SDKConfig) => boolean) | undefined;
+  private configHistory: SDKConfig[] = [];
+  private validationHooks: ((config: SDKConfig) => Promise<void>)[] = [];
+  private changeListeners: ((path: string, newValue: any, oldValue: any) => void)[] = [];
 
   constructor(options: SDKInitOptions = {}) {
     this.validator = options.validator;
@@ -107,7 +111,7 @@ export class ConfigManager {
       if (value && typeof value === 'object' && key in value) {
         value = value[key];
       } else {
-        throw new Error(`Configuration key '${path}' not found`);
+        throw new ConfigurationError(`Configuration key '${path}' not found`, 'CONFIG_KEY_NOT_FOUND');
       }
     }
     
@@ -115,35 +119,177 @@ export class ConfigManager {
   }
 
   /**
-   * Update configuration
+   * Set configuration value by path
    */
-  update(newConfig: Partial<SDKConfig>): void {
-    this.config = this.mergeConfig(this.config, newConfig);
+  set(path: string, value: any): void {
+    const keys = path.split('.');
+    const lastKey = keys.pop()!;
+    let current: any = this.config;
+    
+    // Navigate to parent object
+    for (const key of keys) {
+      if (!current[key] || typeof current[key] !== 'object') {
+        current[key] = {};
+      }
+      current = current[key];
+    }
+    
+    const oldValue = current[lastKey];
+    current[lastKey] = value;
+    
+    // Notify listeners
+    this.notifyChangeListeners(path, value, oldValue);
   }
 
   /**
-   * Validate configuration
+   * Update configuration with advanced merging
+   */
+  update(newConfig: Partial<SDKConfig>): void {
+    // Store current config in history
+    this.configHistory.push(JSON.parse(JSON.stringify(this.config)));
+    
+    // Keep only last 10 configs in history
+    if (this.configHistory.length > 10) {
+      this.configHistory.shift();
+    }
+
+    const oldConfig = JSON.parse(JSON.stringify(this.config));
+    this.config = this.mergeConfig(this.config, newConfig);
+    
+    // Detect changes and notify listeners
+    this.detectAndNotifyChanges(oldConfig, this.config);
+  }
+
+  /**
+   * Enhanced validation with detailed error reporting
    */
   async validate(): Promise<void> {
     try {
+      // Schema validation
       const { error, value } = configSchema.validate(this.config, {
         abortEarly: false,
         allowUnknown: false,
       });
 
       if (error) {
-        throw new Error(`Configuration validation failed: ${error.message}`);
+        const validationErrors = error.details.map(detail => ({
+          path: detail.path.join('.'),
+          message: detail.message,
+          value: detail.context?.value
+        }));
+
+        throw new ConfigurationError(
+          `Configuration validation failed: ${error.message}`,
+          'CONFIG_VALIDATION_FAILED',
+          { 
+            component: 'ConfigManager', 
+            metadata: { validationErrors }
+          }
+        );
       }
 
       this.config = value;
 
+      // Run validation hooks
+      for (const hook of this.validationHooks) {
+        await hook(this.config);
+      }
+
       // Custom validation if provided
       if (this.validator && !this.validator(this.config)) {
-        throw new Error('Custom configuration validation failed');
+        throw new ConfigurationError(
+          'Custom configuration validation failed',
+          'CUSTOM_VALIDATION_FAILED',
+          { component: 'ConfigManager' }
+        );
       }
+
     } catch (error) {
-      throw new Error(`Configuration validation error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      if (error instanceof ConfigurationError) {
+        throw error;
+      }
+      throw new ConfigurationError(
+        `Configuration validation error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        'CONFIG_VALIDATION_ERROR',
+        { component: 'ConfigManager' },
+        error instanceof Error ? error : undefined
+      );
     }
+  }
+
+  /**
+   * Add validation hook
+   */
+  addValidationHook(hook: (config: SDKConfig) => Promise<void>): void {
+    this.validationHooks.push(hook);
+  }
+
+  /**
+   * Add change listener
+   */
+  addChangeListener(listener: (path: string, newValue: any, oldValue: any) => void): void {
+    this.changeListeners.push(listener);
+  }
+
+  /**
+   * Get configuration backup (last saved state)
+   */
+  getBackup(index: number = 0): SDKConfig | undefined {
+    const historyIndex = this.configHistory.length - 1 - index;
+    return historyIndex >= 0 ? this.configHistory[historyIndex] : undefined;
+  }
+
+  /**
+   * Restore configuration from backup
+   */
+  restoreFromBackup(index: number = 0): boolean {
+    const backup = this.getBackup(index);
+    if (backup) {
+      this.config = JSON.parse(JSON.stringify(backup));
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Get configuration differences between current and backup
+   */
+  getConfigDiff(backupIndex: number = 0): Record<string, { old: any; new: any }> {
+    const backup = this.getBackup(backupIndex);
+    if (!backup) return {};
+
+    return this.deepDiff(backup, this.config);
+  }
+
+  /**
+   * Validate specific configuration section
+   */
+  async validateSection(sectionPath: string): Promise<void> {
+    const sectionValue = this.get(sectionPath);
+    const sectionSchema = this.getSectionSchema(sectionPath);
+    
+    if (sectionSchema) {
+      const { error } = sectionSchema.validate(sectionValue);
+      if (error) {
+        throw new ConfigurationError(
+          `Section '${sectionPath}' validation failed: ${error.message}`,
+          'SECTION_VALIDATION_FAILED',
+          { 
+            component: 'ConfigManager', 
+            metadata: { section: sectionPath }
+          }
+        );
+      }
+    }
+  }
+
+  /**
+   * Hot reload configuration from environment or external source
+   */
+  async hotReload(_source?: 'env' | 'file' | 'external'): Promise<void> {
+    // This is a placeholder for hot reloading functionality
+    // In a real implementation, this would load from the specified source
+    throw new Error('Hot reload not implemented yet');
   }
 
   /**
@@ -151,6 +297,97 @@ export class ConfigManager {
    */
   getAll(): SDKConfig {
     return { ...this.config };
+  }
+
+  /**
+   * Deep merge two configuration objects
+   */
+  private mergeConfig(target: any, source: any): any {
+    const result = { ...target };
+    
+    for (const key in source) {
+      if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+        result[key] = this.mergeConfig(target[key] || {}, source[key]);
+      } else {
+        result[key] = source[key];
+      }
+    }
+    
+    return result;
+  }
+
+  /**
+   * Notify change listeners
+   */
+  private notifyChangeListeners(path: string, newValue: any, oldValue: any): void {
+    this.changeListeners.forEach(listener => {
+      try {
+        listener(path, newValue, oldValue);
+      } catch (error) {
+        console.error('Error in config change listener:', error);
+      }
+    });
+  }
+
+  /**
+   * Detect changes between old and new config
+   */
+  private detectAndNotifyChanges(oldConfig: any, newConfig: any, path: string = ''): void {
+    for (const key in newConfig) {
+      const currentPath = path ? `${path}.${key}` : key;
+      const oldValue = oldConfig[key];
+      const newValue = newConfig[key];
+
+      if (typeof newValue === 'object' && newValue !== null && !Array.isArray(newValue)) {
+        this.detectAndNotifyChanges(oldValue || {}, newValue, currentPath);
+      } else if (oldValue !== newValue) {
+        this.notifyChangeListeners(currentPath, newValue, oldValue);
+      }
+    }
+  }
+
+  /**
+   * Deep diff between two objects
+   */
+  private deepDiff(obj1: any, obj2: any, path: string = ''): Record<string, { old: any; new: any }> {
+    const diff: Record<string, { old: any; new: any }> = {};
+
+    const allKeys = new Set([...Object.keys(obj1 || {}), ...Object.keys(obj2 || {})]);
+
+    for (const key of allKeys) {
+      const currentPath = path ? `${path}.${key}` : key;
+      const oldValue = obj1?.[key];
+      const newValue = obj2?.[key];
+
+      if (typeof oldValue === 'object' && typeof newValue === 'object' && 
+          oldValue !== null && newValue !== null && 
+          !Array.isArray(oldValue) && !Array.isArray(newValue)) {
+        const nestedDiff = this.deepDiff(oldValue, newValue, currentPath);
+        Object.assign(diff, nestedDiff);
+      } else if (oldValue !== newValue) {
+        diff[currentPath] = { old: oldValue, new: newValue };
+      }
+    }
+
+    return diff;
+  }
+
+  /**
+   * Get schema for specific section
+   */
+  private getSectionSchema(sectionPath: string): Joi.Schema | undefined {
+    const sectionSchemas: Record<string, Joi.Schema> = {
+      'api': configSchema.extract('api'),
+      'fhir': configSchema.extract('fhir'),
+      'nphies': configSchema.extract('nphies'),
+      'security': configSchema.extract('security'),
+      'localization': configSchema.extract('localization'),
+      'ai': configSchema.extract('ai'),
+      'ui': configSchema.extract('ui'),
+      'logging': configSchema.extract('logging')
+    };
+
+    return sectionSchemas[sectionPath];
   }
 
   private createDefaultConfig(): SDKConfig {
@@ -212,21 +449,5 @@ export class ConfigManager {
         outputs: ['console'],
       },
     };
-  }
-
-  private mergeConfig(base: any, override: any): any {
-    const result = { ...base };
-    
-    for (const key in override) {
-      if (override[key] !== undefined) {
-        if (typeof override[key] === 'object' && !Array.isArray(override[key]) && override[key] !== null) {
-          result[key] = this.mergeConfig(base[key] || {}, override[key]);
-        } else {
-          result[key] = override[key];
-        }
-      }
-    }
-    
-    return result;
   }
 }
