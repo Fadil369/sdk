@@ -5,7 +5,7 @@
 export interface SDKConfig {
   /** Environment configuration */
   environment: 'development' | 'staging' | 'production';
-  
+
   /** API configuration */
   api: {
     baseUrl: string;
@@ -107,10 +107,10 @@ export interface PerformanceMetrics {
 export interface SDKInitOptions extends Partial<SDKConfig> {
   /** Custom configuration validator */
   validator?: (config: SDKConfig) => boolean;
-  
+
   /** Performance monitoring callback */
   onPerformanceMetric?: (metric: PerformanceMetrics) => void;
-  
+
   /** Error handler */
   onError?: (error: Error) => void;
 }

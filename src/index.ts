@@ -1,9 +1,9 @@
 /**
  * BrainSAIT Healthcare SDK
- * 
+ *
  * A comprehensive SDK for NPHIES/FHIR integration with Arabic/HIPAA support,
  * AI agents, and glass morphism UI components for Saudi healthcare systems.
- * 
+ *
  * @author BrainSAIT
  * @version 1.0.0
  */

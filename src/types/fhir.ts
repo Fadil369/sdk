@@ -14,7 +14,16 @@ export interface FHIRResource {
 
 export interface FHIRBundle extends FHIRResource {
   resourceType: 'Bundle';
-  type: 'document' | 'message' | 'transaction' | 'transaction-response' | 'batch' | 'batch-response' | 'history' | 'searchset' | 'collection';
+  type:
+    | 'document'
+    | 'message'
+    | 'transaction'
+    | 'transaction-response'
+    | 'batch'
+    | 'batch-response'
+    | 'history'
+    | 'searchset'
+    | 'collection';
   entry?: FHIRBundleEntry[];
   total?: number;
 }

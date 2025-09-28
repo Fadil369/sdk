@@ -55,9 +55,9 @@ export class PerformanceMonitor {
   recordApiResponse(responseTime: number): void {
     // Use exponential moving average for smoothing
     const alpha = 0.1;
-    this.metrics.apiResponseTime = 
-      this.metrics.apiResponseTime === 0 
-        ? responseTime 
+    this.metrics.apiResponseTime =
+      this.metrics.apiResponseTime === 0
+        ? responseTime
         : alpha * responseTime + (1 - alpha) * this.metrics.apiResponseTime;
 
     // Alert if response time exceeds target (2.5s)
@@ -101,27 +101,29 @@ export class PerformanceMonitor {
       } else {
         this.frameCount++;
         const elapsed = timestamp - this.lastFrameTime;
-        
-        if (elapsed >= 1000) { // Calculate FPS every second
+
+        if (elapsed >= 1000) {
+          // Calculate FPS every second
           const fps = Math.round((this.frameCount * 1000) / elapsed);
           this.metrics.uiFrameRate = fps;
-          
+
           // Alert if FPS drops below target
-          if (fps < this.config.targetFps * 0.8) { // 80% of target
+          if (fps < this.config.targetFps * 0.8) {
+            // 80% of target
             this.onMetric?.({
               ...this.metrics,
               uiFrameRate: fps,
             });
           }
-          
+
           this.lastFrameTime = timestamp;
           this.frameCount = 0;
         }
       }
-      
+
       requestAnimationFrame(measureFps);
     };
-    
+
     requestAnimationFrame(measureFps);
   }
 
@@ -140,7 +142,7 @@ export class PerformanceMonitor {
       if (!inThrottle) {
         func.apply(this, args);
         inThrottle = true;
-        setTimeout(() => inThrottle = false, limit);
+        setTimeout(() => (inThrottle = false), limit);
       }
     }) as T;
   }
@@ -159,8 +161,8 @@ export class PerformanceMonitor {
   }
 
   createVirtualList<T>(
-    items: T[], 
-    containerHeight: number, 
+    items: T[],
+    containerHeight: number,
     itemHeight: number
   ): { visibleItems: T[]; startIndex: number; endIndex: number } {
     if (!this.config.virtualScrolling) {
@@ -169,10 +171,10 @@ export class PerformanceMonitor {
 
     const visibleCount = Math.ceil(containerHeight / itemHeight);
     const buffer = Math.ceil(visibleCount / 2); // Add buffer for smooth scrolling
-    
+
     const startIndex = Math.max(0, Math.floor(window.scrollY / itemHeight) - buffer);
     const endIndex = Math.min(items.length - 1, startIndex + visibleCount + buffer * 2);
-    
+
     return {
       visibleItems: items.slice(startIndex, endIndex + 1),
       startIndex,

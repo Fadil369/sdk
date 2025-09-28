@@ -20,7 +20,11 @@ export interface NPHIESAuthToken {
 
 export interface NPHIESSubmissionRequest {
   submissionId: string;
-  resourceType: 'Claim' | 'ClaimResponse' | 'CoverageEligibilityRequest' | 'CoverageEligibilityResponse';
+  resourceType:
+    | 'Claim'
+    | 'ClaimResponse'
+    | 'CoverageEligibilityRequest'
+    | 'CoverageEligibilityResponse';
   data: any;
   priority?: 'routine' | 'urgent' | 'asap' | 'stat';
 }
@@ -54,10 +58,12 @@ export interface NPHIESClaim {
   id?: string;
   status: 'active' | 'cancelled' | 'draft' | 'entered-in-error';
   type: {
-    coding: [{
-      system: 'http://terminology.hl7.org/CodeSystem/claim-type';
-      code: 'institutional' | 'oral' | 'pharmacy' | 'professional' | 'vision';
-    }];
+    coding: [
+      {
+        system: 'http://terminology.hl7.org/CodeSystem/claim-type';
+        code: 'institutional' | 'oral' | 'pharmacy' | 'professional' | 'vision';
+      },
+    ];
   };
   patient: {
     reference: string;
@@ -67,10 +73,12 @@ export interface NPHIESClaim {
     reference: string;
   };
   priority: {
-    coding: [{
-      system: 'http://terminology.hl7.org/CodeSystem/processpriority';
-      code: 'normal' | 'stat';
-    }];
+    coding: [
+      {
+        system: 'http://terminology.hl7.org/CodeSystem/processpriority';
+        code: 'normal' | 'stat';
+      },
+    ];
   };
   item?: NPHIESClaimItem[];
   total?: {
@@ -82,11 +90,13 @@ export interface NPHIESClaim {
 export interface NPHIESClaimItem {
   sequence: number;
   productOrService: {
-    coding: [{
-      system: string;
-      code: string;
-      display?: string;
-    }];
+    coding: [
+      {
+        system: string;
+        code: string;
+        display?: string;
+      },
+    ];
   };
   quantity?: {
     value: number;
@@ -106,10 +116,12 @@ export interface NPHIESCoverageEligibilityRequest {
   id?: string;
   status: 'active' | 'cancelled' | 'draft' | 'entered-in-error';
   priority?: {
-    coding: [{
-      system: 'http://terminology.hl7.org/CodeSystem/processpriority';
-      code: 'normal' | 'stat';
-    }];
+    coding: [
+      {
+        system: 'http://terminology.hl7.org/CodeSystem/processpriority';
+        code: 'normal' | 'stat';
+      },
+    ];
   };
   purpose: ('auth-requirements' | 'benefits' | 'discovery' | 'validation')[];
   patient: {
@@ -128,11 +140,13 @@ export interface NPHIESCoverageEligibilityRequest {
 export interface NPHIESEligibilityItem {
   sequence: number;
   productOrService: {
-    coding: [{
-      system: string;
-      code: string;
-      display?: string;
-    }];
+    coding: [
+      {
+        system: string;
+        code: string;
+        display?: string;
+      },
+    ];
   };
   quantity?: {
     value: number;

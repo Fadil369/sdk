@@ -2,7 +2,12 @@
  * HTTP API client with performance optimizations
  */
 
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import axios, {
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from 'axios';
 import { ConfigManager } from './config';
 import { Logger } from './logger';
 import { ApiResponse } from '@/types/common';
@@ -15,15 +20,15 @@ export class ApiClient {
 
   constructor(config: ConfigManager, logger: Logger) {
     this.logger = logger.child({ component: 'ApiClient' });
-    
+
     const apiConfig = config.get('api');
-    
+
     this.client = axios.create({
       baseURL: apiConfig.baseUrl,
       timeout: apiConfig.timeout,
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'User-Agent': 'BrainSAIT-Healthcare-SDK/1.0.0',
       },
     });
@@ -52,9 +57,9 @@ export class ApiClient {
   }
 
   private async request<T>(
-    method: string, 
-    url: string, 
-    data?: any, 
+    method: string,
+    url: string,
+    data?: any,
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
     const startTime = Date.now();
@@ -75,7 +80,7 @@ export class ApiClient {
       });
 
       const responseTime = Date.now() - startTime;
-      
+
       this.logger.info(`${method} ${url} - ${response.status}`, {
         requestId,
         responseTime,
@@ -91,10 +96,9 @@ export class ApiClient {
           responseTime,
         },
       };
-
     } catch (error) {
       const responseTime = Date.now() - startTime;
-      
+
       if (axios.isAxiosError(error)) {
         this.logger.error(`${method} ${url} failed`, error, {
           requestId,
@@ -114,8 +118,11 @@ export class ApiClient {
         };
       }
 
-      this.logger.error(`${method} ${url} failed with unknown error`, error, { requestId, responseTime });
-      
+      this.logger.error(`${method} ${url} failed with unknown error`, error, {
+        requestId,
+        responseTime,
+      });
+
       return {
         success: false,
         error: 'An unexpected error occurred',
@@ -143,7 +150,7 @@ export class ApiClient {
 
         return config;
       },
-      (error) => {
+      error => {
         this.logger.error('Request interceptor error', error);
         return Promise.reject(error);
       }
@@ -153,7 +160,7 @@ export class ApiClient {
     this.client.interceptors.response.use(
       (response: AxiosResponse) => {
         const responseTime = Date.now() - ((response.config as any).metadata?.startTime || 0);
-        
+
         // Log slow responses (>2.5s target)
         if (responseTime > 2500) {
           this.logger.warn('Slow API response detected', {
@@ -165,10 +172,10 @@ export class ApiClient {
 
         return response;
       },
-      (error) => {
+      error => {
         if (axios.isAxiosError(error) && error.config) {
           const responseTime = Date.now() - ((error.config as any).metadata?.startTime || 0);
-          
+
           this.logger.error('API request failed', {
             url: error.config.url,
             method: error.config.method,

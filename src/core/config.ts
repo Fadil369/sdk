@@ -79,7 +79,9 @@ const configSchema = Joi.object({
   logging: Joi.object({
     level: Joi.string().valid('debug', 'info', 'warn', 'error').default('info'),
     format: Joi.string().valid('json', 'text').default('json'),
-    outputs: Joi.array().items(Joi.string().valid('console', 'file', 'remote')).default(['console']),
+    outputs: Joi.array()
+      .items(Joi.string().valid('console', 'file', 'remote'))
+      .default(['console']),
   }).required(),
 });
 
@@ -90,7 +92,7 @@ export class ConfigManager {
   constructor(options: SDKInitOptions = {}) {
     this.validator = options.validator;
     this.config = this.createDefaultConfig();
-    
+
     if (options) {
       this.update(options);
     }
@@ -102,7 +104,7 @@ export class ConfigManager {
   get<T = any>(path: string): T {
     const keys = path.split('.');
     let value: any = this.config;
-    
+
     for (const key of keys) {
       if (value && typeof value === 'object' && key in value) {
         value = value[key];
@@ -110,7 +112,7 @@ export class ConfigManager {
         throw new Error(`Configuration key '${path}' not found`);
       }
     }
-    
+
     return value as T;
   }
 
@@ -142,7 +144,9 @@ export class ConfigManager {
         throw new Error('Custom configuration validation failed');
       }
     } catch (error) {
-      throw new Error(`Configuration validation error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Configuration validation error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -216,17 +220,21 @@ export class ConfigManager {
 
   private mergeConfig(base: any, override: any): any {
     const result = { ...base };
-    
+
     for (const key in override) {
       if (override[key] !== undefined) {
-        if (typeof override[key] === 'object' && !Array.isArray(override[key]) && override[key] !== null) {
+        if (
+          typeof override[key] === 'object' &&
+          !Array.isArray(override[key]) &&
+          override[key] !== null
+        ) {
           result[key] = this.mergeConfig(base[key] || {}, override[key]);
         } else {
           result[key] = override[key];
         }
       }
     }
-    
+
     return result;
   }
 }

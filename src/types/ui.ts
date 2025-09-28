@@ -138,7 +138,17 @@ export interface FilterOption {
 
 export interface FormField {
   name: string;
-  type: 'text' | 'email' | 'password' | 'number' | 'date' | 'select' | 'multiselect' | 'textarea' | 'checkbox' | 'radio';
+  type:
+    | 'text'
+    | 'email'
+    | 'password'
+    | 'number'
+    | 'date'
+    | 'select'
+    | 'multiselect'
+    | 'textarea'
+    | 'checkbox'
+    | 'radio';
   label: string;
   placeholder?: string;
   required?: boolean;
