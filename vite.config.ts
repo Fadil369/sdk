@@ -48,6 +48,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    include: ['tests/**/*.test.ts'],
+    exclude: ['tests/**/*.js', 'tests/**/*.d.ts', 'node_modules/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

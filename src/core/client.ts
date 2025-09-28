@@ -61,7 +61,10 @@ export class ApiClient {
     const requestId = this.generateRequestId();
 
     try {
-      this.logger.debug(`${method} ${url}`, { requestId, data });
+      this.logger.debug(`${method} ${url}`, { 
+        requestId, 
+        metadata: { data: this.sanitizeData(data) } 
+      });
 
       const response = await this.client.request({
         method,
@@ -78,8 +81,10 @@ export class ApiClient {
       
       this.logger.info(`${method} ${url} - ${response.status}`, {
         requestId,
-        responseTime,
-        status: response.status,
+        metadata: {
+          responseTime,
+          status: response.status
+        }
       });
 
       return {
@@ -98,9 +103,11 @@ export class ApiClient {
       if (axios.isAxiosError(error)) {
         this.logger.error(`${method} ${url} failed`, error, {
           requestId,
-          responseTime,
-          status: error.response?.status,
-          statusText: error.response?.statusText,
+          metadata: {
+            responseTime,
+            status: error.response?.status,
+            statusText: error.response?.statusText
+          }
         });
 
         return {
@@ -114,7 +121,10 @@ export class ApiClient {
         };
       }
 
-      this.logger.error(`${method} ${url} failed with unknown error`, error, { requestId, responseTime });
+      this.logger.error(`${method} ${url} failed with unknown error`, error, { 
+        requestId, 
+        metadata: { responseTime } 
+      });
       
       return {
         success: false,
@@ -157,9 +167,11 @@ export class ApiClient {
         // Log slow responses (>2.5s target)
         if (responseTime > 2500) {
           this.logger.warn('Slow API response detected', {
-            url: response.config.url,
-            method: response.config.method,
-            responseTime,
+            metadata: {
+              url: response.config.url,
+              method: response.config.method,
+              responseTime
+            }
           });
         }
 
@@ -169,11 +181,13 @@ export class ApiClient {
         if (axios.isAxiosError(error) && error.config) {
           const responseTime = Date.now() - ((error.config as any).metadata?.startTime || 0);
           
-          this.logger.error('API request failed', {
-            url: error.config.url,
-            method: error.config.method,
-            status: error.response?.status,
-            responseTime,
+          this.logger.error('API request failed', undefined, {
+            metadata: {
+              url: error.config.url,
+              method: error.config.method,
+              status: error.response?.status,
+              responseTime
+            }
           });
         }
 
@@ -212,5 +226,20 @@ export class ApiClient {
       requestCount: this.requestCount,
       activeWindows: this.rateLimitWindow.size,
     };
+  }
+
+  private sanitizeData(data: any): any {
+    if (!data || typeof data !== 'object') return data;
+    
+    const sanitized = { ...data };
+    const sensitiveKeys = ['password', 'token', 'secret', 'authorization', 'key'];
+    
+    for (const key of Object.keys(sanitized)) {
+      if (sensitiveKeys.some(sensitive => key.toLowerCase().includes(sensitive))) {
+        sanitized[key] = '[REDACTED]';
+      }
+    }
+    
+    return sanitized;
   }
 }

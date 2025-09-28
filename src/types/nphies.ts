@@ -31,11 +31,11 @@ export interface NPHIESSubmissionResponse {
   outcomeCode?: string;
   outcomeDescription?: string;
   responseData?: any;
-  errors?: NPHIESError[];
+  errors?: NPHIESErrorInfo[];
   warnings?: NPHIESWarning[];
 }
 
-export interface NPHIESError {
+export interface NPHIESErrorInfo {
   code: string;
   severity: 'error' | 'warning' | 'information';
   diagnostics: string;
