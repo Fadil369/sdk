@@ -10,6 +10,7 @@ import { PHIDataMasker, createPHIDataMasker, defaultMaskingConfig } from './comp
 import { SessionManager, createSessionManager, defaultSessionConfig } from './compliance/session';
 import { ComplianceValidator, createComplianceValidator } from './compliance/validation';
 import { RBACManager, createRBACManager } from './auth/rbac';
+import type { SecurityConfig } from '@/types/security';
 
 export class SecurityManager {
   private auditLogger?: HIPAAAuditLogger;
@@ -25,7 +26,7 @@ export class SecurityManager {
   ) {}
 
   async initialize(): Promise<void> {
-    const securityConfig = this.config.get('security') as any;
+    const securityConfig = this.config.get<SecurityConfig>('security');
 
     // Initialize audit logger
     const hipaaLevel = securityConfig?.hipaa?.auditLevel ?? 'standard';
