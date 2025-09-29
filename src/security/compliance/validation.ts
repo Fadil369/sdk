@@ -254,7 +254,7 @@ export class ComplianceValidator {
           return { passed: true, message: 'Access control verified' };
         },
       },
-      
+
       // Enhanced Security Rules for Advanced HIPAA Compliance
       {
         id: 'tech_006',
@@ -288,7 +288,8 @@ export class ComplianceValidator {
           const clientIp = context.session?.ipAddress;
           if (clientIp) {
             // Check for suspicious patterns or unauthorized ranges
-            const isPrivateOrLocalhost = /^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|127\.|::1|localhost)/.test(clientIp);
+            const isPrivateOrLocalhost =
+              /^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|127\.|::1|localhost)/.test(clientIp);
             if (!isPrivateOrLocalhost && !context.metadata?.ipWhitelisted) {
               return {
                 passed: false,
@@ -347,11 +348,11 @@ export class ComplianceValidator {
           const userAgent = context.session?.userAgent || '';
           // Check for insecure or outdated browsers
           const insecurePatterns = [
-            /Chrome\/[1-8][0-9]\./,  // Chrome versions < 90
-            /Firefox\/[1-7][0-9]\./,  // Firefox versions < 80
-            /Safari\/[1-9]\./,        // Very old Safari
+            /Chrome\/[1-8][0-9]\./, // Chrome versions < 90
+            /Firefox\/[1-7][0-9]\./, // Firefox versions < 80
+            /Safari\/[1-9]\./, // Very old Safari
           ];
-          
+
           for (const pattern of insecurePatterns) {
             if (pattern.test(userAgent)) {
               return {
@@ -530,7 +531,7 @@ export class ComplianceValidator {
         const ruleStartTime = Date.now();
         const result = await rule.validate(context);
         const ruleExecutionTime = Date.now() - ruleStartTime;
-        
+
         return {
           rule,
           result,
@@ -547,7 +548,7 @@ export class ComplianceValidator {
     });
 
     const validationResults = await Promise.all(validationPromises);
-    
+
     for (const { rule, result } of validationResults) {
       if (!result.passed) {
         criticalFailures++;
@@ -556,9 +557,10 @@ export class ComplianceValidator {
     }
 
     const executionTime = Date.now() - startTime;
-    const averageRuleTime = validationResults.length > 0 
-      ? validationResults.reduce((sum, r) => sum + r.executionTime, 0) / validationResults.length 
-      : 0;
+    const averageRuleTime =
+      validationResults.length > 0
+        ? validationResults.reduce((sum, r) => sum + r.executionTime, 0) / validationResults.length
+        : 0;
 
     return {
       passed: criticalFailures === 0,
@@ -575,39 +577,41 @@ export class ComplianceValidator {
   /**
    * Advanced compliance validation with risk scoring
    */
-  async advancedValidation(context: ValidationContext): Promise<ComplianceReport & {
-    riskScore: number;
-    riskLevel: 'low' | 'medium' | 'high' | 'critical';
-    priorityRecommendations: string[];
-    performanceMetrics: {
-      executionTime: number;
-      rulesEvaluated: number;
-    };
-  }> {
+  async advancedValidation(context: ValidationContext): Promise<
+    ComplianceReport & {
+      riskScore: number;
+      riskLevel: 'low' | 'medium' | 'high' | 'critical';
+      priorityRecommendations: string[];
+      performanceMetrics: {
+        executionTime: number;
+        rulesEvaluated: number;
+      };
+    }
+  > {
     const startTime = Date.now();
     const baseReport = await this.validateCompliance(context);
-    
+
     // Calculate risk score based on failed rules and their severity
     let riskScore = 0;
     const severityWeights = { low: 1, medium: 2, high: 4, critical: 8 };
-    
+
     for (const ruleResult of baseReport.ruleResults) {
       if (!ruleResult.passed) {
         riskScore += severityWeights[ruleResult.severity as keyof typeof severityWeights] || 1;
       }
     }
-    
+
     // Normalize risk score to 0-100 scale
     const maxPossibleScore = this.rules.size * 8; // assuming all critical
     const normalizedRiskScore = Math.min(100, (riskScore / maxPossibleScore) * 100);
-    
+
     // Determine risk level
     let riskLevel: 'low' | 'medium' | 'high' | 'critical';
     if (normalizedRiskScore <= 20) riskLevel = 'low';
     else if (normalizedRiskScore <= 50) riskLevel = 'medium';
     else if (normalizedRiskScore <= 80) riskLevel = 'high';
     else riskLevel = 'critical';
-    
+
     // Generate priority recommendations
     const priorityRecommendations = baseReport.ruleResults
       .filter(r => !r.passed && (r.severity === 'critical' || r.severity === 'high'))
@@ -743,13 +747,15 @@ export function createValidationContext(options: {
           permissions: options.permissions || [],
         }
       : undefined,
-    session: options.sessionInfo || (options.sessionId
-      ? {
-          id: options.sessionId,
-          ipAddress: options.ipAddress,
-          userAgent: options.userAgent,
-        }
-      : undefined),
+    session:
+      options.sessionInfo ||
+      (options.sessionId
+        ? {
+            id: options.sessionId,
+            ipAddress: options.ipAddress,
+            userAgent: options.userAgent,
+          }
+        : undefined),
     operation:
       options.operationType && options.resource
         ? {

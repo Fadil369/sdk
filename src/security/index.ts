@@ -26,18 +26,19 @@ export class SecurityManager {
 
   async initialize(): Promise<void> {
     const securityConfig = this.config.get('security') as {
-      hipaa: { auditLevel: 'minimal' | 'standard' | 'comprehensive' };
-      audit: { endpoint?: string };
-      encryption: { algorithm: string; keySize: number };
+      hipaa?: { auditLevel?: 'minimal' | 'standard' | 'comprehensive' };
+      audit?: { endpoint?: string };
+      encryption?: { algorithm?: string; keySize?: number };
     };
 
     // Initialize audit logger
+    const hipaaLevel = securityConfig?.hipaa?.auditLevel ?? 'standard';
     this.auditLogger = createHIPAAAuditLogger(
       {
-        hipaaLevel: securityConfig.hipaa?.auditLevel || 'standard',
+        hipaaLevel,
         retentionPeriod: 2555, // 7 years as required by HIPAA
         automaticReporting: true,
-        endpoint: securityConfig.audit?.endpoint,
+        endpoint: securityConfig?.audit?.endpoint,
       },
       this.logger
     );

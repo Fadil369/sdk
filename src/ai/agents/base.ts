@@ -497,20 +497,6 @@ export abstract class BaseAgent {
   protected abstract executeAnalysisStep(step: WorkflowStep, context: AgentContext, previousResults: Record<string, unknown>): Promise<unknown>;
   protected abstract executeDecisionStep(step: WorkflowStep, context: AgentContext, previousResults: Record<string, unknown>): Promise<unknown>;
   protected abstract executeActionStep(step: WorkflowStep, context: AgentContext, previousResults: Record<string, unknown>): Promise<unknown>;
-        case 'failed':
-          stats.failedTasks++;
-          break;
-        case 'cancelled':
-          stats.cancelledTasks++;
-          break;
-      }
-    }
-
-    stats.averageExecutionTime =
-      completedCount > 0 ? Math.round(totalExecutionTime / completedCount) : 0;
-
-    return stats;
-  }
 
   /**
    * Update agent status

@@ -36,20 +36,25 @@ export const HealthcareDashboard = ({
   ...baseProps
 }: HealthcareDashboardProps): ReactElement => {
   const [activeFilters, setActiveFilters] = useState<Record<string, unknown>>({});
-  const [, setRefreshTick] = useState(0);
+  const [refreshTick, setRefreshTick] = useState(0);
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [isAutoRefresh, setIsAutoRefresh] = useState(true);
 
+  // Enhanced refresh functionality
   useEffect(() => {
-    if (!refreshInterval || refreshInterval <= 0) {
+    if (!refreshInterval || refreshInterval <= 0 || !isAutoRefresh) {
       return undefined;
     }
 
     const interval = setInterval(() => {
       setRefreshTick(prev => prev + 1);
+      setLastRefresh(new Date());
     }, refreshInterval * 1000);
 
     return () => clearInterval(interval);
-  }, [refreshInterval]);
+  }, [refreshInterval, isAutoRefresh]);
 
+  // Handle filter changes with analytics
   const handleFilterChange = (filterId: string, value: unknown) => {
     const newFilters = {
       ...activeFilters,
@@ -57,6 +62,27 @@ export const HealthcareDashboard = ({
     };
     setActiveFilters(newFilters);
     onFilterChange?.(newFilters);
+  };
+
+  // Manual refresh function
+  const handleManualRefresh = () => {
+    setRefreshTick(prev => prev + 1);
+    setLastRefresh(new Date());
+  };
+
+  // Toggle auto-refresh
+  const toggleAutoRefresh = () => {
+    setIsAutoRefresh(prev => !prev);
+  };
+
+  // Format last refresh time
+  const formatLastRefresh = (date: Date): string => {
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diff < 60) return `${diff}s ago`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    return `${Math.floor(diff / 3600)}h ago`;
   };
 
   const dashboardStyle: React.CSSProperties = {
