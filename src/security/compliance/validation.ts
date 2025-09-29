@@ -12,7 +12,7 @@ export interface ValidationRule {
   category: 'administrative' | 'physical' | 'technical';
   severity: 'low' | 'medium' | 'high' | 'critical';
   required: boolean;
-  validate: (context: ValidationContext) => Promise<ComplianceComplianceValidationResult>;
+  validate: (context: ValidationContext) => Promise<ComplianceValidationResult>;
 }
 
 export interface ValidationContext {
@@ -35,7 +35,7 @@ export interface ValidationContext {
   metadata?: Record<string, unknown>;
 }
 
-export interface ComplianceComplianceValidationResult {
+export interface ComplianceValidationResult {
   passed: boolean;
   message: string;
   details?: Record<string, unknown>;
@@ -254,6 +254,116 @@ export class ComplianceValidator {
           return { passed: true, message: 'Access control verified' };
         },
       },
+      
+      // Enhanced Security Rules for Advanced HIPAA Compliance
+      {
+        id: 'tech_006',
+        name: 'Multi-Factor Authentication',
+        description: 'Critical operations require multi-factor authentication',
+        category: 'technical',
+        severity: 'critical',
+        required: true,
+        validate: async context => {
+          const criticalOperations = ['export', 'delete'];
+          if (context.operation?.type && criticalOperations.includes(context.operation.type)) {
+            if (!context.metadata?.mfaVerified) {
+              return {
+                passed: false,
+                message: 'Multi-factor authentication required for critical operations',
+                recommendations: ['Enable MFA verification for sensitive operations'],
+              };
+            }
+          }
+          return { passed: true, message: 'MFA requirements satisfied' };
+        },
+      },
+      {
+        id: 'tech_007',
+        name: 'IP Address Validation',
+        description: 'Access must be from authorized IP addresses',
+        category: 'technical',
+        severity: 'high',
+        required: true,
+        validate: async context => {
+          const clientIp = context.session?.ipAddress;
+          if (clientIp) {
+            // Check for suspicious patterns or unauthorized ranges
+            const isPrivateOrLocalhost = /^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|127\.|::1|localhost)/.test(clientIp);
+            if (!isPrivateOrLocalhost && !context.metadata?.ipWhitelisted) {
+              return {
+                passed: false,
+                message: 'Access from non-authorized IP address',
+                recommendations: ['Verify IP address is authorized for healthcare data access'],
+              };
+            }
+          }
+          return { passed: true, message: 'IP address validation passed' };
+        },
+      },
+      {
+        id: 'tech_008',
+        name: 'Data Retention Compliance',
+        description: 'Data retention policies must be enforced',
+        category: 'technical',
+        severity: 'medium',
+        required: true,
+        validate: async context => {
+          if (context.operation?.type === 'delete' && !context.metadata?.retentionPolicyChecked) {
+            return {
+              passed: false,
+              message: 'Data retention policy not verified before deletion',
+              recommendations: ['Verify data retention requirements before allowing deletion'],
+            };
+          }
+          return { passed: true, message: 'Data retention compliance verified' };
+        },
+      },
+      {
+        id: 'admin_004',
+        name: 'Business Associate Agreement',
+        description: 'Third-party access requires valid BAA',
+        category: 'administrative',
+        severity: 'critical',
+        required: true,
+        validate: async context => {
+          if (context.user?.role === 'third-party' && !context.metadata?.baaVerified) {
+            return {
+              passed: false,
+              message: 'Business Associate Agreement not verified for third-party access',
+              recommendations: ['Ensure valid BAA exists before granting third-party access'],
+            };
+          }
+          return { passed: true, message: 'BAA requirements satisfied' };
+        },
+      },
+      {
+        id: 'phys_002',
+        name: 'Device Security Compliance',
+        description: 'Accessing device must meet security requirements',
+        category: 'physical',
+        severity: 'high',
+        required: true,
+        validate: async context => {
+          const userAgent = context.session?.userAgent || '';
+          // Check for insecure or outdated browsers
+          const insecurePatterns = [
+            /Chrome\/[1-8][0-9]\./,  // Chrome versions < 90
+            /Firefox\/[1-7][0-9]\./,  // Firefox versions < 80
+            /Safari\/[1-9]\./,        // Very old Safari
+          ];
+          
+          for (const pattern of insecurePatterns) {
+            if (pattern.test(userAgent)) {
+              return {
+                passed: false,
+                message: 'Insecure or outdated browser detected',
+                recommendations: ['Update browser to latest secure version'],
+              };
+            }
+          }
+          return { passed: true, message: 'Device security compliance verified' };
+        },
+      },
     ];
 
     for (const rule of defaultRules) {
@@ -394,13 +504,19 @@ export class ComplianceValidator {
   }
 
   /**
-   * Quick validation for critical rules only
+   * Enhanced parallel validation for critical rules only
    */
   async quickValidation(context: ValidationContext): Promise<{
     passed: boolean;
     criticalFailures: number;
     failedRules: string[];
+    performanceMetrics: {
+      executionTime: number;
+      rulesEvaluated: number;
+      averageRuleTime: number;
+    };
   }> {
+    const startTime = Date.now();
     const criticalRules = Array.from(this.rules.values()).filter(
       rule => rule.severity === 'critical' && rule.required
     );
@@ -408,24 +524,107 @@ export class ComplianceValidator {
     let criticalFailures = 0;
     const failedRules: string[] = [];
 
-    for (const rule of criticalRules) {
+    // Execute rules in parallel for better performance
+    const validationPromises = criticalRules.map(async rule => {
       try {
+        const ruleStartTime = Date.now();
         const result = await rule.validate(context);
-        if (!result.passed) {
-          criticalFailures++;
-          failedRules.push(rule.id);
-        }
+        const ruleExecutionTime = Date.now() - ruleStartTime;
+        
+        return {
+          rule,
+          result,
+          executionTime: ruleExecutionTime,
+        };
       } catch (error) {
+        this.logger.error('Critical rule validation failed', error as Error, { ruleId: rule.id });
+        return {
+          rule,
+          result: { passed: false, message: `Rule execution failed: ${(error as Error).message}` },
+          executionTime: 0,
+        };
+      }
+    });
+
+    const validationResults = await Promise.all(validationPromises);
+    
+    for (const { rule, result } of validationResults) {
+      if (!result.passed) {
         criticalFailures++;
         failedRules.push(rule.id);
-        this.logger.error('Critical rule validation failed', error as Error, { ruleId: rule.id });
       }
     }
+
+    const executionTime = Date.now() - startTime;
+    const averageRuleTime = validationResults.length > 0 
+      ? validationResults.reduce((sum, r) => sum + r.executionTime, 0) / validationResults.length 
+      : 0;
 
     return {
       passed: criticalFailures === 0,
       criticalFailures,
       failedRules,
+      performanceMetrics: {
+        executionTime,
+        rulesEvaluated: criticalRules.length,
+        averageRuleTime,
+      },
+    };
+  }
+
+  /**
+   * Advanced compliance validation with risk scoring
+   */
+  async advancedValidation(context: ValidationContext): Promise<ComplianceReport & {
+    riskScore: number;
+    riskLevel: 'low' | 'medium' | 'high' | 'critical';
+    priorityRecommendations: string[];
+    performanceMetrics: {
+      executionTime: number;
+      rulesEvaluated: number;
+    };
+  }> {
+    const startTime = Date.now();
+    const baseReport = await this.validateCompliance(context);
+    
+    // Calculate risk score based on failed rules and their severity
+    let riskScore = 0;
+    const severityWeights = { low: 1, medium: 2, high: 4, critical: 8 };
+    
+    for (const ruleResult of baseReport.ruleResults) {
+      if (!ruleResult.passed) {
+        riskScore += severityWeights[ruleResult.severity as keyof typeof severityWeights] || 1;
+      }
+    }
+    
+    // Normalize risk score to 0-100 scale
+    const maxPossibleScore = this.rules.size * 8; // assuming all critical
+    const normalizedRiskScore = Math.min(100, (riskScore / maxPossibleScore) * 100);
+    
+    // Determine risk level
+    let riskLevel: 'low' | 'medium' | 'high' | 'critical';
+    if (normalizedRiskScore <= 20) riskLevel = 'low';
+    else if (normalizedRiskScore <= 50) riskLevel = 'medium';
+    else if (normalizedRiskScore <= 80) riskLevel = 'high';
+    else riskLevel = 'critical';
+    
+    // Generate priority recommendations
+    const priorityRecommendations = baseReport.ruleResults
+      .filter(r => !r.passed && (r.severity === 'critical' || r.severity === 'high'))
+      .flatMap(r => r.recommendations || [])
+      .slice(0, 5); // Top 5 priority recommendations
+
+    const executionTime = Date.now() - startTime;
+
+    return {
+      ...baseReport,
+      riskScore: normalizedRiskScore,
+      riskLevel,
+      priorityRecommendations,
+      performanceMetrics: {
+        executionTime,
+        rulesEvaluated: this.rules.size,
+      },
     };
   }
 
@@ -518,12 +717,21 @@ export function createValidationContext(options: {
   userRole?: string;
   permissions?: string[];
   sessionId?: string;
+  sessionInfo?: {
+    id: string;
+    ipAddress?: string;
+    userAgent?: string;
+  };
   ipAddress?: string;
   userAgent?: string;
   operationType?: 'create' | 'read' | 'update' | 'delete' | 'export';
   resource?: string;
   resourceId?: string;
   auditLogged?: boolean;
+  mfaVerified?: boolean;
+  ipWhitelisted?: boolean;
+  baaVerified?: boolean;
+  retentionPolicyChecked?: boolean;
   additionalMetadata?: Record<string, unknown>;
 }): ValidationContext {
   return {
@@ -535,13 +743,13 @@ export function createValidationContext(options: {
           permissions: options.permissions || [],
         }
       : undefined,
-    session: options.sessionId
+    session: options.sessionInfo || (options.sessionId
       ? {
           id: options.sessionId,
           ipAddress: options.ipAddress,
           userAgent: options.userAgent,
         }
-      : undefined,
+      : undefined),
     operation:
       options.operationType && options.resource
         ? {
@@ -552,6 +760,10 @@ export function createValidationContext(options: {
         : undefined,
     metadata: {
       auditLogged: options.auditLogged,
+      mfaVerified: options.mfaVerified,
+      ipWhitelisted: options.ipWhitelisted,
+      baaVerified: options.baaVerified,
+      retentionPolicyChecked: options.retentionPolicyChecked,
       ...options.additionalMetadata,
     },
   };
