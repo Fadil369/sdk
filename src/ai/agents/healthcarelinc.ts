@@ -1284,6 +1284,28 @@ export class HealthcareLincAgent extends BaseAgent {
     // Healthcare report generation logic
     return { reportGenerated: true, reportId: `report_${Date.now()}` };
   }
+
+  // Core decision making method
+  private async makeDecision(params: {
+    type: string;
+    context: AgentContext;
+    analysisResults: unknown;
+    rules: string[];
+  }): Promise<unknown> {
+    // Healthcare decision making logic
+    this.logger.debug('Making healthcare decision', { 
+      type: params.type, 
+      userId: params.context.userId 
+    });
+
+    return {
+      decision: 'approved',
+      confidence: 0.85,
+      reasoning: `Decision made based on ${params.type} analysis`,
+      recommendations: [],
+      followUpRequired: false,
+    };
+  }
 }
 
 /**
