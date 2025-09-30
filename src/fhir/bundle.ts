@@ -55,11 +55,11 @@ export class FHIRBundleBuilder {
    */
   addResource(resource: FHIRResource, fullUrl?: string): FHIRBundleBuilder {
     const entry: FHIRBundleEntry = {
-      fullUrl: fullUrl || `urn:uuid:${resource.id || uuidv4()}`,
+      fullUrl: fullUrl ?? `urn:uuid:${resource.id ?? uuidv4()}`,
       resource,
     };
 
-    this.bundle.entry = this.bundle.entry || [];
+    this.bundle.entry = this.bundle.entry ?? [];
     this.bundle.entry.push(entry);
 
     return this;
@@ -75,7 +75,7 @@ export class FHIRBundleBuilder {
     fullUrl?: string
   ): FHIRBundleBuilder {
     const entry: FHIRBundleEntryComplete = {
-      fullUrl: fullUrl || `urn:uuid:${resource.id || uuidv4()}`,
+      fullUrl: fullUrl ?? `urn:uuid:${resource.id ?? uuidv4()}`,
       resource,
       request: {
         method,
@@ -83,7 +83,7 @@ export class FHIRBundleBuilder {
       },
     };
 
-    this.bundle.entry = this.bundle.entry || [];
+    this.bundle.entry = this.bundle.entry ?? [];
     this.bundle.entry.push(entry);
 
     return this;
@@ -122,7 +122,7 @@ export class FHIRBundleBuilder {
       },
     };
 
-    this.bundle.entry = this.bundle.entry || [];
+    this.bundle.entry = this.bundle.entry ?? [];
     this.bundle.entry.push(entry);
 
     return this;

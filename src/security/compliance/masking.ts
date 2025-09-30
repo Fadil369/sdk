@@ -131,9 +131,9 @@ export class PHIDataMasker {
       case 'full':
         return this.applyFullMasking(stringValue, rule.preserveLength);
       case 'partial':
-        return this.applyPartialMasking(stringValue, rule.visibleChars || 0);
+        return this.applyPartialMasking(stringValue, rule.visibleChars ?? 0);
       case 'format':
-        return this.applyFormatMasking(stringValue, field, rule.visibleChars || 0);
+        return this.applyFormatMasking(stringValue, field, rule.visibleChars ?? 0);
       case 'hash':
         return this.applyHashMasking(stringValue);
       case 'tokenize':
@@ -155,15 +155,17 @@ export class PHIDataMasker {
 
     for (const [key, value] of Object.entries(masked)) {
       if (Array.isArray(value)) {
-        (masked as any)[key] = value.map(item =>
+        (masked as Record<string, unknown>)[key] = value.map(item =>
           typeof item === 'object' && item !== null
             ? this.maskObject(item as Record<string, unknown>)
             : this.maskValue(item, key)
         );
       } else if (typeof value === 'object' && value !== null) {
-        (masked as any)[key] = this.maskObject(value as Record<string, unknown>);
+        (masked as Record<string, unknown>)[key] = this.maskObject(
+          value as Record<string, unknown>
+        );
       } else {
-        (masked as any)[key] = this.maskValue(value, key);
+        (masked as Record<string, unknown>)[key] = this.maskValue(value, key);
       }
     }
 
@@ -302,7 +304,6 @@ export class PHIDataMasker {
       return `${maskedUsername}@***`;
     }
 
-    const domainName = domain.substring(0, dotIndex);
     const tld = domain.substring(dotIndex);
     const maskedDomain = `***${tld}`;
 
@@ -358,7 +359,7 @@ export class PHIDataMasker {
   /**
    * Apply tokenization (replace with a token)
    */
-  private applyTokenization(value: string): string {
+  private applyTokenization(_value: string): string {
     // Simple tokenization for demonstration
     // In production, use a secure tokenization service
     const tokenId = Math.random().toString(36).substring(2, 15);
@@ -384,7 +385,7 @@ export class PHIDataMasker {
     const phiFields: string[] = [];
 
     for (const [field, rule] of this.maskingRules.entries()) {
-      rulesByType[rule.type] = (rulesByType[rule.type] || 0) + 1;
+      rulesByType[rule.type] = (rulesByType[rule.type] ?? 0) + 1;
       phiFields.push(field);
     }
 
@@ -401,7 +402,7 @@ export class PHIDataMasker {
   validateConfiguration(): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
 
-    if (!this.config.defaultMaskChar || this.config.defaultMaskChar.length !== 1) {
+    if ((this.config.defaultMaskChar ?? '').length !== 1) {
       errors.push('Default mask character must be a single character');
     }
 

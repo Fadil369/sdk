@@ -326,7 +326,7 @@ export class HealthcareLincAgent extends BaseAgent {
    * Generate diagnosis recommendations
    */
   private async generateDiagnosisRecommendations(decision: ClinicalDecision): Promise<void> {
-    const { symptoms = [], vitals = {}, labResults = {} } = decision.input;
+    const { symptoms = [], vitals = {}, labResults: _labResults = {} } = decision.input;
 
     const possibleConditions = new Set<string>();
     const reasoning: string[] = [];
@@ -381,7 +381,7 @@ export class HealthcareLincAgent extends BaseAgent {
    * Generate treatment recommendations
    */
   private async generateTreatmentRecommendations(decision: ClinicalDecision): Promise<void> {
-    const { symptoms = [], currentMedications = [] } = decision.input;
+    const { symptoms = [], currentMedications: _currentMedications = [] } = decision.input;
 
     // Generate treatment recommendations based on symptoms
     const treatments: Array<{
@@ -542,7 +542,7 @@ export class HealthcareLincAgent extends BaseAgent {
    * Generate discharge recommendations
    */
   private async generateDischargeRecommendations(decision: ClinicalDecision): Promise<void> {
-    const { symptoms = [], vitals = {} } = decision.input;
+    const { symptoms: _symptoms = [], vitals: _vitals = {} } = decision.input;
 
     const dischargeRecommendations: Array<{
       type: ClinicalRecommendation['type'];
@@ -754,7 +754,7 @@ export class HealthcareLincAgent extends BaseAgent {
    */
   private optimizeForTime(steps: ClinicalWorkflowStep[]): void {
     // Identify steps that can be parallelized
-    const parallelizableSteps = steps.filter(step => step.dependencies.length === 0);
+    const _parallelizableSteps = steps.filter(step => step.dependencies.length === 0);
 
     // Merge similar steps
     for (let i = steps.length - 1; i > 0; i--) {
@@ -829,11 +829,14 @@ export class HealthcareLincAgent extends BaseAgent {
       if (!stepsByType.has(step.type)) {
         stepsByType.set(step.type, []);
       }
-      stepsByType.get(step.type)!.push(step);
+      const stepType = stepsByType.get(step.type);
+      if (stepType) {
+        stepType.push(step);
+      }
     });
 
     // Standardize timing within each type
-    stepsByType.forEach((stepsOfType, type) => {
+    stepsByType.forEach((stepsOfType, _type) => {
       const averageTime =
         stepsOfType.reduce((sum, step) => sum + step.estimatedTime, 0) / stepsOfType.length;
       const averageErrorRate =
@@ -1072,7 +1075,7 @@ export class HealthcareLincAgent extends BaseAgent {
   /**
    * Generate general clinical alerts
    */
-  private generateGeneralAlerts(context: Record<string, unknown>): Array<{
+  private generateGeneralAlerts(_context: Record<string, unknown>): Array<{
     id: string;
     type: string;
     severity: 'info' | 'warning' | 'critical';
@@ -1146,8 +1149,8 @@ export class HealthcareLincAgent extends BaseAgent {
   // Implementation of abstract methods from BaseAgent
   protected async executeValidationStep(
     step: WorkflowStep,
-    context: AgentContext,
-    previousResults: Record<string, unknown>
+    _context: AgentContext,
+    _previousResults: Record<string, unknown>
   ): Promise<unknown> {
     // Healthcare-specific validation logic
     this.logger.debug('Executing validation step', { stepId: step.id, stepName: step.name });
@@ -1156,7 +1159,7 @@ export class HealthcareLincAgent extends BaseAgent {
       case 'fhir':
         return this.validateFHIRData(step.config.data);
       case 'clinical':
-        return this.validateClinicalRules(step.config, context);
+        return this.validateClinicalRules(step.config, _context);
       default:
         return { valid: true, message: 'Default validation passed' };
     }
@@ -1164,13 +1167,13 @@ export class HealthcareLincAgent extends BaseAgent {
 
   protected async executeTransformationStep(
     step: WorkflowStep,
-    context: AgentContext,
+    _context: AgentContext,
     previousResults: Record<string, unknown>
   ): Promise<unknown> {
     // Healthcare data transformation logic
     this.logger.debug('Executing transformation step', { stepId: step.id, stepName: step.name });
 
-    const inputData = previousResults[step.dependencies?.[0] || 'default'] || step.config.inputData;
+    const inputData = previousResults[step.dependencies?.[0] ?? 'default'] ?? step.config.inputData;
 
     switch (step.config.transformationType) {
       case 'fhir-mapping':
@@ -1190,7 +1193,7 @@ export class HealthcareLincAgent extends BaseAgent {
     // Healthcare analysis logic
     this.logger.debug('Executing analysis step', { stepId: step.id, stepName: step.name });
 
-    const inputData = previousResults[step.dependencies?.[0] || 'default'] || step.config.inputData;
+    const inputData = previousResults[step.dependencies?.[0] ?? 'default'] ?? step.config.inputData;
 
     switch (step.config.analysisType) {
       case 'clinical-decision':
@@ -1243,14 +1246,14 @@ export class HealthcareLincAgent extends BaseAgent {
   }
 
   // Helper methods for workflow steps
-  private async validateFHIRData(data: unknown): Promise<{ valid: boolean; errors?: string[] }> {
+  private async validateFHIRData(_data: unknown): Promise<{ valid: boolean; errors?: string[] }> {
     // FHIR validation logic
     return { valid: true };
   }
 
   private async validateClinicalRules(
-    config: Record<string, unknown>,
-    context: AgentContext
+    _config: Record<string, unknown>,
+    _context: AgentContext
   ): Promise<{ valid: boolean; warnings?: string[] }> {
     // Clinical rules validation
     return { valid: true };
@@ -1266,35 +1269,35 @@ export class HealthcareLincAgent extends BaseAgent {
     return data;
   }
 
-  private async performClinicalAnalysis(data: unknown, context: AgentContext): Promise<unknown> {
+  private async performClinicalAnalysis(_data: unknown, _context: AgentContext): Promise<unknown> {
     // Clinical analysis logic
     return { analysis: 'clinical-analysis-complete', confidence: 0.85 };
   }
 
-  private async assessRisk(data: unknown, context: AgentContext): Promise<unknown> {
+  private async assessRisk(_data: unknown, _context: AgentContext): Promise<unknown> {
     // Risk assessment logic
     return { riskScore: 'low', confidence: 0.9 };
   }
 
   private async sendHealthcareNotification(
-    config: Record<string, unknown>,
-    context: AgentContext
+    _config: Record<string, unknown>,
+    _context: AgentContext
   ): Promise<unknown> {
     // Healthcare notification logic
     return { notificationSent: true, timestamp: new Date().toISOString() };
   }
 
   private async updateHealthcareRecord(
-    config: Record<string, unknown>,
-    context: AgentContext
+    _config: Record<string, unknown>,
+    _context: AgentContext
   ): Promise<unknown> {
     // Healthcare record update logic
     return { recordUpdated: true, timestamp: new Date().toISOString() };
   }
 
   private async generateHealthcareReport(
-    results: unknown,
-    context: AgentContext
+    _results: unknown,
+    _context: AgentContext
   ): Promise<unknown> {
     // Healthcare report generation logic
     return { reportGenerated: true, reportId: `report_${Date.now()}` };

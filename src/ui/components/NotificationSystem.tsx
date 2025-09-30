@@ -362,18 +362,18 @@ export class HealthcareNotificationManager {
     const id = showNotification({
       ...notificationConfig,
       metadata: {
-        priority: priority || 'medium',
-        category: category || 'system',
+        priority: priority ?? 'medium',
+        category: category ?? 'system',
         patientId,
         userId,
         requiresAcknowledgment,
-        ...(config.metadata || {}),
+        ...(config.metadata ?? {}),
       },
     });
 
     // Track analytics
-    const key = `${config.category || 'system'}-${config.type}`;
-    const existing = this.analytics.get(key) || { count: 0, lastSeen: 0 };
+    const key = `${config.category ?? 'system'}-${config.type}`;
+    const existing = this.analytics.get(key) ?? { count: 0, lastSeen: 0 };
     this.analytics.set(key, {
       count: existing.count + 1,
       lastSeen: Date.now(),
@@ -536,21 +536,24 @@ export class HealthcareNotificationManager {
 
     for (const notification of globalNotifications) {
       // Count by type
-      report.byType[notification.type || 'info'] =
-        (report.byType[notification.type || 'info'] || 0) + 1;
+      report.byType[notification.type ?? 'info'] =
+        (report.byType[notification.type ?? 'info'] ?? 0) + 1;
 
       // Count by category
-      const category = notification.category || 'system';
-      report.byCategory[category] = (report.byCategory[category] || 0) + 1;
+      const category = notification.category ?? 'system';
+      report.byCategory[category] = (report.byCategory[category] ?? 0) + 1;
 
       // Count by priority
-      const priority = notification.priority || 'medium';
-      report.byPriority[priority] = (report.byPriority[priority] || 0) + 1;
+      const priority = notification.priority ?? 'medium';
+      report.byPriority[priority] = (report.byPriority[priority] ?? 0) + 1;
 
       // Track unacknowledged
       if (!notification.acknowledged) {
         report.unacknowledged++;
-        if (!report.oldestUnacknowledged || notification.timestamp < report.oldestUnacknowledged) {
+        if (
+          report.oldestUnacknowledged === undefined ||
+          notification.timestamp < report.oldestUnacknowledged
+        ) {
           report.oldestUnacknowledged = notification.timestamp;
         }
       }

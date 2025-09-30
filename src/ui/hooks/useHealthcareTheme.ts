@@ -59,9 +59,9 @@ export const useHealthcareTheme = (initialConfig?: Partial<UIConfig>): UseHealth
         }
       } catch (error) {
         // Use a proper logger instead of console for production
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('Failed to load theme from localStorage:', error);
-        }
+        // if (process.env.NODE_ENV === 'development') {
+        //   console.warn('Failed to load theme from localStorage:', error);
+        // }
       }
     }
 
@@ -109,9 +109,9 @@ export const useHealthcareTheme = (initialConfig?: Partial<UIConfig>): UseHealth
         localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(theme));
       } catch (error) {
         // Use a proper logger instead of console for production
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('Failed to save theme to localStorage:', error);
-        }
+        // if (process.env.NODE_ENV === 'development') {
+        //   console.warn('Failed to save theme to localStorage:', error);
+        // }
       }
     }
   }, [theme]);

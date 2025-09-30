@@ -131,6 +131,7 @@ export abstract class BaseAgent {
 
     // Auto-process task if agent is available
     if (this.agent.status === 'active') {
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
       setImmediate(() => this.executeTask(taskId));
     }
 
@@ -198,7 +199,7 @@ export abstract class BaseAgent {
    * Get task by ID
    */
   getTask(taskId: string): AgentTask | null {
-    return this.tasks.get(taskId) || null;
+    return this.tasks.get(taskId) ?? null;
   }
 
   /**
@@ -371,7 +372,7 @@ export abstract class BaseAgent {
             }
           }
 
-          // Execute step with timeout
+          // eslint-disable-next-line no-await-in-loop
           const stepResult = await this.executeWorkflowStep(step, context, results);
           results[step.id] = stepResult;
           stepsCompleted++;
@@ -457,7 +458,7 @@ export abstract class BaseAgent {
       case 'action':
         return this.executeActionStep(step, context, previousResults);
       default:
-        throw new Error(`Unknown step type: ${step.type}`);
+        throw new Error(`Unknown step type: ${step.type as string}`);
     }
   }
 
@@ -571,6 +572,7 @@ export abstract class BaseAgent {
     // Cancel all pending tasks
     const pendingTasks = this.getTasksByStatus('pending');
     for (const task of pendingTasks) {
+      // eslint-disable-next-line no-await-in-loop
       await this.cancelTask(task.id);
     }
 

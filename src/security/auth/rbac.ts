@@ -3,7 +3,7 @@
  */
 
 import { Logger } from '@/core/logger';
-import { RoleBasedAccess, Permission, PermissionCondition, Restriction } from '@/types/security';
+import { Permission, PermissionCondition, Restriction } from '@/types/security';
 
 export interface Role {
   id: string;
@@ -376,7 +376,7 @@ export class RBACManager {
    * Get role by ID
    */
   getRole(roleId: string): Role | null {
-    return this.roles.get(roleId) || null;
+    return this.roles.get(roleId) ?? null;
   }
 
   /**
@@ -413,7 +413,7 @@ export class RBACManager {
    * Get user by ID
    */
   getUser(userId: string): User | null {
-    return this.users.get(userId) || null;
+    return this.users.get(userId) ?? null;
   }
 
   /**
@@ -581,10 +581,11 @@ export class RBACManager {
       contextValue = context.userId;
     } else if (condition.field.includes('.')) {
       // Handle nested field access
-      contextValue = this.getNestedValue(context.data || {}, condition.field);
+      contextValue = this.getNestedValue(context.data ?? {}, condition.field);
     } else {
       contextValue =
-        (context.data as any)?.[condition.field] || (context.environment as any)?.[condition.field];
+        (context.data as Record<string, unknown>)?.[condition.field] ??
+        (context.environment as Record<string, unknown>)?.[condition.field];
     }
 
     switch (condition.operator) {
@@ -611,8 +612,11 @@ export class RBACManager {
    * Get nested value from an object using dot notation
    */
   private getNestedValue(obj: Record<string, unknown>, path: string): unknown {
-    return path.split('.').reduce((current: any, key: string) => {
-      return current && current[key] !== undefined ? current[key] : undefined;
+    return path.split('.').reduce((current: unknown, key: string) => {
+      if (typeof current === 'object' && current !== null && key in current) {
+        return (current as Record<string, unknown>)[key];
+      }
+      return undefined;
     }, obj);
   }
 
@@ -697,7 +701,7 @@ export class RBACManager {
   private isSelfReference(data: Record<string, unknown> | undefined, userId: string): boolean {
     if (!data) return false;
 
-    const subjectRef = (data as any)?.subject?.reference;
+    const subjectRef = (data as { subject?: { reference?: string } })?.subject?.reference;
     return subjectRef === `Patient/${userId}` || subjectRef === userId;
   }
 
@@ -720,7 +724,7 @@ export class RBACManager {
 
     for (const role of this.roles.values()) {
       totalPermissions += role.permissions.length;
-      totalRestrictions += role.restrictions?.length || 0;
+      totalRestrictions += role.restrictions?.length ?? 0;
     }
 
     return {

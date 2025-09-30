@@ -14,7 +14,7 @@ export class CacheManager {
   constructor(config: SDKConfig, logger: Logger) {
     this.config = config;
     this.logger = logger;
-    this.enabled = config.caching?.enabled || false;
+    this.enabled = config.caching?.enabled ?? false;
   }
 
   get<T>(key: string): T | undefined {

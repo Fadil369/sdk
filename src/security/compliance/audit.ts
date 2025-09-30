@@ -3,7 +3,7 @@
  */
 
 import { Logger } from '@/core/logger';
-import { AuditLog, HIPAACompliance } from '@/types/security';
+import { AuditLog } from '@/types/security';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface AuditLoggerConfig {
@@ -210,15 +210,15 @@ export class HIPAAAuditLogger {
 
     // Count by event type and outcome
     for (const log of logs) {
-      stats.logsByEventType[log.eventType] = (stats.logsByEventType[log.eventType] || 0) + 1;
-      stats.logsByOutcome[log.outcome] = (stats.logsByOutcome[log.outcome] || 0) + 1;
+      stats.logsByEventType[log.eventType] = (stats.logsByEventType[log.eventType] ?? 0) + 1;
+      stats.logsByOutcome[log.outcome] = (stats.logsByOutcome[log.outcome] ?? 0) + 1;
     }
 
     // Find oldest and newest
     const sortedLogs = logs.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
     if (sortedLogs.length > 0) {
-      stats.oldestLog = sortedLogs[0]!.timestamp;
-      stats.newestLog = sortedLogs[sortedLogs.length - 1]!.timestamp;
+      stats.oldestLog = sortedLogs[0]?.timestamp;
+      stats.newestLog = sortedLogs[sortedLogs.length - 1]?.timestamp;
     }
 
     return stats;

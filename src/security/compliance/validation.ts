@@ -3,7 +3,6 @@
  */
 
 import { Logger } from '@/core/logger';
-import { HIPAACompliance, SecurityPolicy } from '@/types/security';
 
 export interface ValidationRule {
   id: string;
@@ -83,7 +82,7 @@ export class ComplianceValidator {
         category: 'administrative',
         severity: 'critical',
         required: true,
-        validate: async context => {
+        validate: async (context: ValidationContext) => {
           if (!context.user?.id) {
             return {
               passed: false,
@@ -101,7 +100,7 @@ export class ComplianceValidator {
         category: 'administrative',
         severity: 'high',
         required: true,
-        validate: async context => {
+        validate: async (context: ValidationContext) => {
           if (!context.user?.role || !context.user?.permissions?.length) {
             return {
               passed: false,
@@ -119,7 +118,7 @@ export class ComplianceValidator {
         category: 'administrative',
         severity: 'medium',
         required: true,
-        validate: async context => {
+        validate: async (context: ValidationContext) => {
           if (
             context.operation?.type === 'export' &&
             !context.user?.permissions.includes('export')
@@ -142,7 +141,7 @@ export class ComplianceValidator {
         category: 'physical',
         severity: 'medium',
         required: false,
-        validate: async context => {
+        validate: async (_context: ValidationContext) => {
           // In a real implementation, this would check workstation certificates or other security measures
           return { passed: true, message: 'Workstation security assumed compliant' };
         },
@@ -156,9 +155,9 @@ export class ComplianceValidator {
         category: 'technical',
         severity: 'critical',
         required: true,
-        validate: async context => {
+        validate: async (context: ValidationContext) => {
           // Check if connection is secure (HTTPS)
-          const userAgent = context.session?.userAgent || '';
+          const userAgent = context.session?.userAgent ?? '';
           if (userAgent.includes('http:') && !userAgent.includes('localhost')) {
             return {
               passed: false,
@@ -176,7 +175,7 @@ export class ComplianceValidator {
         category: 'technical',
         severity: 'critical',
         required: true,
-        validate: async context => {
+        validate: async (context: ValidationContext) => {
           if (context.operation && !context.metadata?.auditLogged) {
             return {
               passed: false,
@@ -194,7 +193,7 @@ export class ComplianceValidator {
         category: 'technical',
         severity: 'medium',
         required: true,
-        validate: async context => {
+        validate: async (_context: ValidationContext) => {
           // In a real implementation, check session timeout configuration
           return { passed: true, message: 'Session timeout configured' };
         },
@@ -206,7 +205,7 @@ export class ComplianceValidator {
         category: 'technical',
         severity: 'high',
         required: true,
-        validate: async context => {
+        validate: async (context: ValidationContext) => {
           if (context.data && typeof context.data === 'object') {
             const dataStr = JSON.stringify(context.data);
             // Check for common PHI patterns that should be masked
@@ -236,12 +235,17 @@ export class ComplianceValidator {
         category: 'technical',
         severity: 'critical',
         required: true,
-        validate: async context => {
+        validate: async (context: ValidationContext) => {
           if (context.operation && context.user) {
-            const requiredPermission = `${context.operation.resource}:${context.operation.type}`;
-            const hasPermission = context.user.permissions.some(
-              p => p === requiredPermission || p === `${context.operation!.resource}:*` || p === '*'
-            );
+            const requiredPermission = `${context.operation.type}:${context.operation.resource}`;
+            const hasPermission = context.user.permissions.some(p => {
+              if (p === requiredPermission) return true;
+              if (p === '*') return true;
+              if (context.operation && p === `${context.operation.resource}:*`) {
+                return true;
+              }
+              return false;
+            });
 
             if (!hasPermission) {
               return {
@@ -263,7 +267,7 @@ export class ComplianceValidator {
         category: 'technical',
         severity: 'critical',
         required: true,
-        validate: async context => {
+        validate: async (context: ValidationContext) => {
           const criticalOperations = ['export', 'delete'];
           if (context.operation?.type && criticalOperations.includes(context.operation.type)) {
             if (!context.metadata?.mfaVerified) {
@@ -284,7 +288,7 @@ export class ComplianceValidator {
         category: 'technical',
         severity: 'high',
         required: true,
-        validate: async context => {
+        validate: async (context: ValidationContext) => {
           const clientIp = context.session?.ipAddress;
           if (clientIp) {
             // Check for suspicious patterns or unauthorized ranges
@@ -308,7 +312,7 @@ export class ComplianceValidator {
         category: 'technical',
         severity: 'medium',
         required: true,
-        validate: async context => {
+        validate: async (context: ValidationContext) => {
           if (context.operation?.type === 'delete' && !context.metadata?.retentionPolicyChecked) {
             return {
               passed: false,
@@ -326,7 +330,7 @@ export class ComplianceValidator {
         category: 'administrative',
         severity: 'critical',
         required: true,
-        validate: async context => {
+        validate: async (context: ValidationContext) => {
           if (context.user?.role === 'third-party' && !context.metadata?.baaVerified) {
             return {
               passed: false,
@@ -344,8 +348,8 @@ export class ComplianceValidator {
         category: 'physical',
         severity: 'high',
         required: true,
-        validate: async context => {
-          const userAgent = context.session?.userAgent || '';
+        validate: async (context: ValidationContext) => {
+          const userAgent = context.session?.userAgent ?? '';
           // Check for insecure or outdated browsers
           const insecurePatterns = [
             /Chrome\/[1-8][0-9]\./, // Chrome versions < 90
@@ -404,48 +408,46 @@ export class ComplianceValidator {
     let passedRules = 0;
     let criticalFailures = 0;
 
-    // Run all validation rules
-    for (const rule of this.rules.values()) {
+    const validationPromises = Array.from(this.rules.values()).map(async rule => {
       try {
         const result = await rule.validate(context);
-
-        results.push({
-          ruleId: rule.id,
-          ruleName: rule.name,
-          category: rule.category,
-          severity: rule.severity,
-          passed: result.passed,
-          message: result.message,
-          recommendations: result.recommendations,
-        });
-
-        if (result.passed) {
-          passedRules++;
-        } else {
-          if (rule.severity === 'critical') {
-            criticalFailures++;
-          }
-
-          // Add recommendations
-          if (result.recommendations) {
-            result.recommendations.forEach(rec => recommendations.add(rec));
-          }
-        }
+        return { rule, result };
       } catch (error) {
         this.logger.error('Validation rule execution failed', error as Error, { ruleId: rule.id });
+        return {
+          rule,
+          result: {
+            passed: false,
+            message: `Rule execution failed: ${(error as Error).message}`,
+            recommendations: ['Review and fix validation rule implementation'],
+          },
+        };
+      }
+    });
 
-        results.push({
-          ruleId: rule.id,
-          ruleName: rule.name,
-          category: rule.category,
-          severity: rule.severity,
-          passed: false,
-          message: `Rule execution failed: ${(error as Error).message}`,
-          recommendations: ['Review and fix validation rule implementation'],
-        });
+    const validationResults = await Promise.all(validationPromises);
 
+    for (const { rule, result } of validationResults) {
+      results.push({
+        ruleId: rule.id,
+        ruleName: rule.name,
+        category: rule.category,
+        severity: rule.severity,
+        passed: result.passed,
+        message: result.message,
+        recommendations: result.recommendations,
+      });
+
+      if (result.passed) {
+        passedRules++;
+      } else {
         if (rule.severity === 'critical') {
           criticalFailures++;
+        }
+
+        // Add recommendations
+        if (result.recommendations) {
+          result.recommendations.forEach(rec => recommendations.add(rec));
         }
       }
     }
@@ -615,7 +617,7 @@ export class ComplianceValidator {
     // Generate priority recommendations
     const priorityRecommendations = baseReport.ruleResults
       .filter(r => !r.passed && (r.severity === 'critical' || r.severity === 'high'))
-      .flatMap(r => r.recommendations || [])
+      .flatMap(r => r.recommendations ?? [])
       .slice(0, 5); // Top 5 priority recommendations
 
     const executionTime = Date.now() - startTime;
@@ -636,7 +638,7 @@ export class ComplianceValidator {
    * Get validation rule information
    */
   getRule(ruleId: string): ValidationRule | null {
-    return this.rules.get(ruleId) || null;
+    return this.rules.get(ruleId) ?? null;
   }
 
   /**
@@ -644,7 +646,7 @@ export class ComplianceValidator {
    */
   listRules(): Array<Omit<ValidationRule, 'validate'>> {
     return Array.from(this.rules.values()).map(rule => {
-      const { validate, ...ruleInfo } = rule;
+      const { ...ruleInfo } = rule;
       return ruleInfo;
     });
   }
@@ -666,8 +668,8 @@ export class ComplianceValidator {
     };
 
     for (const rule of this.rules.values()) {
-      stats.rulesByCategory[rule.category] = (stats.rulesByCategory[rule.category] || 0) + 1;
-      stats.rulesBySeverity[rule.severity] = (stats.rulesBySeverity[rule.severity] || 0) + 1;
+      stats.rulesByCategory[rule.category] = (stats.rulesByCategory[rule.category] ?? 0) + 1;
+      stats.rulesBySeverity[rule.severity] = (stats.rulesBySeverity[rule.severity] ?? 0) + 1;
       if (rule.required) {
         stats.requiredRules++;
       }
@@ -743,12 +745,12 @@ export function createValidationContext(options: {
     user: options.userId
       ? {
           id: options.userId,
-          role: options.userRole || 'user',
-          permissions: options.permissions || [],
+          role: options.userRole ?? 'user',
+          permissions: options.permissions ?? [],
         }
       : undefined,
     session:
-      options.sessionInfo ||
+      options.sessionInfo ??
       (options.sessionId
         ? {
             id: options.sessionId,

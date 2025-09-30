@@ -88,7 +88,7 @@ export class SaudiPatientBuilder {
       },
     };
 
-    this.patient.identifier = this.patient.identifier || [];
+    this.patient.identifier = this.patient.identifier ?? [];
     this.patient.identifier.push(identifier);
 
     return this;
@@ -114,7 +114,7 @@ export class SaudiPatientBuilder {
       },
     };
 
-    this.patient.identifier = this.patient.identifier || [];
+    this.patient.identifier = this.patient.identifier ?? [];
     this.patient.identifier.push(identifier);
 
     return this;
@@ -140,7 +140,7 @@ export class SaudiPatientBuilder {
       },
     };
 
-    this.patient.identifier = this.patient.identifier || [];
+    this.patient.identifier = this.patient.identifier ?? [];
     this.patient.identifier.push(identifier);
 
     return this;
@@ -176,7 +176,7 @@ export class SaudiPatientBuilder {
       given,
     };
 
-    this.patient.name = this.patient.name || [];
+    this.patient.name = this.patient.name ?? [];
     this.patient.name.push(name);
 
     return this;
@@ -192,7 +192,7 @@ export class SaudiPatientBuilder {
       given,
     };
 
-    this.patient.name = this.patient.name || [];
+    this.patient.name = this.patient.name ?? [];
     this.patient.name.push(name);
 
     return this;
@@ -226,7 +226,7 @@ export class SaudiPatientBuilder {
       use,
     };
 
-    this.patient.telecom = this.patient.telecom || [];
+    this.patient.telecom = this.patient.telecom ?? [];
     this.patient.telecom.push(telecom);
 
     return this;
@@ -252,7 +252,7 @@ export class SaudiPatientBuilder {
       country: 'SA',
     };
 
-    this.patient.address = this.patient.address || [];
+    this.patient.address = this.patient.address ?? [];
     this.patient.address.push(address);
 
     return this;
@@ -279,7 +279,7 @@ export class SaudiPatientBuilder {
   }
 
   private addExtension(url: string, value: string): void {
-    this.patient.extension = this.patient.extension || [];
+    this.patient.extension = this.patient.extension ?? [];
 
     let saudiExtension = this.patient.extension.find(
       ext => ext.url === SAUDI_SYSTEMS.PATIENT_EXTENSION
@@ -382,13 +382,13 @@ export class SaudiExtensionHelper {
   }
 
   private static getExtensionValue(patient: FHIRPatient, url: string): string | undefined {
-    const saudiExtension = (patient as any).extension?.find(
-      (ext: any) => ext.url === SAUDI_SYSTEMS.PATIENT_EXTENSION
+    const saudiExtension = (patient as SaudiPatientProfile).extension?.find(
+      ext => ext.url === SAUDI_SYSTEMS.PATIENT_EXTENSION
     );
 
     if (!saudiExtension) return undefined;
 
-    const subExtension = saudiExtension.extension?.find((ext: any) => ext.url === url);
+    const subExtension = saudiExtension.extension.find(ext => ext.url === url);
 
     return subExtension?.valueString;
   }

@@ -55,7 +55,7 @@ export class EncryptionService {
    * Generate AES-256 encryption key
    */
   async generateAESKey(keyId?: string): Promise<string> {
-    const id = keyId || uuidv4();
+    const id = keyId ?? uuidv4();
 
     // In a real implementation, this would use Node.js crypto or Web Crypto API
     // For now, we'll simulate key generation
@@ -126,7 +126,7 @@ export class EncryptionService {
    * Encrypt data using AES-256-GCM
    */
   async encryptWithAES(data: string, keyId?: string): Promise<EncryptedData> {
-    const activeKeyId = keyId || 'default-aes';
+    const activeKeyId = keyId ?? 'default-aes';
     const key = this.keys.get(activeKeyId);
 
     if (!key || !key.algorithm.includes('AES')) {
@@ -182,7 +182,7 @@ export class EncryptionService {
    * Encrypt data using RSA-OAEP (typically for small data like keys)
    */
   async encryptWithRSA(data: string, publicKeyId?: string): Promise<EncryptedData> {
-    const activeKeyId = publicKeyId || 'default-rsa-public';
+    const activeKeyId = publicKeyId ?? 'default-rsa-public';
     const key = this.keys.get(activeKeyId);
 
     if (!key || !key.algorithm.includes('RSA') || !activeKeyId.includes('public')) {
@@ -273,11 +273,13 @@ export class EncryptionService {
       try {
         if (key.expiresAt && new Date(key.expiresAt) < new Date()) {
           if (key.algorithm.includes('AES')) {
+            // eslint-disable-next-line no-await-in-loop
             const newKeyId = await this.generateAESKey();
             rotated.push(`${keyId} -> ${newKeyId}`);
             this.keys.delete(keyId);
           } else if (key.algorithm.includes('RSA')) {
             const baseName = keyId.replace(/-public|-private$/, '');
+            // eslint-disable-next-line no-await-in-loop
             const { publicKeyId, privateKeyId } = await this.generateRSAKeyPair(
               `${baseName}-rotated`
             );
@@ -318,6 +320,52 @@ export class EncryptionService {
       const { key: _, ...keyInfo } = key;
       return keyInfo;
     });
+  }
+
+  /**
+   * Encrypt an object recursively
+   */
+  async encryptObject(obj: Record<string, unknown>): Promise<Record<string, unknown>> {
+    const entries = Object.entries(obj);
+
+    const encryptedEntries = await Promise.all(
+      entries.map(async ([key, value]): Promise<[string, unknown]> => {
+        if (typeof value === 'string') {
+          const encryptedValue = await this.encryptWithAES(value);
+          return [key, encryptedValue];
+        }
+        if (typeof value === 'object' && value !== null) {
+          const encryptedValue = await this.encryptObject(value as Record<string, unknown>);
+          return [key, encryptedValue];
+        }
+        return [key, value];
+      })
+    );
+
+    return Object.fromEntries(encryptedEntries);
+  }
+
+  /**
+   * Recursively decrypt an object's string values
+   */
+  async decryptObject(encryptedObj: Record<string, unknown>): Promise<Record<string, unknown>> {
+    const entries = Object.entries(encryptedObj);
+
+    const decryptedEntries = await Promise.all(
+      entries.map(async ([key, value]): Promise<[string, unknown]> => {
+        if (typeof value === 'object' && value !== null && 'data' in value && 'keyId' in value) {
+          const decryptedValue = await this.decryptWithAES(value as EncryptedData);
+          return [key, decryptedValue];
+        }
+        if (typeof value === 'object' && value !== null) {
+          const decryptedValue = await this.decryptObject(value as Record<string, unknown>);
+          return [key, decryptedValue];
+        }
+        return [key, value];
+      })
+    );
+
+    return Object.fromEntries(decryptedEntries);
   }
 
   /**

@@ -294,6 +294,7 @@ export class MasterLincAgent extends BaseAgent {
       const stepPromises = readySteps.map(step =>
         this.executeWorkflowExecutionStep(step, stepResults, parameters)
       );
+      // eslint-disable-next-line no-await-in-loop
       const results = await Promise.allSettled(stepPromises);
 
       // Process results
@@ -362,7 +363,7 @@ export class MasterLincAgent extends BaseAgent {
       case 'conditional':
         return this.executeConditional(step, stepResults, parameters);
       default:
-        throw new Error(`Unknown step type: ${step.type}`);
+        throw new Error(`Unknown step type: ${step.type as string}`);
     }
   }
 
@@ -724,8 +725,8 @@ export class MasterLincAgent extends BaseAgent {
   // Implementation of abstract methods from BaseAgent
   protected async executeValidationStep(
     step: WorkflowStep,
-    context: AgentContext,
-    previousResults: Record<string, unknown>
+    _context: AgentContext,
+    _previousResults: Record<string, unknown>
   ): Promise<unknown> {
     // Master orchestration validation logic
     this.logger.debug('Master executing validation step', { stepId: step.id, stepName: step.name });
@@ -791,7 +792,7 @@ export class MasterLincAgent extends BaseAgent {
     // Master orchestration decision logic
     this.logger.debug('Master executing decision step', { stepId: step.id, stepName: step.name });
 
-    const analysisResults = previousResults[step.dependencies?.[0] || 'default'];
+    const analysisResults = previousResults[step.dependencies?.[0] ?? 'default'];
 
     return this.makeSystemDecision({
       type: step.config.decisionType as string,
@@ -809,7 +810,7 @@ export class MasterLincAgent extends BaseAgent {
     // Master orchestration action logic
     this.logger.debug('Master executing action step', { stepId: step.id, stepName: step.name });
 
-    const decisionResults = previousResults[step.dependencies?.[0] || 'default'];
+    const decisionResults = previousResults[step.dependencies?.[0] ?? 'default'];
 
     switch (step.config.actionType) {
       case 'allocate-agents':
@@ -825,14 +826,14 @@ export class MasterLincAgent extends BaseAgent {
 
   // Helper methods for master orchestration
   private async validateResourceAllocation(
-    config: Record<string, unknown>
+    _config: Record<string, unknown>
   ): Promise<{ valid: boolean; issues?: string[] }> {
     // Resource allocation validation
     return { valid: true };
   }
 
   private async validateWorkflowIntegrity(
-    config: Record<string, unknown>
+    _config: Record<string, unknown>
   ): Promise<{ valid: boolean; warnings?: string[] }> {
     // Workflow integrity validation
     return { valid: true };
@@ -848,12 +849,12 @@ export class MasterLincAgent extends BaseAgent {
     return data;
   }
 
-  private async analyzeSystemPerformance(data: unknown, context: AgentContext): Promise<unknown> {
+  private async analyzeSystemPerformance(_data: unknown, _context: AgentContext): Promise<unknown> {
     // System performance analysis
     return { performance: 'optimal', utilization: 85 };
   }
 
-  private async analyzeResourceUtilization(data: unknown): Promise<unknown> {
+  private async analyzeResourceUtilization(_data: unknown): Promise<unknown> {
     // Resource utilization analysis
     return { utilization: 'efficient', recommendations: [] };
   }
@@ -869,24 +870,24 @@ export class MasterLincAgent extends BaseAgent {
   }
 
   private async executeAgentAllocation(
-    config: Record<string, unknown>,
-    context: AgentContext
+    _config: Record<string, unknown>,
+    _context: AgentContext
   ): Promise<unknown> {
     // Agent allocation execution
     return { allocated: true, agentCount: 3 };
   }
 
   private async coordinateSystemWorkflow(
-    config: Record<string, unknown>,
-    context: AgentContext
+    _config: Record<string, unknown>,
+    _context: AgentContext
   ): Promise<unknown> {
     // System workflow coordination
     return { coordinated: true, workflowId: `wf_${Date.now()}` };
   }
 
   private async optimizeSystemPerformance(
-    results: unknown,
-    context: AgentContext
+    _results: unknown,
+    _context: AgentContext
   ): Promise<unknown> {
     // System performance optimization
     return { optimized: true, improvementPercent: 15 };

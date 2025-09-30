@@ -300,7 +300,7 @@ export class FHIRClient {
 
   private processResponse<T extends FHIRResource>(response: ApiResponse<T>): FHIRResponse<T> {
     if (!response.success || !response.data) {
-      throw new Error(`FHIR operation failed: ${response.error || 'Unknown error'}`);
+      throw new Error(`FHIR operation failed: ${response.error ?? 'Unknown error'}`);
     }
 
     return {
@@ -316,11 +316,11 @@ export class FHIRClient {
     response: ApiResponse<FHIRBundle>
   ): FHIRSearchResponse<T> {
     if (!response.success || !response.data) {
-      throw new Error(`FHIR search failed: ${response.error || 'Unknown error'}`);
+      throw new Error(`FHIR search failed: ${response.error ?? 'Unknown error'}`);
     }
 
     const bundle = response.data;
-    const resources = (bundle.entry || [])
+    const resources = (bundle.entry ?? [])
       .map(entry => entry.resource)
       .filter((resource): resource is T => resource !== undefined);
 
