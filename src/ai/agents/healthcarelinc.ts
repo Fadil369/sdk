@@ -1148,10 +1148,10 @@ export class HealthcareLincAgent extends BaseAgent {
   ): Promise<unknown> {
     // Healthcare-specific validation logic
     this.logger.debug('Executing validation step', { stepId: step.id, stepName: step.name });
-    
+
     switch (step.config.validationType) {
       case 'fhir':
-        return this.validateFHIRData(step.config.data as unknown);
+        return this.validateFHIRData(step.config.data);
       case 'clinical':
         return this.validateClinicalRules(step.config, context);
       default:
@@ -1166,9 +1166,9 @@ export class HealthcareLincAgent extends BaseAgent {
   ): Promise<unknown> {
     // Healthcare data transformation logic
     this.logger.debug('Executing transformation step', { stepId: step.id, stepName: step.name });
-    
+
     const inputData = previousResults[step.dependencies?.[0] || 'default'] || step.config.inputData;
-    
+
     switch (step.config.transformationType) {
       case 'fhir-mapping':
         return this.transformToFHIR(inputData);
@@ -1186,9 +1186,9 @@ export class HealthcareLincAgent extends BaseAgent {
   ): Promise<unknown> {
     // Healthcare analysis logic
     this.logger.debug('Executing analysis step', { stepId: step.id, stepName: step.name });
-    
+
     const inputData = previousResults[step.dependencies?.[0] || 'default'] || step.config.inputData;
-    
+
     switch (step.config.analysisType) {
       case 'clinical-decision':
         return this.performClinicalAnalysis(inputData, context);
@@ -1206,9 +1206,9 @@ export class HealthcareLincAgent extends BaseAgent {
   ): Promise<unknown> {
     // Healthcare decision logic
     this.logger.debug('Executing decision step', { stepId: step.id, stepName: step.name });
-    
+
     const analysisResults = previousResults[step.dependencies?.[0] || 'default'];
-    
+
     return this.makeDecision({
       type: step.config.decisionType as string,
       context,
@@ -1219,14 +1219,14 @@ export class HealthcareLincAgent extends BaseAgent {
 
   protected async executeActionStep(
     step: WorkflowStep,
-    context: AgentContext, 
+    context: AgentContext,
     previousResults: Record<string, unknown>
   ): Promise<unknown> {
     // Healthcare action execution logic
     this.logger.debug('Executing action step', { stepId: step.id, stepName: step.name });
-    
+
     const decisionResults = previousResults[step.dependencies?.[0] || 'default'];
-    
+
     switch (step.config.actionType) {
       case 'send-notification':
         return this.sendHealthcareNotification(step.config, context);
@@ -1245,7 +1245,10 @@ export class HealthcareLincAgent extends BaseAgent {
     return { valid: true };
   }
 
-  private async validateClinicalRules(config: Record<string, unknown>, context: AgentContext): Promise<{ valid: boolean; warnings?: string[] }> {
+  private async validateClinicalRules(
+    config: Record<string, unknown>,
+    context: AgentContext
+  ): Promise<{ valid: boolean; warnings?: string[] }> {
     // Clinical rules validation
     return { valid: true };
   }
@@ -1270,17 +1273,26 @@ export class HealthcareLincAgent extends BaseAgent {
     return { riskScore: 'low', confidence: 0.9 };
   }
 
-  private async sendHealthcareNotification(config: Record<string, unknown>, context: AgentContext): Promise<unknown> {
+  private async sendHealthcareNotification(
+    config: Record<string, unknown>,
+    context: AgentContext
+  ): Promise<unknown> {
     // Healthcare notification logic
     return { notificationSent: true, timestamp: new Date().toISOString() };
   }
 
-  private async updateHealthcareRecord(config: Record<string, unknown>, context: AgentContext): Promise<unknown> {
+  private async updateHealthcareRecord(
+    config: Record<string, unknown>,
+    context: AgentContext
+  ): Promise<unknown> {
     // Healthcare record update logic
     return { recordUpdated: true, timestamp: new Date().toISOString() };
   }
 
-  private async generateHealthcareReport(results: unknown, context: AgentContext): Promise<unknown> {
+  private async generateHealthcareReport(
+    results: unknown,
+    context: AgentContext
+  ): Promise<unknown> {
     // Healthcare report generation logic
     return { reportGenerated: true, reportId: `report_${Date.now()}` };
   }
@@ -1293,9 +1305,9 @@ export class HealthcareLincAgent extends BaseAgent {
     rules: string[];
   }): Promise<unknown> {
     // Healthcare decision making logic
-    this.logger.debug('Making healthcare decision', { 
-      type: params.type, 
-      userId: params.context.userId 
+    this.logger.debug('Making healthcare decision', {
+      type: params.type,
+      userId: params.context.userId,
     });
 
     return {

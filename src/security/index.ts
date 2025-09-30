@@ -25,11 +25,7 @@ export class SecurityManager {
   ) {}
 
   async initialize(): Promise<void> {
-    const securityConfig = this.config.get('security') as {
-      hipaa?: { auditLevel?: 'minimal' | 'standard' | 'comprehensive' };
-      audit?: { endpoint?: string };
-      encryption?: { algorithm?: string; keySize?: number };
-    };
+    const securityConfig = this.config.get('security');
 
     // Initialize audit logger
     const hipaaLevel = securityConfig?.hipaa?.auditLevel ?? 'standard';

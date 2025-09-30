@@ -311,16 +311,20 @@ export abstract class BaseAgent {
 
     // Calculate performance metrics
     const now = Date.now();
-    const oneHourAgo = now - (60 * 60 * 1000);
+    const oneHourAgo = now - 60 * 60 * 1000;
     const recentTasks = tasks.filter(t => new Date(t.createdAt).getTime() > oneHourAgo);
     stats.performanceMetrics.tasksPerHour = recentTasks.length;
-    
-    const recentFinishedTasks = recentTasks.filter(t => t.status === 'completed' || t.status === 'failed');
+
+    const recentFinishedTasks = recentTasks.filter(
+      t => t.status === 'completed' || t.status === 'failed'
+    );
     if (recentFinishedTasks.length > 0) {
-      stats.performanceMetrics.errorRate = (recentTasks.filter(t => t.status === 'failed').length / recentFinishedTasks.length) * 100;
-      stats.performanceMetrics.averageResponseTime = recentFinishedTasks.reduce((sum, task) => {
-        return sum + (now - new Date(task.createdAt).getTime());
-      }, 0) / recentFinishedTasks.length;
+      stats.performanceMetrics.errorRate =
+        (recentTasks.filter(t => t.status === 'failed').length / recentFinishedTasks.length) * 100;
+      stats.performanceMetrics.averageResponseTime =
+        recentFinishedTasks.reduce((sum, task) => {
+          return sum + (now - new Date(task.createdAt).getTime());
+        }, 0) / recentFinishedTasks.length;
     }
 
     return stats;
@@ -329,7 +333,10 @@ export abstract class BaseAgent {
   /**
    * Enhanced workflow execution with creative capabilities
    */
-  async executeWorkflow(workflow: AIWorkflow, context: AgentContext): Promise<{
+  async executeWorkflow(
+    workflow: AIWorkflow,
+    context: AgentContext
+  ): Promise<{
     success: boolean;
     results: Record<string, unknown>;
     executionTime: number;
@@ -350,11 +357,11 @@ export abstract class BaseAgent {
     try {
       // Sort steps by dependencies
       const sortedSteps = this.topologicalSort(workflow.steps);
-      
+
       for (const step of sortedSteps) {
         try {
           const stepStartTime = Date.now();
-          
+
           // Check if step dependencies are satisfied
           if (step.dependencies) {
             for (const depId of step.dependencies) {
@@ -376,7 +383,6 @@ export abstract class BaseAgent {
             stepName: step.name,
             executionTime: stepExecutionTime,
           });
-
         } catch (error) {
           const errorMsg = `Step ${step.name} failed: ${(error as Error).message}`;
           errors.push(errorMsg);
@@ -385,7 +391,7 @@ export abstract class BaseAgent {
             stepId: step.id,
             stepName: step.name,
           });
-          
+
           // Continue with non-critical steps or stop based on step configuration
           if (step.type === 'validation') {
             break; // Stop on validation failures
@@ -412,7 +418,6 @@ export abstract class BaseAgent {
         stepsCompleted,
         errors: errors.length > 0 ? errors : undefined,
       };
-
     } catch (error) {
       const executionTime = Date.now() - startTime;
       this.logger.error('Workflow execution failed', error as Error, {
@@ -492,11 +497,31 @@ export abstract class BaseAgent {
   }
 
   // Abstract methods for workflow step execution
-  protected abstract executeValidationStep(step: WorkflowStep, context: AgentContext, previousResults: Record<string, unknown>): Promise<unknown>;
-  protected abstract executeTransformationStep(step: WorkflowStep, context: AgentContext, previousResults: Record<string, unknown>): Promise<unknown>;
-  protected abstract executeAnalysisStep(step: WorkflowStep, context: AgentContext, previousResults: Record<string, unknown>): Promise<unknown>;
-  protected abstract executeDecisionStep(step: WorkflowStep, context: AgentContext, previousResults: Record<string, unknown>): Promise<unknown>;
-  protected abstract executeActionStep(step: WorkflowStep, context: AgentContext, previousResults: Record<string, unknown>): Promise<unknown>;
+  protected abstract executeValidationStep(
+    step: WorkflowStep,
+    context: AgentContext,
+    previousResults: Record<string, unknown>
+  ): Promise<unknown>;
+  protected abstract executeTransformationStep(
+    step: WorkflowStep,
+    context: AgentContext,
+    previousResults: Record<string, unknown>
+  ): Promise<unknown>;
+  protected abstract executeAnalysisStep(
+    step: WorkflowStep,
+    context: AgentContext,
+    previousResults: Record<string, unknown>
+  ): Promise<unknown>;
+  protected abstract executeDecisionStep(
+    step: WorkflowStep,
+    context: AgentContext,
+    previousResults: Record<string, unknown>
+  ): Promise<unknown>;
+  protected abstract executeActionStep(
+    step: WorkflowStep,
+    context: AgentContext,
+    previousResults: Record<string, unknown>
+  ): Promise<unknown>;
 
   /**
    * Update agent status
