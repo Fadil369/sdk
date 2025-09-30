@@ -238,10 +238,15 @@ export class ComplianceValidator {
         validate: async (context: ValidationContext) => {
           if (context.operation && context.user) {
             const requiredPermission = `${context.operation.type}:${context.operation.resource}`;
+            const alternativePermission = `${context.operation.resource}:${context.operation.type}`;
             const hasPermission = context.user.permissions.some(p => {
               if (p === requiredPermission) return true;
+              if (p === alternativePermission) return true;
               if (p === '*') return true;
               if (context.operation && p === `${context.operation.resource}:*`) {
+                return true;
+              }
+              if (context.operation && p === `*:${context.operation.resource}`) {
                 return true;
               }
               return false;
