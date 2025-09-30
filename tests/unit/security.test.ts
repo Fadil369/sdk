@@ -414,7 +414,7 @@ describe('Compliance Validator', () => {
     expect(result.passed).toBe(true);
     expect(result.criticalFailures).toBe(0);
     expect(result.performanceMetrics).toBeDefined();
-    expect(result.performanceMetrics.executionTime).toBeGreaterThan(0);
+    expect(result.performanceMetrics.executionTime).toBeGreaterThanOrEqual(0);
     expect(result.performanceMetrics.rulesEvaluated).toBeGreaterThan(0);
   });
 

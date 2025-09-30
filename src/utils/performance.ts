@@ -84,7 +84,7 @@ export class HealthcarePerformanceProfiler {
    */
   getAllStats(): Record<string, ReturnType<HealthcarePerformanceProfiler['getStats']>> {
     const stats: Record<string, ReturnType<HealthcarePerformanceProfiler['getStats']>> = {};
-    
+
     for (const operationName of this.measurements.keys()) {
       stats[operationName] = this.getStats(operationName);
     }
@@ -138,14 +138,16 @@ export class HealthcarePerformanceProfiler {
         'compliance-check': 200,
         'audit-logging': 50,
         'security-validation': 300,
-        'default': 1000,
+        default: 1000,
       };
 
       const threshold = thresholds[operationName as keyof typeof thresholds] || thresholds.default;
-      
+
       if (stats.p95 > threshold) {
         slowOperations.push(operationName);
-        recommendations.push(`Optimize ${operationName} - P95: ${stats.p95.toFixed(2)}ms (threshold: ${threshold}ms)`);
+        recommendations.push(
+          `Optimize ${operationName} - P95: ${stats.p95.toFixed(2)}ms (threshold: ${threshold}ms)`
+        );
       } else {
         fastOperations.push(operationName);
       }
@@ -189,12 +191,12 @@ export function measurePerformance(operationName: string) {
     descriptor: TypedPropertyDescriptor<T>
   ): TypedPropertyDescriptor<T> {
     const originalMethod = descriptor.value;
-    
+
     if (!originalMethod) {
       return descriptor;
     }
 
-    descriptor.value = (async function (this: unknown, ...args: Parameters<T>) {
+    descriptor.value = async function (this: unknown, ...args: Parameters<T>) {
       healthcareProfiler.startTimer(operationName);
       try {
         const result = await originalMethod.apply(this, args);
@@ -202,7 +204,7 @@ export function measurePerformance(operationName: string) {
       } finally {
         healthcareProfiler.endTimer(operationName);
       }
-    }) as T;
+    } as T;
 
     return descriptor;
   };
@@ -223,35 +225,36 @@ export class FrameRateMonitor {
    */
   start(): void {
     if (this.isMonitoring) return;
-    
+
     this.isMonitoring = true;
     this.frameCount = 0;
     this.lastTime = performance.now();
     this.frameRates = [];
-    
+
     const monitor = () => {
       if (!this.isMonitoring) return;
-      
+
       this.frameCount++;
       const currentTime = performance.now();
       const deltaTime = currentTime - this.lastTime;
-      
-      if (deltaTime >= 1000) { // Calculate FPS every second
+
+      if (deltaTime >= 1000) {
+        // Calculate FPS every second
         const fps = Math.round((this.frameCount * 1000) / deltaTime);
         this.frameRates.push(fps);
-        
+
         // Keep only last 60 measurements (1 minute of data)
         if (this.frameRates.length > 60) {
           this.frameRates.shift();
         }
-        
+
         this.frameCount = 0;
         this.lastTime = currentTime;
       }
-      
+
       this.animationId = requestAnimationFrame(monitor);
     };
-    
+
     this.animationId = requestAnimationFrame(monitor);
   }
 
@@ -288,7 +291,7 @@ export class FrameRateMonitor {
   getPerformanceStatus(): 'excellent' | 'good' | 'acceptable' | 'poor' {
     const avgFps = this.getAverageFrameRate();
     if (avgFps >= 55) return 'excellent';
-    if (avgFps >= 45) return 'good';  
+    if (avgFps >= 45) return 'good';
     if (avgFps >= 30) return 'acceptable';
     return 'poor';
   }

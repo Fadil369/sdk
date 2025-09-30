@@ -4,7 +4,14 @@
 
 import { Logger } from '@/core/logger';
 import { AIAgent } from '@/types/ai';
-import { BaseAgent, AgentTask, AgentContext, WorkflowStep, AgentCapability, createAgentCapability } from './base';
+import {
+  BaseAgent,
+  AgentTask,
+  AgentContext,
+  WorkflowStep,
+  AgentCapability,
+  createAgentCapability,
+} from './base';
 
 export interface WorkflowExecution {
   id: string;
@@ -161,7 +168,7 @@ export class MasterLincAgent extends BaseAgent {
   protected async processTask(task: AgentTask): Promise<Record<string, unknown>> {
     switch (task.type) {
       case 'workflow_execution':
-        return this.executeWorkflow(task);
+        return this.executeWorkflowTask(task);
       case 'task_prioritization':
         return this.prioritizeTasks(task);
       case 'resource_allocation':
@@ -172,9 +179,9 @@ export class MasterLincAgent extends BaseAgent {
   }
 
   /**
-   * Execute a workflow
+   * Execute a workflow task
    */
-  private async executeWorkflow(task: AgentTask): Promise<Record<string, unknown>> {
+  private async executeWorkflowTask(task: AgentTask): Promise<Record<string, unknown>> {
     const { workflowDefinition, parameters, priority } = task.data;
 
     const executionId = `workflow_${Date.now()}_${Math.random().toString(36).substring(2)}`;
@@ -278,7 +285,7 @@ export class MasterLincAgent extends BaseAgent {
 
       // Execute ready steps (can be done in parallel)
       const stepPromises = readySteps.map(step =>
-        this.executeWorkflowStep(step, stepResults, parameters)
+        this.executeWorkflowExecutionStep(step, stepResults, parameters)
       );
       const results = await Promise.allSettled(stepPromises);
 
@@ -327,9 +334,9 @@ export class MasterLincAgent extends BaseAgent {
   }
 
   /**
-   * Execute a single workflow step
+   * Execute a single workflow execution step
    */
-  private async executeWorkflowStep(
+  private async executeWorkflowExecutionStep(
     step: WorkflowExecutionStep,
     stepResults: Record<string, unknown>,
     parameters: Record<string, unknown>
@@ -715,7 +722,7 @@ export class MasterLincAgent extends BaseAgent {
   ): Promise<unknown> {
     // Master orchestration validation logic
     this.logger.debug('Master executing validation step', { stepId: step.id, stepName: step.name });
-    
+
     switch (step.config.validationType) {
       case 'resource-allocation':
         return this.validateResourceAllocation(step.config);
@@ -732,10 +739,13 @@ export class MasterLincAgent extends BaseAgent {
     previousResults: Record<string, unknown>
   ): Promise<unknown> {
     // Master orchestration transformation logic
-    this.logger.debug('Master executing transformation step', { stepId: step.id, stepName: step.name });
-    
+    this.logger.debug('Master executing transformation step', {
+      stepId: step.id,
+      stepName: step.name,
+    });
+
     const inputData = previousResults[step.dependencies?.[0] || 'default'] || step.config.inputData;
-    
+
     switch (step.config.transformationType) {
       case 'agent-coordination':
         return this.transformForAgentCoordination(inputData);
@@ -753,9 +763,9 @@ export class MasterLincAgent extends BaseAgent {
   ): Promise<unknown> {
     // Master orchestration analysis logic
     this.logger.debug('Master executing analysis step', { stepId: step.id, stepName: step.name });
-    
+
     const inputData = previousResults[step.dependencies?.[0] || 'default'] || step.config.inputData;
-    
+
     switch (step.config.analysisType) {
       case 'performance-analysis':
         return this.analyzeSystemPerformance(inputData, context);
@@ -773,9 +783,9 @@ export class MasterLincAgent extends BaseAgent {
   ): Promise<unknown> {
     // Master orchestration decision logic
     this.logger.debug('Master executing decision step', { stepId: step.id, stepName: step.name });
-    
+
     const analysisResults = previousResults[step.dependencies?.[0] || 'default'];
-    
+
     return this.makeSystemDecision({
       type: step.config.decisionType as string,
       context,
@@ -791,9 +801,9 @@ export class MasterLincAgent extends BaseAgent {
   ): Promise<unknown> {
     // Master orchestration action logic
     this.logger.debug('Master executing action step', { stepId: step.id, stepName: step.name });
-    
+
     const decisionResults = previousResults[step.dependencies?.[0] || 'default'];
-    
+
     switch (step.config.actionType) {
       case 'allocate-agents':
         return this.executeAgentAllocation(step.config, context);
@@ -807,12 +817,16 @@ export class MasterLincAgent extends BaseAgent {
   }
 
   // Helper methods for master orchestration
-  private async validateResourceAllocation(config: Record<string, unknown>): Promise<{ valid: boolean; issues?: string[] }> {
+  private async validateResourceAllocation(
+    config: Record<string, unknown>
+  ): Promise<{ valid: boolean; issues?: string[] }> {
     // Resource allocation validation
     return { valid: true };
   }
 
-  private async validateWorkflowIntegrity(config: Record<string, unknown>): Promise<{ valid: boolean; warnings?: string[] }> {
+  private async validateWorkflowIntegrity(
+    config: Record<string, unknown>
+  ): Promise<{ valid: boolean; warnings?: string[] }> {
     // Workflow integrity validation
     return { valid: true };
   }
@@ -847,17 +861,26 @@ export class MasterLincAgent extends BaseAgent {
     return { decision: 'proceed', confidence: 0.9, priority: params.priority };
   }
 
-  private async executeAgentAllocation(config: Record<string, unknown>, context: AgentContext): Promise<unknown> {
+  private async executeAgentAllocation(
+    config: Record<string, unknown>,
+    context: AgentContext
+  ): Promise<unknown> {
     // Agent allocation execution
     return { allocated: true, agentCount: 3 };
   }
 
-  private async coordinateSystemWorkflow(config: Record<string, unknown>, context: AgentContext): Promise<unknown> {
+  private async coordinateSystemWorkflow(
+    config: Record<string, unknown>,
+    context: AgentContext
+  ): Promise<unknown> {
     // System workflow coordination
     return { coordinated: true, workflowId: `wf_${Date.now()}` };
   }
 
-  private async optimizeSystemPerformance(results: unknown, context: AgentContext): Promise<unknown> {
+  private async optimizeSystemPerformance(
+    results: unknown,
+    context: AgentContext
+  ): Promise<unknown> {
     // System performance optimization
     return { optimized: true, improvementPercent: 15 };
   }

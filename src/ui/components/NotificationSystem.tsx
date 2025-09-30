@@ -255,7 +255,7 @@ const NotificationCard = ({
 };
 
 // Global notification functions
-export const showNotification = (config: Omit<NotificationConfig, 'id'>): string => {
+export const showNotification = (config: Omit<NotificationInstance, 'id' | 'timestamp'>): string => {
   const notification: NotificationInstance = {
     ...config,
     id: `notification-${++notificationId}`,
@@ -344,25 +344,28 @@ export class HealthcareNotificationManager {
   /**
    * Show enhanced notification with healthcare context
    */
-  showHealthcareNotification(config: NotificationConfig & {
-    priority?: 'low' | 'medium' | 'high' | 'critical';
-    category?: 'system' | 'security' | 'patient' | 'workflow' | 'compliance';
-    patientId?: string;
-    userId?: string;
-    requiresAcknowledgment?: boolean;
-    metadata?: Record<string, unknown>;
-  }): string {
-    const { priority, category, patientId, userId, requiresAcknowledgment, ...notificationConfig } = config;
-    
+  showHealthcareNotification(
+    config: NotificationConfig & {
+      priority?: 'low' | 'medium' | 'high' | 'critical';
+      category?: 'system' | 'security' | 'patient' | 'workflow' | 'compliance';
+      patientId?: string;
+      userId?: string;
+      requiresAcknowledgment?: boolean;
+      metadata?: Record<string, unknown>;
+    }
+  ): string {
+    const { priority, category, patientId, userId, requiresAcknowledgment, ...notificationConfig } =
+      config;
+
     const id = showNotification({
       ...notificationConfig,
       metadata: {
-        ...config.metadata,
         priority: priority || 'medium',
         category: category || 'system',
         patientId,
         userId,
         requiresAcknowledgment,
+        ...(config.metadata || {}),
       },
     });
 
@@ -427,13 +430,18 @@ export class HealthcareNotificationManager {
    * Show workflow status notification
    */
   showWorkflowStatus(
-    workflowName: string, 
+    workflowName: string,
     status: 'started' | 'completed' | 'failed' | 'paused',
     details?: string
   ): string {
     const icons = { started: '▶️', completed: '✅', failed: '❌', paused: '⏸️' };
-    const types = { started: 'info', completed: 'success', failed: 'error', paused: 'warning' } as const;
-    
+    const types = {
+      started: 'info',
+      completed: 'success',
+      failed: 'error',
+      paused: 'warning',
+    } as const;
+
     return this.showHealthcareNotification({
       type: types[status],
       title: `${icons[status]} Workflow ${status.charAt(0).toUpperCase() + status.slice(1)}`,
@@ -461,9 +469,7 @@ export class HealthcareNotificationManager {
    * Get unacknowledged critical notifications
    */
   getCriticalNotifications(): NotificationInstance[] {
-    return globalNotifications.filter(
-      n => n.priority === 'critical' && !n.acknowledged
-    );
+    return globalNotifications.filter(n => n.priority === 'critical' && !n.acknowledged);
   }
 
   /**
@@ -490,7 +496,7 @@ export class HealthcareNotificationManager {
   clearOldNotifications(maxAgeMs: number = 24 * 60 * 60 * 1000): number {
     const cutoff = Date.now() - maxAgeMs;
     let removedCount = 0;
-    
+
     for (let i = globalNotifications.length - 1; i >= 0; i--) {
       const notification = globalNotifications[i];
       if (notification && notification.timestamp < cutoff && notification.acknowledged) {
@@ -498,11 +504,11 @@ export class HealthcareNotificationManager {
         removedCount++;
       }
     }
-    
+
     if (removedCount > 0) {
       subscribers.forEach(callback => callback(globalNotifications));
     }
-    
+
     return removedCount;
   }
 
@@ -528,16 +534,17 @@ export class HealthcareNotificationManager {
 
     for (const notification of globalNotifications) {
       // Count by type
-      report.byType[notification.type || 'info'] = (report.byType[notification.type || 'info'] || 0) + 1;
-      
+      report.byType[notification.type || 'info'] =
+        (report.byType[notification.type || 'info'] || 0) + 1;
+
       // Count by category
       const category = notification.category || 'system';
       report.byCategory[category] = (report.byCategory[category] || 0) + 1;
-      
+
       // Count by priority
       const priority = notification.priority || 'medium';
       report.byPriority[priority] = (report.byPriority[priority] || 0) + 1;
-      
+
       // Track unacknowledged
       if (!notification.acknowledged) {
         report.unacknowledged++;
