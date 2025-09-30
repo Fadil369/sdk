@@ -255,7 +255,9 @@ const NotificationCard = ({
 };
 
 // Global notification functions
-export const showNotification = (config: Omit<NotificationInstance, 'id' | 'timestamp'>): string => {
+export const showNotification = (
+  config: Omit<NotificationInstance, 'id' | 'timestamp'>
+): string => {
   const notification: NotificationInstance = {
     ...config,
     id: `notification-${++notificationId}`,

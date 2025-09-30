@@ -3,6 +3,7 @@ name = "brainsait-healthcare-sdk"
 main = "./dist/worker.js"
 compatibility_date = "2023-10-01"
 compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "public"
 
 # Environment settings
 [env.production]

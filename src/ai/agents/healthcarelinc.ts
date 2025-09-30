@@ -681,7 +681,8 @@ export class HealthcareLincAgent extends BaseAgent {
     const optimizationId = `optimization_${Date.now()}_${Math.random().toString(36).substring(2)}`;
 
     try {
-      const currentSteps = (currentWorkflow as any).steps || [];
+      const currentSteps =
+        ((currentWorkflow as Record<string, unknown>)?.steps as ClinicalWorkflowStep[]) ?? [];
       const optimizedSteps = await this.analyzeAndOptimizeSteps(
         currentSteps,
         optimizationGoals as string[]
@@ -1102,14 +1103,14 @@ export class HealthcareLincAgent extends BaseAgent {
    * Get clinical decision by ID
    */
   getClinicalDecision(decisionId: string): ClinicalDecision | null {
-    return this.clinicalDecisions.get(decisionId) || null;
+    return this.clinicalDecisions.get(decisionId) ?? null;
   }
 
   /**
    * Get workflow optimization by ID
    */
   getWorkflowOptimization(optimizationId: string): WorkflowOptimization | null {
-    return this.workflowOptimizations.get(optimizationId) || null;
+    return this.workflowOptimizations.get(optimizationId) ?? null;
   }
 
   /**
@@ -1128,7 +1129,7 @@ export class HealthcareLincAgent extends BaseAgent {
     let totalConfidence = 0;
 
     decisions.forEach(decision => {
-      decisionsByType[decision.decisionType] = (decisionsByType[decision.decisionType] || 0) + 1;
+      decisionsByType[decision.decisionType] = (decisionsByType[decision.decisionType] ?? 0) + 1;
       totalWarnings += decision.warnings.length;
       totalConfidence += decision.confidence;
     });
@@ -1209,7 +1210,7 @@ export class HealthcareLincAgent extends BaseAgent {
     // Healthcare decision logic
     this.logger.debug('Executing decision step', { stepId: step.id, stepName: step.name });
 
-    const analysisResults = previousResults[step.dependencies?.[0] || 'default'];
+    const analysisResults = previousResults[step.dependencies?.[0] ?? 'default'];
 
     return this.makeDecision({
       type: step.config.decisionType as string,
@@ -1227,7 +1228,7 @@ export class HealthcareLincAgent extends BaseAgent {
     // Healthcare action execution logic
     this.logger.debug('Executing action step', { stepId: step.id, stepName: step.name });
 
-    const decisionResults = previousResults[step.dependencies?.[0] || 'default'];
+    const decisionResults = previousResults[step.dependencies?.[0] ?? 'default'];
 
     switch (step.config.actionType) {
       case 'send-notification':

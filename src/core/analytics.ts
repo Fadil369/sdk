@@ -13,7 +13,7 @@ export class AnalyticsManager {
   constructor(config: SDKConfig, logger: Logger) {
     this.config = config;
     this.logger = logger;
-    this.enabled = config.analytics?.enabled || false;
+    this.enabled = config.analytics?.enabled ?? false;
   }
 
   trackEvent(eventName: string, eventProperties: Record<string, unknown>): void {

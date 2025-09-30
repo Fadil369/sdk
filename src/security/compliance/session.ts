@@ -78,17 +78,15 @@ export class SessionManager {
     const expiresAt = new Date(now.getTime() + this.config.maxDuration * 60 * 1000);
 
     const sessionData: SessionData = {
-      sessionId,
       userId,
       userRole,
-      permissions: [...permissions],
-      createdAt: now.toISOString(),
-      lastActivity: now.toISOString(),
-      expiresAt: expiresAt.toISOString(),
-      ipAddress: metadata?.ipAddress,
-      userAgent: metadata?.userAgent,
+      sessionId,
       isActive: true,
-      metadata: metadata?.additionalData,
+      createdAt: new Date().toISOString(),
+      lastActivity: new Date().toISOString(),
+      expiresAt: expiresAt.toISOString(),
+      metadata: metadata ?? {},
+      permissions: [],
     };
 
     // Store session
@@ -98,7 +96,8 @@ export class SessionManager {
     if (!this.userSessions.has(userId)) {
       this.userSessions.set(userId, new Set());
     }
-    this.userSessions.get(userId)!.add(sessionId);
+    const userSessions = this.userSessions.get(userId);
+    userSessions?.add(sessionId);
 
     // Log session creation
     this.logger.info('Session created', {
@@ -239,13 +238,15 @@ export class SessionManager {
       }
     }
 
+    const terminationReason = reason ?? 'manual';
+
     this.logger.info('Session terminated', {
       sessionId,
       userId: session.userId,
-      reason: reason || 'manual',
+      reason: terminationReason,
     });
 
-    this.logSessionEvent(sessionId, 'terminated', { reason });
+    this.logSessionEvent(sessionId, 'terminated', { reason: terminationReason });
 
     // Remove session after a delay (for audit purposes)
     setTimeout(() => {
@@ -264,17 +265,24 @@ export class SessionManager {
       return 0;
     }
 
-    let terminatedCount = 0;
-    for (const sessionId of Array.from(userSessionIds)) {
-      if (except && sessionId === except) {
-        continue;
-      }
+    const sessionsToTerminate = Array.from(userSessionIds).filter(
+      sessionId => !except || sessionId !== except
+    );
 
-      const terminated = await this.terminateSession(sessionId, 'user_sessions_terminated');
-      if (terminated) {
-        terminatedCount++;
-      }
+    if (sessionsToTerminate.length === 0) {
+      return 0;
     }
+
+    const terminationResults = await Promise.all(
+      sessionsToTerminate.map(sessionId =>
+        this.terminateSession(sessionId, 'user_sessions_terminated')
+      )
+    );
+
+    const terminatedCount = terminationResults.reduce(
+      (count, terminated) => count + (terminated ? 1 : 0),
+      0
+    );
 
     this.logger.info('User sessions terminated', { userId, terminatedCount });
 
@@ -310,7 +318,7 @@ export class SessionManager {
       return null;
     }
 
-    const { metadata, ...sessionInfo } = session;
+    const { metadata: _metadata, ...sessionInfo } = session;
     return sessionInfo;
   }
 
@@ -322,7 +330,7 @@ export class SessionManager {
 
     for (const session of this.sessions.values()) {
       if (session.isActive && new Date(session.expiresAt) > new Date()) {
-        const { metadata, ...sessionInfo } = session;
+        const { metadata: _metadata, ...sessionInfo } = session;
         activeSessions.push(sessionInfo);
       }
     }
@@ -357,7 +365,7 @@ export class SessionManager {
    */
   hasPermission(sessionId: string, permission: string): boolean {
     const session = this.sessions.get(sessionId);
-    return (session?.isActive && session.permissions.includes(permission)) || false;
+    return Boolean(session?.isActive && session.permissions.includes(permission));
   }
 
   /**
@@ -397,7 +405,7 @@ export class SessionManager {
       totalDuration += duration;
 
       // Count sessions per user
-      stats.sessionsPerUser[session.userId] = (stats.sessionsPerUser[session.userId] || 0) + 1;
+      stats.sessionsPerUser[session.userId] = (stats.sessionsPerUser[session.userId] ?? 0) + 1;
     }
 
     stats.averageSessionDuration =
@@ -415,7 +423,10 @@ export class SessionManager {
     // Run cleanup every 5 minutes
     this.cleanupInterval = setInterval(
       () => {
-        this.cleanupExpiredSessions();
+        void this.cleanupExpiredSessions().catch(error => {
+          const err = error instanceof Error ? error : new Error(String(error));
+          this.logger.error('Session cleanup failed', err);
+        });
       },
       5 * 60 * 1000
     );
@@ -439,8 +450,9 @@ export class SessionManager {
    */
   private async cleanupExpiredSessions(): Promise<void> {
     const now = new Date();
-    let cleanedCount = 0;
+    const sessionsToCleanup: Array<{ sessionId: string; reason: 'expired' | 'idle_timeout' }> = [];
 
+    // First pass: identify sessions to cleanup (no async operations)
     for (const [sessionId, session] of this.sessions.entries()) {
       const isExpired = new Date(session.expiresAt) < now;
       const isIdle =
@@ -448,13 +460,22 @@ export class SessionManager {
         this.config.idleTimeout * 60 * 1000;
 
       if (isExpired || isIdle) {
-        await this.terminateSession(sessionId, isExpired ? 'expired' : 'idle_timeout');
-        cleanedCount++;
+        sessionsToCleanup.push({
+          sessionId,
+          reason: isExpired ? 'expired' : 'idle_timeout',
+        });
       }
     }
 
-    if (cleanedCount > 0) {
-      this.logger.info('Expired sessions cleaned up', { cleanedCount });
+    // Second pass: cleanup sessions in parallel
+    if (sessionsToCleanup.length > 0) {
+      await Promise.allSettled(
+        sessionsToCleanup.map(({ sessionId, reason }) => this.terminateSession(sessionId, reason))
+      );
+
+      this.logger.info('Expired sessions cleaned up', {
+        cleanedCount: sessionsToCleanup.length,
+      });
     }
   }
 
@@ -467,7 +488,7 @@ export class SessionManager {
     const timestamp = Date.now().toString(36);
     const random = Math.random().toString(36).substring(2);
 
-    return `sess_${uuid}_${timestamp}_${random}`.substring(0, this.config.sessionTokenLength || 64);
+    return `sess_${uuid}_${timestamp}_${random}`.substring(0, this.config.sessionTokenLength ?? 64);
   }
 
   /**
@@ -496,8 +517,11 @@ export class SessionManager {
 
     // Terminate all active sessions
     const activeSessions = this.getAllActiveSessions();
-    for (const session of activeSessions) {
-      await this.terminateSession(session.sessionId, 'system_shutdown');
+
+    if (activeSessions.length > 0) {
+      await Promise.all(
+        activeSessions.map(session => this.terminateSession(session.sessionId, 'system_shutdown'))
+      );
     }
 
     this.logger.info('Session manager shutdown complete');

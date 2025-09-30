@@ -94,6 +94,8 @@ export default {
         }
       );
     } catch (error) {
+      // ESLint disable: console needed for Cloudflare Workers debugging
+      // eslint-disable-next-line no-console
       console.error('Worker error:', error);
       return new Response(
         JSON.stringify({
@@ -112,7 +114,7 @@ export default {
   },
 
   // Handle scheduled events (cron jobs)
-  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+  async scheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionContext): Promise<void> {
     try {
       // Cache warmup and cleanup
       await cacheMaintenanceTask(env);
@@ -120,8 +122,12 @@ export default {
       // Health metrics collection
       await collectHealthMetrics(env);
 
+      // ESLint disable: console needed for Cloudflare Workers logging
+      // eslint-disable-next-line no-console
       console.log('Scheduled task completed successfully');
     } catch (error) {
+      // ESLint disable: console needed for Cloudflare Workers debugging
+      // eslint-disable-next-line no-console
       console.error('Scheduled task error:', error);
     }
   },
@@ -182,7 +188,7 @@ async function handleAPIRequest(
     }
 
     // Handle different API endpoints
-    let response: any;
+    let response: Record<string, unknown>;
     switch (apiPath) {
       case 'health':
         // response = await sdk.getHealthStatus();
@@ -248,7 +254,7 @@ async function handleAPIRequest(
 async function handleFHIRRequest(
   request: Request,
   env: Env,
-  ctx: ExecutionContext
+  _ctx: ExecutionContext
 ): Promise<Response> {
   // Proxy FHIR requests to the actual FHIR server
   const url = new URL(request.url);
@@ -258,7 +264,7 @@ async function handleFHIRRequest(
   const response = await fetch(fhirUrl, {
     method: request.method,
     headers: {
-      
+      ...Object.fromEntries(request.headers.entries()),
       'User-Agent': `BrainSAIT-SDK/${env.SDK_VERSION}`,
     },
     body: request.method !== 'GET' ? await request.arrayBuffer() : undefined,
@@ -267,7 +273,7 @@ async function handleFHIRRequest(
   return new Response(response.body, {
     status: response.status,
     headers: {
-      
+      ...Object.fromEntries(response.headers.entries()),
       ...corsHeaders,
     },
   });
@@ -277,7 +283,7 @@ async function handleFHIRRequest(
 async function handleNPHIESRequest(
   request: Request,
   env: Env,
-  ctx: ExecutionContext
+  _ctx: ExecutionContext
 ): Promise<Response> {
   // Proxy NPHIES requests
   const url = new URL(request.url);
@@ -287,7 +293,7 @@ async function handleNPHIESRequest(
   const response = await fetch(nphiesUrl, {
     method: request.method,
     headers: {
-      
+      ...Object.fromEntries(request.headers.entries()),
       'User-Agent': `BrainSAIT-SDK/${env.SDK_VERSION}`,
     },
     body: request.method !== 'GET' ? await request.arrayBuffer() : undefined,
@@ -296,7 +302,7 @@ async function handleNPHIESRequest(
   return new Response(response.body, {
     status: response.status,
     headers: {
-      
+      ...Object.fromEntries(response.headers.entries()),
       ...corsHeaders,
     },
   });
@@ -339,7 +345,7 @@ async function handleAssetRequest(request: Request, env: Env): Promise<Response>
 
     return new Response(object.body, {
       headers: {
-        'Content-Type': object.httpMetadata?.contentType || 'application/octet-stream',
+        'Content-Type': object.httpMetadata?.contentType ?? 'application/octet-stream',
         'Cache-Control': 'public, max-age=31536000',
         ETag: object.httpEtag,
         ...corsHeaders,
@@ -351,9 +357,11 @@ async function handleAssetRequest(request: Request, env: Env): Promise<Response>
 }
 
 // Cache maintenance task
-async function cacheMaintenanceTask(env: Env): Promise<void> {
+async function cacheMaintenanceTask(_env: Env): Promise<void> {
   // Clean up expired cache entries
   // This is a simplified implementation
+  // ESLint disable: console needed for Cloudflare Workers logging
+  // eslint-disable-next-line no-console
   console.log('Cache maintenance completed');
 }
 

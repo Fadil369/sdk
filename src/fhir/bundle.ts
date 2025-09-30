@@ -41,7 +41,7 @@ export class FHIRBundleBuilder {
   constructor(type: BundleType, id?: string) {
     this.bundle = {
       resourceType: 'Bundle',
-      id: id || uuidv4(),
+      id: id ?? uuidv4(),
       type,
       entry: [],
       meta: {
@@ -163,7 +163,7 @@ export class FHIRBundleBuilder {
    */
   build(): FHIRBundle {
     // Update entry count
-    this.bundle.total = this.bundle.entry?.length || 0;
+    this.bundle.total = this.bundle.entry?.length ?? 0;
 
     return { ...this.bundle };
   }
@@ -275,7 +275,7 @@ export class FHIRBundleProcessor {
         };
 
         const bundle = builder.getBundle();
-        bundle.entry = bundle.entry || [];
+        bundle.entry = bundle.entry ?? [];
         bundle.entry.push(responseEntry);
       }
     });

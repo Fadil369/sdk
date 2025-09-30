@@ -4,22 +4,22 @@ Welcome to the comprehensive documentation for the BrainSAIT Healthcare SDK - yo
 
 ## 📚 Documentation Sections
 
-### [API Reference](api/README.md)
+### API Reference
 Complete API documentation with examples and use cases.
 
-### [FHIR Integration](fhir/README.md)
+### FHIR Integration
 Learn how to integrate with FHIR R4/R5 servers and handle healthcare resources.
 
-### [NPHIES Integration](nphies/README.md)
+### NPHIES Integration
 Complete guide for Saudi Arabia's NPHIES system integration.
 
-### [Security & Compliance](security/README.md)
+### Security & Compliance
 HIPAA compliance, encryption, and security best practices.
 
-### [AI Agents](ai/README.md)
+### AI Agents
 Implementing AI-powered healthcare automation and decision support.
 
-### [UI Components](ui/README.md)
+### UI Components
 Glass morphism UI components optimized for healthcare applications.
 
 ## 🚀 Quick Start Guide
@@ -139,11 +139,11 @@ We welcome contributions from the Saudi healthcare developer community!
 4. Add tests and documentation
 5. Submit a pull request
 
-See our [Contributing Guide](CONTRIBUTING.md) for detailed instructions.
+See our Contributing Guide for detailed instructions.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ---
 

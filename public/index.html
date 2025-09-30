@@ -1,131 +1,690 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BrainSAIT Healthcare SDK - Demo</title>
-    <meta name="description" content="BrainSAIT Healthcare SDK for NPHIES/FHIR Integration with Arabic support">
-    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .container {
-            text-align: center;
-            color: white;
-            padding: 2rem;
-            border-radius: 20px;
-            backdrop-filter: blur(20px);
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
-        }
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            font-weight: 700;
-        }
-        .subtitle {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
-        }
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin: 2rem 0;
-        }
-        .feature {
-            padding: 1rem;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .links {
-            margin-top: 2rem;
-        }
-        .link {
-            display: inline-block;
-            margin: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            text-decoration: none;
-            border-radius: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transition: all 0.3s ease;
-        }
-        .link:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-        .version {
-            margin-top: 2rem;
-            opacity: 0.7;
-            font-size: 0.9rem;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🧠 BrainSAIT Healthcare SDK</h1>
-        <div class="subtitle">
-            Advanced Healthcare Integration with FHIR/NPHIES Support
-        </div>
-        
-        <div class="features">
-            <div class="feature">
-                <h3>🔒 HIPAA Compliant</h3>
-                <p>Full security & compliance framework</p>
-            </div>
-            <div class="feature">
-                <h3>🌐 Arabic Support</h3>
-                <p>RTL & internationalization ready</p>
-            </div>
-            <div class="feature">
-                <h3>🤖 AI Agents</h3>
-                <p>MASTERLINC & HEALTHCARELINC</p>
-            </div>
-            <div class="feature">
-                <h3>💎 Glass UI</h3>
-                <p>Modern glass morphism design</p>
-            </div>
-        </div>
-        
-        <div class="links">
-            <a href="/docs" class="link">📚 Documentation</a>
-            <a href="https://github.com/Fadil369/sdk" class="link">💻 GitHub</a>
-            <a href="/api/config" class="link">⚙️ API</a>
-        </div>
-        
-        <div class="version">
-            Version 1.2.0 | Powered by Cloudflare
-        </div>
-    </div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>BrainSAIT Healthcare SDK</title>
+        <meta
+            name="description"
+            content="BrainSAIT Healthcare SDK delivers secure FHIR & NPHIES integrations, AI augmentation, and glassmorphism UI components for modern health platforms."
+        />
+        <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cairo:wght@400;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            :root {
+                color-scheme: light dark;
+                --page-bg: radial-gradient(circle at 15% 15%, rgba(103, 232, 249, 0.2), transparent 60%),
+                    radial-gradient(circle at 85% 25%, rgba(147, 197, 253, 0.25), transparent 55%),
+                    radial-gradient(circle at 50% 80%, rgba(192, 132, 252, 0.18), transparent 65%),
+                    #050b23;
+                --surface: rgba(15, 23, 42, 0.7);
+                --surface-strong: rgba(15, 23, 42, 0.85);
+                --border: rgba(148, 163, 184, 0.3);
+                --text: #f8fafc;
+                --muted: rgba(226, 232, 240, 0.75);
+                --accent: linear-gradient(120deg, #38bdf8, #6366f1 45%, #a855f7);
+                --accent-soft: rgba(99, 102, 241, 0.22);
+                --glass-blur: 18px;
+                --card-max: 1100px;
+                font-family: 'Inter', 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                background: var(--page-bg);
+                color: var(--text);
+            }
 
-    <!-- Load SDK -->
-    <script src="/index.umd.js"></script>
-    <script>
-        // Initialize SDK demo
-        console.log('🚀 BrainSAIT Healthcare SDK Demo Ready');
-        
-        // Check if SDK is available
-        if (typeof window.BrainSAITHealthcareSDK !== 'undefined') {
-            console.log('✅ SDK loaded successfully');
-        } else {
-            console.log('⚠️ SDK not available on window');
-        }
-    </script>
-</body>
+            [data-theme='light'] {
+                --page-bg: radial-gradient(circle at 10% 10%, rgba(14, 165, 233, 0.16), transparent 50%),
+                    radial-gradient(circle at 80% 0%, rgba(59, 130, 246, 0.15), transparent 50%), #f8fafc;
+                --surface: rgba(255, 255, 255, 0.8);
+                --surface-strong: rgba(255, 255, 255, 0.92);
+                --border: rgba(148, 163, 184, 0.25);
+                --text: #0f172a;
+                --muted: rgba(71, 85, 105, 0.75);
+                --accent-soft: rgba(59, 130, 246, 0.12);
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                min-height: 100vh;
+                background: transparent;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .page {
+                position: relative;
+                width: min(1040px, 94vw);
+                margin: 4.5rem auto;
+                padding: clamp(2.5rem, 4vw, 4rem);
+                border-radius: 32px;
+                background: var(--surface);
+                border: 1px solid var(--border);
+                backdrop-filter: blur(var(--glass-blur));
+                box-shadow: 0 40px 120px rgba(15, 23, 42, 0.45);
+                display: flex;
+                flex-direction: column;
+                gap: 4rem;
+            }
+
+            header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+                flex-wrap: wrap;
+            }
+
+            .brand {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                font-weight: 600;
+                letter-spacing: 0.02em;
+                font-size: 1.125rem;
+            }
+
+            .brand span {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 44px;
+                height: 44px;
+                border-radius: 12px;
+                background: var(--accent);
+                color: white;
+                font-size: 1.4rem;
+            }
+
+            nav {
+                display: flex;
+                gap: 1rem;
+                flex-wrap: wrap;
+            }
+
+            nav a {
+                text-decoration: none;
+                color: var(--text);
+                font-weight: 500;
+                padding: 0.65rem 1rem;
+                border-radius: 999px;
+                border: 1px solid transparent;
+                transition: all 0.25s ease;
+            }
+
+            nav a:hover {
+                border-color: rgba(255, 255, 255, 0.18);
+                background: rgba(255, 255, 255, 0.08);
+            }
+
+            .theme-toggle {
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                border-radius: 999px;
+                padding: 0.6rem 0.95rem;
+                background: transparent;
+                color: var(--text);
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                cursor: pointer;
+                font-weight: 500;
+                transition: all 0.2s ease;
+            }
+
+            .theme-toggle:hover {
+                background: rgba(148, 163, 184, 0.15);
+            }
+
+            .hero {
+                display: grid;
+                gap: clamp(2rem, 3vw, 3rem);
+            }
+
+            .hero-heading {
+                display: grid;
+                gap: 1rem;
+            }
+
+            .hero h1 {
+                margin: 0;
+                font-size: clamp(2.8rem, 5vw, 3.6rem);
+                line-height: 1.1;
+                letter-spacing: -0.02em;
+            }
+
+            .hero h1 span {
+                background: var(--accent);
+                        background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+            }
+
+            .hero p {
+                margin: 0;
+                font-size: clamp(1.05rem, 2vw, 1.2rem);
+                color: var(--muted);
+                max-width: 620px;
+            }
+
+            .cta-group {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+            }
+
+            .btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.85rem 1.6rem;
+                border-radius: 14px;
+                border: 1px solid transparent;
+                font-weight: 600;
+                font-size: 1rem;
+                text-decoration: none;
+                transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+            }
+
+            .btn-primary {
+                background: var(--accent);
+                color: white;
+                box-shadow: 0 18px 40px -20px rgba(59, 130, 246, 0.7);
+            }
+
+            .btn-outline {
+                border-color: rgba(148, 163, 184, 0.35);
+                color: var(--text);
+                background: rgba(255, 255, 255, 0.03);
+            }
+
+            .btn:hover {
+                transform: translateY(-2px);
+            }
+
+            .metrics {
+                display: grid;
+                gap: 1rem;
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            }
+
+            .metric-card {
+                padding: 1.25rem;
+                border-radius: 24px;
+                background: var(--surface-strong);
+                border: 1px solid var(--border);
+                display: grid;
+                gap: 0.35rem;
+            }
+
+            .metric-card span {
+                font-size: 0.85rem;
+                color: var(--muted);
+            }
+
+            .metric-card strong {
+                font-size: 1.35rem;
+                letter-spacing: 0.02em;
+            }
+
+            .section-title {
+                display: flex;
+                align-items: baseline;
+                justify-content: space-between;
+                gap: 1rem;
+            }
+
+            .section-title h2 {
+                margin: 0;
+                font-size: clamp(1.7rem, 3vw, 2.2rem);
+            }
+
+            .section-title p {
+                margin: 0;
+                color: var(--muted);
+            }
+
+            .feature-grid {
+                display: grid;
+                gap: 1.25rem;
+                grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            }
+
+            .feature-card {
+                background: var(--surface-strong);
+                border-radius: 22px;
+                border: 1px solid var(--border);
+                padding: 1.5rem;
+                display: grid;
+                gap: 0.6rem;
+            }
+
+            .feature-card .icon {
+                font-size: 1.7rem;
+            }
+
+            .feature-card p {
+                margin: 0;
+                color: var(--muted);
+            }
+
+            .integration-panel {
+                display: grid;
+                gap: 1.5rem;
+                background: var(--surface-strong);
+                border: 1px solid var(--border);
+                border-radius: 24px;
+                padding: 2rem;
+            }
+
+            .integration-tags {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+            }
+
+            .tag {
+                padding: 0.5rem 1rem;
+                border-radius: 999px;
+                background: var(--accent-soft);
+                color: var(--text);
+                font-weight: 500;
+                border: 1px solid rgba(148, 163, 184, 0.2);
+            }
+
+            .integration-grid {
+                display: grid;
+                gap: 1rem;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            }
+
+            .integration-card {
+                padding: 1.35rem;
+                border-radius: 20px;
+                border: 1px solid var(--border);
+                background: rgba(15, 23, 42, 0.45);
+            }
+
+            .integration-card h3 {
+                margin: 0 0 0.4rem;
+                font-size: 1.1rem;
+            }
+
+            .integration-card p {
+                margin: 0;
+                color: var(--muted);
+                font-size: 0.95rem;
+            }
+
+            .code-demo {
+                background: var(--surface-strong);
+                border: 1px solid var(--border);
+                border-radius: 24px;
+                padding: 1.5rem;
+                display: grid;
+                gap: 1rem;
+            }
+
+            pre {
+                margin: 0;
+                padding: 1.2rem;
+                border-radius: 18px;
+                background: rgba(15, 23, 42, 0.55);
+                border: 1px solid rgba(148, 163, 184, 0.18);
+                overflow-x: auto;
+                font-size: 0.95rem;
+                line-height: 1.55;
+            }
+
+            code {
+                font-family: 'Fira Code', 'SFMono-Regular', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+                    'Liberation Mono', 'Courier New', monospace;
+            }
+
+            .list-grid {
+                display: grid;
+                gap: 0.75rem;
+            }
+
+            .list-item {
+                display: flex;
+                align-items: center;
+                gap: 0.7rem;
+                color: var(--muted);
+            }
+
+            .list-item span {
+                width: 0.55rem;
+                height: 0.55rem;
+                border-radius: 999px;
+                background: var(--accent);
+                flex-shrink: 0;
+            }
+
+            footer {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-between;
+                gap: 1rem;
+                font-size: 0.95rem;
+                color: var(--muted);
+                border-top: 1px solid rgba(148, 163, 184, 0.2);
+                padding-top: 1.5rem;
+            }
+
+            footer a {
+                color: inherit;
+            }
+
+            @media (max-width: 720px) {
+                .page {
+                    margin: 1.5rem auto 2rem;
+                    padding: 1.75rem;
+                    gap: 3rem;
+                    border-radius: 22px;
+                }
+
+                header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+
+                nav {
+                    width: 100%;
+                    justify-content: flex-start;
+                }
+
+                .metrics {
+                    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                *,
+                *::before,
+                *::after {
+                    animation-duration: 0.01ms !important;
+                    animation-iteration-count: 1 !important;
+                    transition-duration: 0.01ms !important;
+                    scroll-behavior: auto !important;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="page">
+            <header>
+                <div class="brand">
+                    <span>🧠</span>
+                    <div>
+                        BrainSAIT Healthcare SDK
+                        <div style="font-size: 0.85rem; color: var(--muted); font-weight: 500">Saudi-built. Globally compliant.</div>
+                    </div>
+                </div>
+                <nav>
+                    <a href="#overview">Overview</a>
+                    <a href="#integrations">Integrations</a>
+                    <a href="#code">Code</a>
+                    <a href="/docs">Docs</a>
+                </nav>
+                <button class="theme-toggle" type="button" data-theme-toggle>
+                    <span aria-hidden="true">🌗</span>
+                    <span>Toggle theme</span>
+                </button>
+            </header>
+
+            <main class="hero" id="overview">
+                <div class="hero-heading">
+                    <h1>
+                        The operating system for
+                        <span>Saudi healthcare innovation</span>
+                    </h1>
+                    <p>
+                        Build compliant, multilingual healthcare experiences with an SDK engineered for
+                        NPHIES, FHIR R4/R5, and AI-driven workflows. Ship faster with glassmorphism UI components,
+                        secure APIs, and edge-ready architecture.
+                    </p>
+                    <div class="cta-group">
+                        <a class="btn btn-primary" href="/docs">
+                            <span aria-hidden="true">🚀</span>
+                            Launch documentation
+                        </a>
+                        <a class="btn btn-outline" href="https://github.com/Fadil369/sdk" target="_blank" rel="noreferrer">
+                            <span aria-hidden="true">🔗</span>
+                            View on GitHub
+                        </a>
+                        <a class="btn btn-outline" href="/api/config">
+                            <span aria-hidden="true">⚙️</span>
+                            Live config API
+                        </a>
+                    </div>
+                </div>
+
+                <div class="metrics">
+                    <article class="metric-card">
+                        <span>Deployment</span>
+                        <strong data-sdk-env>Edge optimized</strong>
+                        <span>Cloudflare Workers • Pages • R2</span>
+                    </article>
+                    <article class="metric-card">
+                        <span>Version</span>
+                        <strong data-sdk-version>v1.2.0</strong>
+                        <span>Auto-updated from /api/config</span>
+                    </article>
+                    <article class="metric-card">
+                        <span>Coverage</span>
+                        <strong>FHIR • NPHIES • HIPAA</strong>
+                        <span>Security-first defaults & audit trails</span>
+                    </article>
+                </div>
+            </main>
+
+            <section aria-labelledby="feature-title">
+                <div class="section-title">
+                    <h2 id="feature-title">Why healthcare builders choose BrainSAIT</h2>
+                    <p>Designed with Saudi care providers, insurers, and digital health innovators.</p>
+                </div>
+                <div class="feature-grid">
+                    <article class="feature-card">
+                        <div class="icon" aria-hidden="true">🔐</div>
+                        <h3>Security-first pipeline</h3>
+                        <p>
+                            Opinionated HIPAA + Saudi Data Protection enforcement, including encryption helpers,
+                            role-aware middleware, and audit logging hooks.
+                        </p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="icon" aria-hidden="true">🌍</div>
+                        <h3>Arabic at the core</h3>
+                        <p>
+                            RTL-ready UI primitives, locale-aware validation, and pretrained Arabic AI prompts for
+                            intake, triage, and claims automation.
+                        </p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="icon" aria-hidden="true">⚡</div>
+                        <h3>Edge-native performance</h3>
+                        <p>
+                            Cloudflare Workers deliver <strong>&lt;150ms</strong> median response with KV caching,
+                            durable sessions, and smart retries tuned for clinical usage.
+                        </p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="icon" aria-hidden="true">🧬</div>
+                        <h3>FHIR superpowers</h3>
+                        <p>
+                            Typed data models, bundle validation, NPHIES adapters, and async job orchestration for
+                            bulk claims and EMR synchronization.
+                        </p>
+                    </article>
+                </div>
+            </section>
+
+            <section class="integration-panel" id="integrations" aria-labelledby="integration-title">
+                <div>
+                    <div class="section-title">
+                        <h2 id="integration-title">Integrations ready out of the box</h2>
+                        <p>Connect your ecosystem without custom glue code.</p>
+                    </div>
+                    <div class="integration-tags">
+                        <span class="tag">FHIR R4/R5</span>
+                        <span class="tag">NPHIES Sandbox & Production</span>
+                        <span class="tag">MASTERLINC Agents</span>
+                        <span class="tag">Glassmorphism UI Kit</span>
+                        <span class="tag">R2 Asset CDN</span>
+                    </div>
+                </div>
+                <div class="integration-grid">
+                    <article class="integration-card">
+                        <h3>FHIR Federation</h3>
+                        <p>
+                            Streamlined resource CRUD with schema validation, bundle helpers, and cache-aware read
+                            patterns. Optimized for EMR interoperability.
+                        </p>
+                    </article>
+                    <article class="integration-card">
+                        <h3>NPHIES Compliance</h3>
+                        <p>
+                            Reusable workflows for eligibility, claims, and prior-authorization that respect Saudi
+                            payer rules, language, and audit demands.
+                        </p>
+                    </article>
+                    <article class="integration-card">
+                        <h3>AI Copilots</h3>
+                        <p>
+                            MASTERLINC & HEALTHCARELINC orchestrations for summarization, denials analysis, and clinical
+                            coding with guardrails.
+                        </p>
+                    </article>
+                    <article class="integration-card">
+                        <h3>Edge Observability</h3>
+                        <p>
+                            Built-in request tracing, structured logging (Pino), and health metrics stored in KV for
+                            fast diagnostics.
+                        </p>
+                    </article>
+                </div>
+            </section>
+
+            <section class="code-demo" id="code" aria-labelledby="code-title">
+                <div class="section-title">
+                    <h2 id="code-title">Production-ready in three calls</h2>
+                    <p>Initialize, validate connectivity, and start orchestrating healthcare journeys.</p>
+                </div>
+                <pre><code>import { BrainSAITHealthcareSDK } from '@brainsait/healthcare-sdk';
+
+const sdk = new BrainSAITHealthcareSDK({
+    api: {
+        baseUrl: 'https://api.brainsait.com',
+        timeout: 30_000,
+        retries: 3,
+    },
+    fhir: {
+        serverUrl: 'https://fhir.nphies.sa',
+        version: 'R4',
+    },
+    nphies: {
+        baseUrl: 'https://nphies.sa',
+        clientId: process.env.NPHIES_CLIENT_ID,
+        scope: ['read', 'write'],
+        sandbox: true,
+    },
+    localization: {
+        defaultLanguage: 'ar',
+        rtl: true,
+    },
+});
+
+await sdk.initialize();
+const health = await sdk.healthCheck();
+console.log('Status:', health.status);</code></pre>
+                <div class="list-grid" role="list">
+                    <div class="list-item" role="listitem">
+                        <span aria-hidden="true"></span>
+                        Deploy to Cloudflare Pages for marketing + docs and Workers for API orchestration.
+                    </div>
+                    <div class="list-item" role="listitem">
+                        <span aria-hidden="true"></span>
+                        Enforce zero-trust policies with JWT, MFA, and RBAC utilities bundled inside `security/`.
+                    </div>
+                    <div class="list-item" role="listitem">
+                        <span aria-hidden="true"></span>
+                        Extend via modular AI agents, UI components, and analytics hooks under `src/`.
+                    </div>
+                </div>
+            </section>
+
+            <footer>
+                <div>
+                    &copy; <span data-year></span> BrainSAIT. Built for Saudi healthcare innovators.
+                </div>
+                <div>
+                    Need help? <a href="mailto:support@brainsait.com">support@brainsait.com</a>
+                </div>
+            </footer>
+        </div>
+
+        <script defer src="/index.umd.js"></script>
+        <script>
+            const root = document.documentElement;
+            const themeButton = document.querySelector('[data-theme-toggle]');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+            const setTheme = (mode) => {
+                root.setAttribute('data-theme', mode);
+                localStorage.setItem('brainsait-theme', mode);
+            };
+
+            const saved = localStorage.getItem('brainsait-theme');
+            const initialTheme = saved || (prefersDark.matches ? 'dark' : 'light');
+            setTheme(initialTheme);
+
+            themeButton?.addEventListener('click', () => {
+                const current = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                setTheme(current);
+            });
+
+            prefersDark.addEventListener('change', (event) => {
+                if (!localStorage.getItem('brainsait-theme')) {
+                    setTheme(event.matches ? 'dark' : 'light');
+                }
+            });
+
+            document.querySelector('[data-year]').textContent = new Date().getFullYear();
+
+            async function populateSDKMeta() {
+                const versionEl = document.querySelector('[data-sdk-version]');
+                const envEl = document.querySelector('[data-sdk-env]');
+
+                try {
+                    const response = await fetch('/api/config', { headers: { Accept: 'application/json' } });
+                    if (!response.ok) return;
+                    const payload = await response.json();
+
+                    if (payload?.version && versionEl) {
+                        versionEl.textContent = `v${payload.version}`;
+                    }
+
+                    if (payload?.environment && envEl) {
+                        const environment = payload.environment.toUpperCase();
+                        envEl.textContent = `${environment} edge`; 
+                    }
+                } catch (error) {
+                    console.warn('Unable to load live SDK config.', error);
+                }
+
+                if (typeof window.BrainSAITHealthcareSDK !== 'undefined') {
+                    console.log('BrainSAIT SDK loaded on the landing page.');
+                }
+            }
+
+            populateSDKMeta();
+        </script>
+    </body>
 </html>

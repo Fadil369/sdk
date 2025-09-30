@@ -43,7 +43,7 @@ export class HealthcarePerformanceProfiler {
     this.activeTimers.delete(operationName);
 
     // Store measurement
-    const measurements = this.measurements.get(operationName) || [];
+    const measurements = this.measurements.get(operationName) ?? [];
     measurements.push(duration);
     this.measurements.set(operationName, measurements);
 

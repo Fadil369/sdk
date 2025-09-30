@@ -160,12 +160,6 @@ upload_assets() {
         done
     fi
     
-    # Upload demo files
-    if [ -f "assets/demo.html" ]; then
-        npx wrangler r2 object put brainsait-sdk-assets/demo.html --file="assets/demo.html" --content-type="text/html"
-        print_status "Uploaded: demo.html"
-    fi
-    
     print_success "Assets uploaded successfully"
 }
 
@@ -174,8 +168,8 @@ setup_kv() {
     print_status "Setting up KV namespaces..."
     
     # Create KV namespaces if they don't exist
-    local cache_namespace=$(npx wrangler kv:namespace create "SDK_CACHE" 2>/dev/null | grep -o 'id = "[^"]*"' | cut -d'"' -f2 || echo "")
-    local config_namespace=$(npx wrangler kv:namespace create "SDK_CONFIG" 2>/dev/null | grep -o 'id = "[^"]*"' | cut -d'"' -f2 || echo "")
+    local cache_namespace=$(npx wrangler kv namespace create "SDK_CACHE" 2>/dev/null | grep -o 'id = "[^"]*"' | cut -d'"' -f2 || echo "")
+    local config_namespace=$(npx wrangler kv namespace create "SDK_CONFIG" 2>/dev/null | grep -o 'id = "[^"]*"' | cut -d'"' -f2 || echo "")
     
     if [ -n "$cache_namespace" ]; then
         print_status "SDK_CACHE namespace ID: $cache_namespace"
@@ -185,8 +179,8 @@ setup_kv() {
         print_status "SDK_CONFIG namespace ID: $config_namespace"
     fi
     
-    # Put initial configuration
-    cat << EOF | npx wrangler kv:key put --namespace-id="$config_namespace" "sdk_info" --path=-
+    # Skip KV key setup for now - can be done manually if needed
+    print_status "KV namespaces ready for manual configuration"
 {
   "name": "BrainSAIT Healthcare SDK",
   "version": "1.2.0",

@@ -9,7 +9,7 @@ import {
   AgentTask,
   AgentContext,
   WorkflowStep,
-  AgentCapability,
+  // AgentCapability, // Unused but may be needed for future extensions
   createAgentCapability,
 } from './base';
 
@@ -182,14 +182,16 @@ export class MasterLincAgent extends BaseAgent {
    * Execute a workflow task
    */
   private async executeWorkflowTask(task: AgentTask): Promise<Record<string, unknown>> {
-    const { workflowDefinition, parameters, priority } = task.data;
+    const { workflowDefinition, parameters, priority: _priority } = task.data;
 
     const executionId = `workflow_${Date.now()}_${Math.random().toString(36).substring(2)}`;
 
     const execution: WorkflowExecution = {
       id: executionId,
-      name: (workflowDefinition as any).name || 'Unnamed Workflow',
-      steps: this.convertWorkflowSteps((workflowDefinition as any).steps || []),
+      name: ((workflowDefinition as Record<string, unknown>)?.name as string) ?? 'Unnamed Workflow',
+      steps: this.convertWorkflowSteps(
+        ((workflowDefinition as Record<string, unknown>)?.steps as Record<string, unknown>[]) ?? []
+      ),
       status: 'pending',
     };
 
@@ -237,15 +239,20 @@ export class MasterLincAgent extends BaseAgent {
   /**
    * Convert workflow definition steps to execution steps
    */
-  private convertWorkflowSteps(steps: any[]): WorkflowExecutionStep[] {
+  private convertWorkflowSteps(steps: Record<string, unknown>[]): WorkflowExecutionStep[] {
     return steps.map(step => ({
-      id: step.id || `step_${Math.random().toString(36).substring(2)}`,
-      name: step.name || 'Unnamed Step',
-      type: step.type || 'agent_task',
-      status: 'pending',
-      agentId: step.agentId,
-      configuration: step.configuration || {},
-      dependencies: step.dependencies || [],
+      id: (step.id as string) ?? `step_${Math.random().toString(36).substring(2)}`,
+      name: (step.name as string) ?? 'Unnamed Step',
+      type: ((step.type as string) ?? 'agent_task') as
+        | 'agent_task'
+        | 'human_approval'
+        | 'data_validation'
+        | 'external_api'
+        | 'conditional',
+      status: 'pending' as const,
+      agentId: step.agentId as string,
+      configuration: (step.configuration as Record<string, unknown>) ?? {},
+      dependencies: (step.dependencies as string[]) ?? [],
     }));
   }
 
@@ -303,7 +310,7 @@ export class MasterLincAgent extends BaseAgent {
           completedSteps.add(step.id);
         } else {
           step.status = 'failed';
-          step.error = result.reason?.message || 'Unknown error';
+          step.error = (result.reason as Error)?.message ?? 'Unknown error';
 
           // For critical steps, fail the entire workflow
           if (step.configuration.required !== false) {
@@ -351,7 +358,7 @@ export class MasterLincAgent extends BaseAgent {
       case 'data_validation':
         return this.executeDataValidation(step, stepResults, parameters);
       case 'external_api':
-        return this.executeExternalAPI(step, stepResults, parameters);
+        return this.executeExternalApi(step, stepResults, parameters);
       case 'conditional':
         return this.executeConditional(step, stepResults, parameters);
       default:
@@ -363,15 +370,15 @@ export class MasterLincAgent extends BaseAgent {
    * Execute agent task step
    */
   private async executeAgentTask(
-    step: WorkflowExecutionStep,
-    stepResults: Record<string, unknown>,
-    parameters: Record<string, unknown>
+    _step: WorkflowExecutionStep,
+    _stepResults: Record<string, unknown>,
+    _parameters: Record<string, unknown>
   ): Promise<Record<string, unknown>> {
     // For now, simulate agent task execution
     await new Promise(resolve => setTimeout(resolve, 100 + Math.random() * 500));
 
     return {
-      agentId: step.agentId,
+      agentId: _step.agentId,
       executedAt: new Date().toISOString(),
       result: 'Agent task completed successfully',
     };
@@ -381,9 +388,9 @@ export class MasterLincAgent extends BaseAgent {
    * Execute human approval step
    */
   private async executeHumanApproval(
-    step: WorkflowExecutionStep,
-    stepResults: Record<string, unknown>,
-    parameters: Record<string, unknown>
+    _step: WorkflowExecutionStep,
+    _stepResults: Record<string, unknown>,
+    _parameters: Record<string, unknown>
   ): Promise<Record<string, unknown>> {
     // Simulate human approval (in real implementation, this would wait for actual approval)
     await new Promise(resolve => setTimeout(resolve, 200));
@@ -399,9 +406,9 @@ export class MasterLincAgent extends BaseAgent {
    * Execute data validation step
    */
   private async executeDataValidation(
-    step: WorkflowExecutionStep,
-    stepResults: Record<string, unknown>,
-    parameters: Record<string, unknown>
+    _step: WorkflowExecutionStep,
+    _stepResults: Record<string, unknown>,
+    _parameters: Record<string, unknown>
   ): Promise<Record<string, unknown>> {
     // Simulate data validation
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -416,10 +423,10 @@ export class MasterLincAgent extends BaseAgent {
   /**
    * Execute external API step
    */
-  private async executeExternalAPI(
-    step: WorkflowExecutionStep,
-    stepResults: Record<string, unknown>,
-    parameters: Record<string, unknown>
+  private async executeExternalApi(
+    _step: WorkflowExecutionStep,
+    _stepResults: Record<string, unknown>,
+    _parameters: Record<string, unknown>
   ): Promise<Record<string, unknown>> {
     // Simulate external API call
     await new Promise(resolve => setTimeout(resolve, 300));
@@ -524,7 +531,7 @@ export class MasterLincAgent extends BaseAgent {
    */
   private calculateTaskPriority(task: AgentTask, criteria: Record<string, unknown>): number {
     const weights = this.agent.configuration.taskPriorityWeights as Record<string, number>;
-    let score = weights[task.priority] || 50;
+    let score = weights[task.priority] ?? 50;
 
     // Factor in due date urgency
     if (task.dueAt) {
@@ -575,7 +582,7 @@ export class MasterLincAgent extends BaseAgent {
         });
 
         // Update agent load
-        const currentLoad = agentLoads.get(selectedAgent.id) || 0;
+        const currentLoad = agentLoads.get(selectedAgent.id) ?? 0;
         agentLoads.set(selectedAgent.id, currentLoad + estimatedLoad);
       }
     }
@@ -606,7 +613,7 @@ export class MasterLincAgent extends BaseAgent {
     strategy: string
   ): { id: string; capacity: number; currentLoad: number } | null {
     const availableAgents = agents.filter(agent => {
-      const currentLoad = agentLoads.get(agent.id) || agent.currentLoad || 0;
+      const currentLoad = agentLoads.get(agent.id) ?? agent.currentLoad ?? 0;
       return currentLoad < agent.capacity;
     });
 
@@ -617,13 +624,13 @@ export class MasterLincAgent extends BaseAgent {
     switch (strategy) {
       case 'round_robin':
         // Simple round-robin selection
-        return availableAgents[Math.floor(Math.random() * availableAgents.length)] || null;
+        return availableAgents[Math.floor(Math.random() * availableAgents.length)] ?? null;
 
       case 'least_loaded':
         // Select agent with lowest current load
         return availableAgents.reduce((best, agent) => {
-          const agentLoad = agentLoads.get(agent.id) || agent.currentLoad || 0;
-          const bestLoad = agentLoads.get(best.id) || best.currentLoad || 0;
+          const agentLoad = agentLoads.get(agent.id) ?? agent.currentLoad ?? 0;
+          const bestLoad = agentLoads.get(best.id) ?? best.currentLoad ?? 0;
           return agentLoad < bestLoad ? agent : best;
         });
 
@@ -636,7 +643,7 @@ export class MasterLincAgent extends BaseAgent {
         });
 
       default:
-        return availableAgents[0] || null;
+        return availableAgents[0] ?? null;
     }
   }
 
@@ -675,7 +682,7 @@ export class MasterLincAgent extends BaseAgent {
    * Get workflow execution by ID
    */
   getWorkflowExecution(executionId: string): WorkflowExecution | null {
-    return this.workflows.get(executionId) || null;
+    return this.workflows.get(executionId) ?? null;
   }
 
   /**
@@ -744,7 +751,7 @@ export class MasterLincAgent extends BaseAgent {
       stepName: step.name,
     });
 
-    const inputData = previousResults[step.dependencies?.[0] || 'default'] || step.config.inputData;
+    const inputData = previousResults[step.dependencies?.[0] ?? 'default'] ?? step.config.inputData;
 
     switch (step.config.transformationType) {
       case 'agent-coordination':
@@ -764,7 +771,7 @@ export class MasterLincAgent extends BaseAgent {
     // Master orchestration analysis logic
     this.logger.debug('Master executing analysis step', { stepId: step.id, stepName: step.name });
 
-    const inputData = previousResults[step.dependencies?.[0] || 'default'] || step.config.inputData;
+    const inputData = previousResults[step.dependencies?.[0] ?? 'default'] ?? step.config.inputData;
 
     switch (step.config.analysisType) {
       case 'performance-analysis':
