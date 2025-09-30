@@ -1411,6 +1411,30 @@ export declare class LegacyFHIRClient {
  */
 export declare type Locale = 'ar' | 'en';
 
+export declare interface LogConfig {
+    level: 'debug' | 'info' | 'warn' | 'error';
+    format: 'json' | 'text';
+    outputs: ('console' | 'file' | 'remote' | 'cloudflare')[];
+    file?: {
+        path: string;
+        maxSize: string;
+        maxFiles: number;
+    };
+    remote?: {
+        endpoint: string;
+        apiKey: string;
+    };
+    cloudflare?: {
+        datasetId: string;
+        token: string;
+    };
+    healthcare?: {
+        auditTrail: boolean;
+        hipaaCompliant: boolean;
+        patientDataMasking: boolean;
+    };
+}
+
 export declare class Logger {
     private logger;
     constructor(config: LoggingConfig);
@@ -2261,11 +2285,7 @@ export declare interface SDKConfig {
         };
     };
     /** Logging configuration */
-    logging: {
-        level: 'debug' | 'info' | 'warn' | 'error';
-        format: 'json' | 'text';
-        outputs: ('console' | 'file' | 'remote')[];
-    };
+    logging?: LogConfig;
 }
 
 export declare interface SDKInitOptions extends Partial<SDKConfig> {

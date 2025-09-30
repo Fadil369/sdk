@@ -123,5 +123,27 @@ export interface DatabaseConfig {
     patients: string;
     ai_models: string;
     vision2030_metrics: string;
+    audit_logs: string;
+    user_sessions: string;
+    fhir_resources: string;
+  };
+  options?: {
+    ssl: boolean;
+    retryWrites: boolean;
+    writeConcern: string;
+    readPreference: 'primary' | 'secondary' | 'nearest';
+    maxPoolSize: number;
+    minPoolSize: number;
+    connectTimeoutMS: number;
+    socketTimeoutMS: number;
+  };
+  monitoring?: {
+    enabled: boolean;
+    metricsInterval: number;
+    alertThresholds: {
+      connectionErrors: number;
+      queryTimeMs: number;
+      memoryUsageMB: number;
+    };
   };
 }

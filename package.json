@@ -1,7 +1,7 @@
 {
   "name": "@brainsait/healthcare-sdk",
   "version": "1.2.0",
-  "description": "BrainSAIT Healthcare SDK for NPHIES/FHIR Integration with Arabic/HIPAA support and AI agents",
+  "description": "Advanced Healthcare SDK for Saudi Arabia - NPHIES/FHIR Integration, Vision 2030 Compliance, AI Agents, Arabic Support, MongoDB Atlas & Cloudflare Edge Computing",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
@@ -30,15 +30,16 @@
     "prepare": "husky install",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "benchmark": "npm run build && node benchmarks/simple-benchmark.js",
+    "benchmark": "npm run build && node benchmarks/api-performance.js",
   "deploy:worker": "wrangler deploy --config wrangler-worker.toml",
   "deploy:pages": "wrangler pages deploy public --config wrangler.toml",
   "deploy:cf": "./scripts/deploy-cloudflare.sh full production",
   "cf:dev": "wrangler dev --config wrangler-worker.toml",
   "cf:tail": "wrangler tail --config wrangler-worker.toml",
     "preview": "vite preview",
-    "clean": "rm -rf dist coverage public docs/.vitepress/dist",
-    "validate": "npm run typecheck && npm run lint:check && npm run format:check && npm run test:ci"
+    "clean": "rm -rf dist coverage public docs/.vitepress/dist node_modules/.cache .venv/__pycache__",
+    "validate": "npm run typecheck && npm run lint:check && npm run format:check && npm run test:ci",
+    "validate:prod": "npm run clean && npm ci && npm run validate && npm run build:all"
   },
   "keywords": [
     "healthcare",
@@ -49,7 +50,11 @@
     "ai-agents",
     "arabic",
     "glass-morphism",
-    "sdk"
+    "sdk",
+    "medical",
+    "cloudflare",
+    "mongodb",
+    "vision2030"
   ],
   "author": "BrainSAIT",
   "license": "MIT",

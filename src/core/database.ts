@@ -252,5 +252,27 @@ export const defaultAtlasConfig: DatabaseConfig = {
     patients: 'patients',
     ai_models: 'ai_models',
     vision2030_metrics: 'vision2030_metrics',
+    audit_logs: 'audit_logs',
+    user_sessions: 'user_sessions',
+    fhir_resources: 'fhir_resources',
+  },
+  options: {
+    ssl: true,
+    retryWrites: true,
+    writeConcern: 'majority',
+    readPreference: 'primary',
+    maxPoolSize: 10,
+    minPoolSize: 2,
+    connectTimeoutMS: 20000,
+    socketTimeoutMS: 45000,
+  },
+  monitoring: {
+    enabled: true,
+    metricsInterval: 60000,
+    alertThresholds: {
+      connectionErrors: 5,
+      queryTimeMs: 5000,
+      memoryUsageMB: 512,
+    },
   },
 };
