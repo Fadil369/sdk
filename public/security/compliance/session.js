@@ -2,6 +2,7 @@
  * HIPAA-compliant session management for healthcare applications
  */
 import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 export class SessionManager {
     sessions = new Map();
     userSessions = new Map(); // userId -> sessionIds
@@ -340,10 +341,10 @@ export class SessionManager {
      * Generate secure session ID
      */
     generateSessionId() {
-        // In production, use crypto.randomBytes for better security
+        // Use crypto.randomBytes for cryptographically secure random value
         const uuid = uuidv4();
         const timestamp = Date.now().toString(36);
-        const random = Math.random().toString(36).substring(2);
+        const random = crypto.randomBytes(12).toString('base64url'); // 12 bytes ~= 16 chars url-safe
         return `sess_${uuid}_${timestamp}_${random}`.substring(0, this.config.sessionTokenLength || 64);
     }
     /**
