@@ -2,10 +2,6 @@
 name = "brainsait-healthcare-sdk-pages"
 pages_build_output_dir = "public"
 
-[build]
-command = "npm run build:pages"
-cwd = "."
-
 [vars]
 ENVIRONMENT = "production"
 SDK_VERSION = "1.2.0"
@@ -24,8 +20,3 @@ API_BASE_URL = "https://api.brainsait.com"
 ENVIRONMENT = "preview"
 BASE_URL = "https://sdk-docs-preview.brainsait.com"
 API_BASE_URL = "https://api-staging.brainsait.com"
-
-[env.development.vars]
-ENVIRONMENT = "development"
-BASE_URL = "http://localhost:5173"
-API_BASE_URL = "http://localhost:3000"
