@@ -168,7 +168,7 @@ export class MasterLincAgent extends BaseAgent {
   protected async processTask(task: AgentTask): Promise<Record<string, unknown>> {
     switch (task.type) {
       case 'workflow_execution':
-        return this.executeWorkflow(task);
+        return this.executeWorkflowTask(task);
       case 'task_prioritization':
         return this.prioritizeTasks(task);
       case 'resource_allocation':
@@ -179,9 +179,9 @@ export class MasterLincAgent extends BaseAgent {
   }
 
   /**
-   * Execute a workflow
+   * Execute a workflow task
    */
-  private async executeWorkflow(task: AgentTask): Promise<Record<string, unknown>> {
+  private async executeWorkflowTask(task: AgentTask): Promise<Record<string, unknown>> {
     const { workflowDefinition, parameters, priority } = task.data;
 
     const executionId = `workflow_${Date.now()}_${Math.random().toString(36).substring(2)}`;
@@ -285,7 +285,7 @@ export class MasterLincAgent extends BaseAgent {
 
       // Execute ready steps (can be done in parallel)
       const stepPromises = readySteps.map(step =>
-        this.executeWorkflowStep(step, stepResults, parameters)
+        this.executeWorkflowExecutionStep(step, stepResults, parameters)
       );
       const results = await Promise.allSettled(stepPromises);
 
@@ -334,9 +334,9 @@ export class MasterLincAgent extends BaseAgent {
   }
 
   /**
-   * Execute a single workflow step
+   * Execute a single workflow execution step
    */
-  private async executeWorkflowStep(
+  private async executeWorkflowExecutionStep(
     step: WorkflowExecutionStep,
     stepResults: Record<string, unknown>,
     parameters: Record<string, unknown>

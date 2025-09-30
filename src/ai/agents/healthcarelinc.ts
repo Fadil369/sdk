@@ -47,8 +47,8 @@ export interface ClinicalWarning {
 
 export interface WorkflowOptimization {
   workflowType: string;
-  currentSteps: WorkflowStep[];
-  optimizedSteps: WorkflowStep[];
+  currentSteps: ClinicalWorkflowStep[];
+  optimizedSteps: ClinicalWorkflowStep[];
   improvements: {
     timeReduction: number; // in minutes
     errorReduction: number; // percentage
@@ -58,10 +58,11 @@ export interface WorkflowOptimization {
   reasoning: string[];
 }
 
-export interface WorkflowStep {
+export interface ClinicalWorkflowStep {
   id: string;
   name: string;
   type: 'data_entry' | 'review' | 'approval' | 'documentation' | 'communication' | 'decision';
+  config: Record<string, unknown>;
   estimatedTime: number; // in minutes
   errorRate: number; // percentage
   dependencies: string[];
@@ -722,9 +723,9 @@ export class HealthcareLincAgent extends BaseAgent {
    * Analyze and optimize workflow steps
    */
   private async analyzeAndOptimizeSteps(
-    currentSteps: WorkflowStep[],
+    currentSteps: ClinicalWorkflowStep[],
     goals: string[]
-  ): Promise<WorkflowStep[]> {
+  ): Promise<ClinicalWorkflowStep[]> {
     const optimizedSteps = [...currentSteps];
 
     // Apply optimization strategies based on goals
@@ -750,7 +751,7 @@ export class HealthcareLincAgent extends BaseAgent {
   /**
    * Optimize workflow for time reduction
    */
-  private optimizeForTime(steps: WorkflowStep[]): void {
+  private optimizeForTime(steps: ClinicalWorkflowStep[]): void {
     // Identify steps that can be parallelized
     const parallelizableSteps = steps.filter(step => step.dependencies.length === 0);
 
@@ -777,15 +778,16 @@ export class HealthcareLincAgent extends BaseAgent {
   /**
    * Optimize workflow for error reduction
    */
-  private optimizeForErrorReduction(steps: WorkflowStep[]): void {
+  private optimizeForErrorReduction(steps: ClinicalWorkflowStep[]): void {
     steps.forEach(step => {
       if (step.errorRate > 0.05) {
         // 5% error rate threshold
         // Add validation steps for high-error steps
-        const validationStep: WorkflowStep = {
+        const validationStep: ClinicalWorkflowStep = {
           id: `${step.id}_validation`,
           name: `Validate ${step.name}`,
           type: 'review',
+          config: { validation: true, parentStepId: step.id },
           estimatedTime: Math.min(step.estimatedTime * 0.2, 5),
           errorRate: 0.01,
           dependencies: [step.id],
@@ -804,7 +806,7 @@ export class HealthcareLincAgent extends BaseAgent {
   /**
    * Optimize workflow for automation
    */
-  private optimizeForAutomation(steps: WorkflowStep[]): void {
+  private optimizeForAutomation(steps: ClinicalWorkflowStep[]): void {
     steps.forEach(step => {
       if (step.automationPotential > 70) {
         // Reduce time and error rate for highly automatable steps
@@ -818,9 +820,9 @@ export class HealthcareLincAgent extends BaseAgent {
   /**
    * Optimize workflow for standardization
    */
-  private optimizeForStandardization(steps: WorkflowStep[]): void {
+  private optimizeForStandardization(steps: ClinicalWorkflowStep[]): void {
     // Group similar step types and standardize their timing
-    const stepsByType = new Map<string, WorkflowStep[]>();
+    const stepsByType = new Map<string, ClinicalWorkflowStep[]>();
 
     steps.forEach(step => {
       if (!stepsByType.has(step.type)) {
@@ -847,8 +849,8 @@ export class HealthcareLincAgent extends BaseAgent {
    * Calculate workflow improvements
    */
   private calculateWorkflowImprovements(
-    currentSteps: WorkflowStep[],
-    optimizedSteps: WorkflowStep[]
+    currentSteps: ClinicalWorkflowStep[],
+    optimizedSteps: ClinicalWorkflowStep[]
   ): WorkflowOptimization['improvements'] {
     const currentTotalTime = currentSteps.reduce((sum, step) => sum + step.estimatedTime, 0);
     const optimizedTotalTime = optimizedSteps.reduce((sum, step) => sum + step.estimatedTime, 0);
@@ -876,8 +878,8 @@ export class HealthcareLincAgent extends BaseAgent {
    * Generate optimization reasoning
    */
   private generateOptimizationReasoning(
-    currentSteps: WorkflowStep[],
-    optimizedSteps: WorkflowStep[]
+    currentSteps: ClinicalWorkflowStep[],
+    optimizedSteps: ClinicalWorkflowStep[]
   ): string[] {
     const reasoning: string[] = [];
 

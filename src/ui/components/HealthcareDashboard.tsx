@@ -36,8 +36,8 @@ export const HealthcareDashboard = ({
   ...baseProps
 }: HealthcareDashboardProps): ReactElement => {
   const [activeFilters, setActiveFilters] = useState<Record<string, unknown>>({});
-  const [refreshTick, setRefreshTick] = useState(0);
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [_refreshTick, setRefreshTick] = useState(0);
+  const [_lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [isAutoRefresh, setIsAutoRefresh] = useState(true);
 
   // Enhanced refresh functionality
@@ -65,18 +65,18 @@ export const HealthcareDashboard = ({
   };
 
   // Manual refresh function
-  const handleManualRefresh = () => {
+  const _handleManualRefresh = () => {
     setRefreshTick(prev => prev + 1);
     setLastRefresh(new Date());
   };
 
   // Toggle auto-refresh
-  const toggleAutoRefresh = () => {
+  const _toggleAutoRefresh = () => {
     setIsAutoRefresh(prev => !prev);
   };
 
   // Format last refresh time
-  const formatLastRefresh = (date: Date): string => {
+  const _formatLastRefresh = (date: Date): string => {
     const now = new Date();
     const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
 

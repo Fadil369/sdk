@@ -255,7 +255,7 @@ const NotificationCard = ({
 };
 
 // Global notification functions
-export const showNotification = (config: Omit<NotificationConfig, 'id'>): string => {
+export const showNotification = (config: Omit<NotificationInstance, 'id' | 'timestamp'>): string => {
   const notification: NotificationInstance = {
     ...config,
     id: `notification-${++notificationId}`,
@@ -360,12 +360,12 @@ export class HealthcareNotificationManager {
     const id = showNotification({
       ...notificationConfig,
       metadata: {
-        ...config.metadata,
         priority: priority || 'medium',
         category: category || 'system',
         patientId,
         userId,
         requiresAcknowledgment,
+        ...(config.metadata || {}),
       },
     });
 
