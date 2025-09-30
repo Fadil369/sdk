@@ -16,6 +16,11 @@ export interface NotificationSystemProps extends BaseComponentProps {
 export interface NotificationInstance extends NotificationConfig {
   id: string;
   timestamp: number;
+  priority?: 'low' | 'medium' | 'high' | 'critical';
+  category?: 'system' | 'security' | 'patient' | 'workflow' | 'compliance';
+  acknowledged?: boolean;
+  readAt?: number;
+  metadata?: Record<string, unknown>;
 }
 
 let notificationId = 0;
@@ -321,3 +326,232 @@ const getTypeIcon = (type: NotificationConfig['type']): string => {
 
   return icons.info;
 };
+
+/**
+ * Enhanced Healthcare Notification Manager
+ */
+export class HealthcareNotificationManager {
+  private static instance: HealthcareNotificationManager;
+  private analytics: Map<string, { count: number; lastSeen: number }> = new Map();
+
+  static getInstance(): HealthcareNotificationManager {
+    if (!HealthcareNotificationManager.instance) {
+      HealthcareNotificationManager.instance = new HealthcareNotificationManager();
+    }
+    return HealthcareNotificationManager.instance;
+  }
+
+  /**
+   * Show enhanced notification with healthcare context
+   */
+  showHealthcareNotification(config: NotificationConfig & {
+    priority?: 'low' | 'medium' | 'high' | 'critical';
+    category?: 'system' | 'security' | 'patient' | 'workflow' | 'compliance';
+    patientId?: string;
+    userId?: string;
+    requiresAcknowledgment?: boolean;
+    metadata?: Record<string, unknown>;
+  }): string {
+    const { priority, category, patientId, userId, requiresAcknowledgment, ...notificationConfig } = config;
+    
+    const id = showNotification({
+      ...notificationConfig,
+      metadata: {
+        ...config.metadata,
+        priority: priority || 'medium',
+        category: category || 'system',
+        patientId,
+        userId,
+        requiresAcknowledgment,
+      },
+    });
+
+    // Track analytics
+    const key = `${config.category || 'system'}-${config.type}`;
+    const existing = this.analytics.get(key) || { count: 0, lastSeen: 0 };
+    this.analytics.set(key, {
+      count: existing.count + 1,
+      lastSeen: Date.now(),
+    });
+
+    return id;
+  }
+
+  /**
+   * Show critical security alert
+   */
+  showSecurityAlert(message: string, details?: Record<string, unknown>): string {
+    return this.showHealthcareNotification({
+      type: 'error',
+      title: '🔒 Security Alert',
+      message,
+      priority: 'critical',
+      category: 'security',
+      duration: 0, // Don't auto-dismiss critical security alerts
+      requiresAcknowledgment: true,
+      metadata: details,
+    });
+  }
+
+  /**
+   * Show compliance violation warning
+   */
+  showComplianceWarning(violation: string, recommendation?: string): string {
+    return this.showHealthcareNotification({
+      type: 'warning',
+      title: '⚖️ Compliance Warning',
+      message: `${violation}${recommendation ? `\n\nRecommendation: ${recommendation}` : ''}`,
+      priority: 'high',
+      category: 'compliance',
+      duration: 10000,
+      requiresAcknowledgment: true,
+    });
+  }
+
+  /**
+   * Show patient update notification
+   */
+  showPatientUpdate(patientId: string, updateType: string, message: string): string {
+    return this.showHealthcareNotification({
+      type: 'info',
+      title: '👤 Patient Update',
+      message: `${updateType}: ${message}`,
+      priority: 'medium',
+      category: 'patient',
+      patientId,
+      duration: 7000,
+    });
+  }
+
+  /**
+   * Show workflow status notification
+   */
+  showWorkflowStatus(
+    workflowName: string, 
+    status: 'started' | 'completed' | 'failed' | 'paused',
+    details?: string
+  ): string {
+    const icons = { started: '▶️', completed: '✅', failed: '❌', paused: '⏸️' };
+    const types = { started: 'info', completed: 'success', failed: 'error', paused: 'warning' } as const;
+    
+    return this.showHealthcareNotification({
+      type: types[status],
+      title: `${icons[status]} Workflow ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+      message: `${workflowName}${details ? `: ${details}` : ''}`,
+      priority: status === 'failed' ? 'high' : 'medium',
+      category: 'workflow',
+      duration: status === 'completed' ? 5000 : 8000,
+    });
+  }
+
+  /**
+   * Acknowledge notification
+   */
+  acknowledgeNotification(id: string): void {
+    const index = globalNotifications.findIndex(n => n.id === id);
+    if (index > -1 && globalNotifications[index]) {
+      globalNotifications[index].acknowledged = true;
+      globalNotifications[index].readAt = Date.now();
+      // Notify subscribers
+      subscribers.forEach(callback => callback(globalNotifications));
+    }
+  }
+
+  /**
+   * Get unacknowledged critical notifications
+   */
+  getCriticalNotifications(): NotificationInstance[] {
+    return globalNotifications.filter(
+      n => n.priority === 'critical' && !n.acknowledged
+    );
+  }
+
+  /**
+   * Get notifications by category
+   */
+  getNotificationsByCategory(category: string): NotificationInstance[] {
+    return globalNotifications.filter(n => n.category === category);
+  }
+
+  /**
+   * Get notification analytics
+   */
+  getAnalytics(): Record<string, { count: number; lastSeen: number }> {
+    const result: Record<string, { count: number; lastSeen: number }> = {};
+    for (const [key, value] of this.analytics.entries()) {
+      result[key] = value;
+    }
+    return result;
+  }
+
+  /**
+   * Clear old notifications
+   */
+  clearOldNotifications(maxAgeMs: number = 24 * 60 * 60 * 1000): number {
+    const cutoff = Date.now() - maxAgeMs;
+    let removedCount = 0;
+    
+    for (let i = globalNotifications.length - 1; i >= 0; i--) {
+      const notification = globalNotifications[i];
+      if (notification && notification.timestamp < cutoff && notification.acknowledged) {
+        globalNotifications.splice(i, 1);
+        removedCount++;
+      }
+    }
+    
+    if (removedCount > 0) {
+      subscribers.forEach(callback => callback(globalNotifications));
+    }
+    
+    return removedCount;
+  }
+
+  /**
+   * Generate notification summary report
+   */
+  generateSummaryReport(): {
+    total: number;
+    byType: Record<string, number>;
+    byCategory: Record<string, number>;
+    byPriority: Record<string, number>;
+    unacknowledged: number;
+    oldestUnacknowledged?: number;
+  } {
+    const report = {
+      total: globalNotifications.length,
+      byType: {} as Record<string, number>,
+      byCategory: {} as Record<string, number>,
+      byPriority: {} as Record<string, number>,
+      unacknowledged: 0,
+      oldestUnacknowledged: undefined as number | undefined,
+    };
+
+    for (const notification of globalNotifications) {
+      // Count by type
+      report.byType[notification.type || 'info'] = (report.byType[notification.type || 'info'] || 0) + 1;
+      
+      // Count by category
+      const category = notification.category || 'system';
+      report.byCategory[category] = (report.byCategory[category] || 0) + 1;
+      
+      // Count by priority
+      const priority = notification.priority || 'medium';
+      report.byPriority[priority] = (report.byPriority[priority] || 0) + 1;
+      
+      // Track unacknowledged
+      if (!notification.acknowledged) {
+        report.unacknowledged++;
+        if (!report.oldestUnacknowledged || notification.timestamp < report.oldestUnacknowledged) {
+          report.oldestUnacknowledged = notification.timestamp;
+        }
+      }
+    }
+
+    return report;
+  }
+}
+
+/**
+ * Global healthcare notification manager instance
+ */
+export const healthcareNotificationManager = HealthcareNotificationManager.getInstance();

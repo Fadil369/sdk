@@ -3,7 +3,25 @@
  */
 
 import { Logger } from '@/core/logger';
-import { AIAgent, AIWorkflow, WorkflowStep } from '@/types/ai';
+import { AIAgent } from '@/types/ai';
+
+export interface AIWorkflow {
+  id: string;
+  name: string;
+  description: string;
+  steps: WorkflowStep[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WorkflowStep {
+  id: string;
+  name: string;
+  type: 'validation' | 'transformation' | 'analysis' | 'decision' | 'action';
+  config: Record<string, unknown>;
+  dependencies?: string[];
+  timeout?: number;
+}
 
 export interface AgentContext {
   userId?: string;
@@ -228,6 +246,12 @@ export abstract class BaseAgent {
     failedTasks: number;
     cancelledTasks: number;
     averageExecutionTime: number;
+    successRate: number;
+    performanceMetrics: {
+      tasksPerHour: number;
+      errorRate: number;
+      averageResponseTime: number;
+    };
   } {
     const tasks = Array.from(this.tasks.values());
     const stats = {
@@ -238,6 +262,12 @@ export abstract class BaseAgent {
       failedTasks: 0,
       cancelledTasks: 0,
       averageExecutionTime: 0,
+      successRate: 0,
+      performanceMetrics: {
+        tasksPerHour: 0,
+        errorRate: 0,
+        averageResponseTime: 0,
+      },
     };
 
     let totalExecutionTime = 0;
@@ -269,11 +299,204 @@ export abstract class BaseAgent {
       }
     }
 
-    stats.averageExecutionTime =
-      completedCount > 0 ? Math.round(totalExecutionTime / completedCount) : 0;
+    if (completedCount > 0) {
+      stats.averageExecutionTime = totalExecutionTime / completedCount;
+    }
+
+    // Calculate success rate
+    const finishedTasks = stats.completedTasks + stats.failedTasks;
+    if (finishedTasks > 0) {
+      stats.successRate = (stats.completedTasks / finishedTasks) * 100;
+    }
+
+    // Calculate performance metrics
+    const now = Date.now();
+    const oneHourAgo = now - (60 * 60 * 1000);
+    const recentTasks = tasks.filter(t => new Date(t.createdAt).getTime() > oneHourAgo);
+    stats.performanceMetrics.tasksPerHour = recentTasks.length;
+    
+    const recentFinishedTasks = recentTasks.filter(t => t.status === 'completed' || t.status === 'failed');
+    if (recentFinishedTasks.length > 0) {
+      stats.performanceMetrics.errorRate = (recentTasks.filter(t => t.status === 'failed').length / recentFinishedTasks.length) * 100;
+      stats.performanceMetrics.averageResponseTime = recentFinishedTasks.reduce((sum, task) => {
+        return sum + (now - new Date(task.createdAt).getTime());
+      }, 0) / recentFinishedTasks.length;
+    }
 
     return stats;
   }
+
+  /**
+   * Enhanced workflow execution with creative capabilities
+   */
+  async executeWorkflow(workflow: AIWorkflow, context: AgentContext): Promise<{
+    success: boolean;
+    results: Record<string, unknown>;
+    executionTime: number;
+    stepsCompleted: number;
+    errors?: string[];
+  }> {
+    const startTime = Date.now();
+    const results: Record<string, unknown> = {};
+    const errors: string[] = [];
+    let stepsCompleted = 0;
+
+    this.logger.info('Workflow execution started', {
+      workflowId: workflow.id,
+      workflowName: workflow.name,
+      totalSteps: workflow.steps.length,
+    });
+
+    try {
+      // Sort steps by dependencies
+      const sortedSteps = this.topologicalSort(workflow.steps);
+      
+      for (const step of sortedSteps) {
+        try {
+          const stepStartTime = Date.now();
+          
+          // Check if step dependencies are satisfied
+          if (step.dependencies) {
+            for (const depId of step.dependencies) {
+              if (!results[depId]) {
+                throw new Error(`Step dependency ${depId} not satisfied`);
+              }
+            }
+          }
+
+          // Execute step with timeout
+          const stepResult = await this.executeWorkflowStep(step, context, results);
+          results[step.id] = stepResult;
+          stepsCompleted++;
+
+          const stepExecutionTime = Date.now() - stepStartTime;
+          this.logger.debug('Workflow step completed', {
+            workflowId: workflow.id,
+            stepId: step.id,
+            stepName: step.name,
+            executionTime: stepExecutionTime,
+          });
+
+        } catch (error) {
+          const errorMsg = `Step ${step.name} failed: ${(error as Error).message}`;
+          errors.push(errorMsg);
+          this.logger.error('Workflow step failed', error as Error, {
+            workflowId: workflow.id,
+            stepId: step.id,
+            stepName: step.name,
+          });
+          
+          // Continue with non-critical steps or stop based on step configuration
+          if (step.type === 'validation') {
+            break; // Stop on validation failures
+          }
+        }
+      }
+
+      const executionTime = Date.now() - startTime;
+      const success = errors.length === 0;
+
+      this.logger.info('Workflow execution completed', {
+        workflowId: workflow.id,
+        success,
+        stepsCompleted,
+        totalSteps: workflow.steps.length,
+        executionTime,
+        errorCount: errors.length,
+      });
+
+      return {
+        success,
+        results,
+        executionTime,
+        stepsCompleted,
+        errors: errors.length > 0 ? errors : undefined,
+      };
+
+    } catch (error) {
+      const executionTime = Date.now() - startTime;
+      this.logger.error('Workflow execution failed', error as Error, {
+        workflowId: workflow.id,
+        stepsCompleted,
+        executionTime,
+      });
+
+      return {
+        success: false,
+        results,
+        executionTime,
+        stepsCompleted,
+        errors: [`Workflow execution failed: ${(error as Error).message}`],
+      };
+    }
+  }
+
+  /**
+   * Execute a single workflow step
+   */
+  private async executeWorkflowStep(
+    step: WorkflowStep,
+    context: AgentContext,
+    previousResults: Record<string, unknown>
+  ): Promise<unknown> {
+    // Implementation would depend on step type
+    switch (step.type) {
+      case 'validation':
+        return this.executeValidationStep(step, context, previousResults);
+      case 'transformation':
+        return this.executeTransformationStep(step, context, previousResults);
+      case 'analysis':
+        return this.executeAnalysisStep(step, context, previousResults);
+      case 'decision':
+        return this.executeDecisionStep(step, context, previousResults);
+      case 'action':
+        return this.executeActionStep(step, context, previousResults);
+      default:
+        throw new Error(`Unknown step type: ${step.type}`);
+    }
+  }
+
+  /**
+   * Topological sort for workflow steps
+   */
+  private topologicalSort(steps: WorkflowStep[]): WorkflowStep[] {
+    const visited = new Set<string>();
+    const sorted: WorkflowStep[] = [];
+    const stepMap = new Map(steps.map(step => [step.id, step]));
+
+    const visit = (step: WorkflowStep): void => {
+      if (visited.has(step.id)) {
+        return;
+      }
+
+      visited.add(step.id);
+
+      // Visit dependencies first
+      if (step.dependencies) {
+        for (const depId of step.dependencies) {
+          const depStep = stepMap.get(depId);
+          if (depStep) {
+            visit(depStep);
+          }
+        }
+      }
+
+      sorted.push(step);
+    };
+
+    for (const step of steps) {
+      visit(step);
+    }
+
+    return sorted;
+  }
+
+  // Abstract methods for workflow step execution
+  protected abstract executeValidationStep(step: WorkflowStep, context: AgentContext, previousResults: Record<string, unknown>): Promise<unknown>;
+  protected abstract executeTransformationStep(step: WorkflowStep, context: AgentContext, previousResults: Record<string, unknown>): Promise<unknown>;
+  protected abstract executeAnalysisStep(step: WorkflowStep, context: AgentContext, previousResults: Record<string, unknown>): Promise<unknown>;
+  protected abstract executeDecisionStep(step: WorkflowStep, context: AgentContext, previousResults: Record<string, unknown>): Promise<unknown>;
+  protected abstract executeActionStep(step: WorkflowStep, context: AgentContext, previousResults: Record<string, unknown>): Promise<unknown>;
 
   /**
    * Update agent status

@@ -54,11 +54,14 @@ export const useHealthcareTheme = (initialConfig?: Partial<UIConfig>): UseHealth
       try {
         const stored = localStorage.getItem(THEME_STORAGE_KEY);
         if (stored) {
-          const parsed = JSON.parse(stored);
+          const parsed = JSON.parse(stored) as Partial<HealthcareTheme>;
           return { ...defaultTheme, ...parsed };
         }
       } catch (error) {
-        console.warn('Failed to load theme from localStorage:', error);
+        // Use a proper logger instead of console for production
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Failed to load theme from localStorage:', error);
+        }
       }
     }
 
@@ -66,7 +69,7 @@ export const useHealthcareTheme = (initialConfig?: Partial<UIConfig>): UseHealth
     return {
       ...defaultTheme,
       ...(initialConfig && {
-        theme: initialConfig.theme || defaultTheme.theme,
+        theme: initialConfig.theme ?? defaultTheme.theme,
         glassMorphism: {
           ...defaultTheme.glassMorphism,
           ...initialConfig.glassMorphism,
@@ -105,7 +108,10 @@ export const useHealthcareTheme = (initialConfig?: Partial<UIConfig>): UseHealth
       try {
         localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(theme));
       } catch (error) {
-        console.warn('Failed to save theme to localStorage:', error);
+        // Use a proper logger instead of console for production
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Failed to save theme to localStorage:', error);
+        }
       }
     }
   }, [theme]);

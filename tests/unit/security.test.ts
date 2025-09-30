@@ -399,6 +399,118 @@ describe('Compliance Validator', () => {
     expect(stats.rulesByCategory).toHaveProperty('technical');
     expect(stats.rulesBySeverity).toHaveProperty('critical');
   });
+
+  it('should perform enhanced parallel validation', async () => {
+    const context = createValidationContext({
+      userId: 'user123',
+      userRole: 'physician',
+      permissions: ['Patient:read'],
+      operationType: 'read',
+      resource: 'Patient',
+      auditLogged: true,
+    });
+
+    const result = await validator.quickValidation(context);
+    expect(result.passed).toBe(true);
+    expect(result.criticalFailures).toBe(0);
+    expect(result.performanceMetrics).toBeDefined();
+    expect(result.performanceMetrics.executionTime).toBeGreaterThan(0);
+    expect(result.performanceMetrics.rulesEvaluated).toBeGreaterThan(0);
+  });
+
+  it('should validate MFA requirements for critical operations', async () => {
+    const context = createValidationContext({
+      userId: 'user123',
+      userRole: 'physician',
+      permissions: ['Patient:export'],
+      operationType: 'export',
+      resource: 'Patient',
+      auditLogged: true,
+      // Missing MFA verification
+    });
+
+    const report = await validator.validateCompliance(context);
+    const mfaRule = report.ruleResults.find(r => r.ruleId === 'tech_006');
+    expect(mfaRule?.passed).toBe(false);
+    expect(mfaRule?.message).toContain('Multi-factor authentication required');
+  });
+
+  it('should validate IP address restrictions', async () => {
+    const context = createValidationContext({
+      userId: 'user123',
+      userRole: 'physician',
+      permissions: ['Patient:read'],
+      operationType: 'read',
+      resource: 'Patient',
+      sessionInfo: {
+        id: 'session123',
+        ipAddress: '203.0.113.1', // Public IP address
+        userAgent: 'Test Browser',
+      },
+      auditLogged: true,
+      // Missing IP whitelisting
+    });
+
+    const report = await validator.validateCompliance(context);
+    const ipRule = report.ruleResults.find(r => r.ruleId === 'tech_007');
+    expect(ipRule?.passed).toBe(false);
+    expect(ipRule?.message).toContain('non-authorized IP address');
+  });
+
+  it('should perform advanced validation with risk scoring', async () => {
+    const context = createValidationContext({
+      userId: 'user123',
+      userRole: 'physician',
+      permissions: ['Patient:read'],
+      operationType: 'read',
+      resource: 'Patient',
+      auditLogged: true,
+    });
+
+    const result = await validator.advancedValidation(context);
+    expect(result.riskScore).toBeDefined();
+    expect(result.riskLevel).toMatch(/^(low|medium|high|critical)$/);
+    expect(result.priorityRecommendations).toBeDefined();
+    expect(result.performanceMetrics).toBeDefined();
+  });
+
+  it('should validate BAA requirements for third-party access', async () => {
+    const context = createValidationContext({
+      userId: 'thirdparty123',
+      userRole: 'third-party',
+      permissions: ['Patient:read'],
+      operationType: 'read',
+      resource: 'Patient',
+      auditLogged: true,
+      // Missing BAA verification
+    });
+
+    const report = await validator.validateCompliance(context);
+    const baaRule = report.ruleResults.find(r => r.ruleId === 'admin_004');
+    expect(baaRule?.passed).toBe(false);
+    expect(baaRule?.message).toContain('Business Associate Agreement not verified');
+  });
+
+  it('should validate device security compliance', async () => {
+    const context = createValidationContext({
+      userId: 'user123',
+      userRole: 'physician',
+      permissions: ['Patient:read'],
+      operationType: 'read',
+      resource: 'Patient',
+      sessionInfo: {
+        id: 'session123',
+        ipAddress: '192.168.1.1',
+        userAgent: 'Chrome/50.0', // Outdated browser
+      },
+      auditLogged: true,
+    });
+
+    const report = await validator.validateCompliance(context);
+    const deviceRule = report.ruleResults.find(r => r.ruleId === 'phys_002');
+    expect(deviceRule?.passed).toBe(false);
+    expect(deviceRule?.message).toContain('Insecure or outdated browser');
+  });
 });
 
 describe('RBAC Manager', () => {
