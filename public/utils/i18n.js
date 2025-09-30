@@ -16,3 +16,4 @@ export const translations = {
 export const t = (key, locale = 'ar') => {
     return translations[locale][key] || key;
 };
+//# sourceMappingURL=i18n.js.map

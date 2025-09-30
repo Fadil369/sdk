@@ -1,0 +1,83 @@
+# Cloudflare Workers configuration for BrainSAIT Healthcare SDK Worker
+name = "brainsait-healthcare-sdk-worker"
+main = "./dist/worker/index.js"
+compatibility_date = "2023-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Static asset directory for local development builds
+[assets]
+directory = "./assets"
+serve_single_page_app = false
+
+# KV namespaces for edge caching and configuration
+[[kv_namespaces]]
+binding = "SDK_CACHE"
+id = "${SDK_CACHE_KV_ID}"
+preview_id = "${SDK_CACHE_KV_PREVIEW_ID}"
+
+[[kv_namespaces]]
+binding = "SDK_CONFIG"
+id = "${SDK_CONFIG_KV_ID}"
+preview_id = "${SDK_CONFIG_KV_PREVIEW_ID}"
+
+# R2 buckets for large static assets
+[[r2_buckets]]
+binding = "SDK_ASSETS"
+bucket_name = "brainsait-sdk-assets"
+preview_bucket_name = "brainsait-sdk-assets-preview"
+
+# Durable Object bindings for stateful workloads
+[[durable_objects.bindings]]
+name = "FHIR_SESSION"
+class_name = "FhirSessionDO"
+script_name = "brainsait-healthcare-sdk"
+
+# Environment settings
+[env.production]
+name = "brainsait-healthcare-sdk-prod"
+account_id = "${CLOUDFLARE_ACCOUNT_ID}"
+workers_dev = false
+route = "api.brainsait.com/sdk/*"
+
+[env.staging]
+name = "brainsait-healthcare-sdk-staging" 
+account_id = "${CLOUDFLARE_ACCOUNT_ID}"
+workers_dev = false
+route = "api-staging.brainsait.com/sdk/*"
+
+[env.development]
+name = "brainsait-healthcare-sdk-dev"
+account_id = "${CLOUDFLARE_ACCOUNT_ID}"
+workers_dev = true
+
+# Environment variables
+[vars]
+ENVIRONMENT = "production"
+SDK_VERSION = "1.2.0"
+FHIR_BASE_URL = "https://fhir.nphies.sa"
+NPHIES_BASE_URL = "https://nphies.sa"
+LOG_LEVEL = "info"
+MONGODB_ATLAS_URI = "mongodb+srv://fadil_db_user:1rlK8vj6YF5reQoc@cluster0.ozzjwto.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+DATABASE_NAME = "brainsait_platform"
+
+# Development environment variables
+[env.development.vars]
+ENVIRONMENT = "development"
+SDK_VERSION = "1.2.0"
+FHIR_BASE_URL = "https://fhir-sandbox.nphies.sa"
+NPHIES_BASE_URL = "https://nphies-sandbox.sa"
+LOG_LEVEL = "debug"
+MONGODB_ATLAS_URI = "mongodb+srv://fadil_db_user:1rlK8vj6YF5reQoc@cluster0.ozzjwto.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+DATABASE_NAME = "brainsait_platform_dev"
+
+# Limits and optimization
+limits = { cpu_ms = 50000 }
+placement = { mode = "smart" }
+
+# Scheduled tasks for cache refreshes
+[[triggers]]
+crons = ["0 */4 * * *"]
+
+# Analytics and observability
+observability = { enabled = true }
+logpush = true

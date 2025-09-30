@@ -15,6 +15,8 @@ interface Env {
   NPHIES_BASE_URL: string;
   LOG_LEVEL: string;
   CLOUDFLARE_ACCOUNT_ID: string;
+  MONGODB_ATLAS_URI: string;
+  DATABASE_NAME: string;
 }
 
 // CORS headers
@@ -49,6 +51,11 @@ export default {
 
       const url = new URL(request.url);
       const path = url.pathname;
+
+      // Route Database API requests
+      if (path.startsWith('/api/db/')) {
+        return handleDatabaseRequest(request, env, ctx);
+      }
 
       // Route API requests
       if (path.startsWith('/api/')) {
@@ -261,19 +268,31 @@ async function handleFHIRRequest(
   const fhirPath = url.pathname.replace('/fhir/', '');
   const fhirUrl = `${env.FHIR_BASE_URL}/${fhirPath}${url.search}`;
 
+  // Copy headers manually for Cloudflare Workers compatibility
+  const requestHeaders: Record<string, string> = {};
+  request.headers.forEach((value, key) => {
+    requestHeaders[key] = value;
+  });
+
   const response = await fetch(fhirUrl, {
     method: request.method,
     headers: {
-      ...Object.fromEntries(request.headers.entries()),
+      ...requestHeaders,
       'User-Agent': `BrainSAIT-SDK/${env.SDK_VERSION}`,
     },
     body: request.method !== 'GET' ? await request.arrayBuffer() : undefined,
   });
 
+  // Copy response headers manually
+  const responseHeaders: Record<string, string> = {};
+  response.headers.forEach((value, key) => {
+    responseHeaders[key] = value;
+  });
+
   return new Response(response.body, {
     status: response.status,
     headers: {
-      ...Object.fromEntries(response.headers.entries()),
+      ...responseHeaders,
       ...corsHeaders,
     },
   });
@@ -290,19 +309,37 @@ async function handleNPHIESRequest(
   const nphiesPath = url.pathname.replace('/nphies/', '');
   const nphiesUrl = `${env.NPHIES_BASE_URL}/${nphiesPath}${url.search}`;
 
+  // Copy headers manually for Cloudflare Workers compatibility
+  const requestHeaders: Record<string, string> = {};
+  request.headers.forEach((value, key) => {
+    requestHeaders[key] = value;
+  });
+
+  // Copy headers manually for Cloudflare Workers compatibility
+  const nphiesRequestHeaders: Record<string, string> = {};
+  request.headers.forEach((value, key) => {
+    nphiesRequestHeaders[key] = value;
+  });
+
   const response = await fetch(nphiesUrl, {
     method: request.method,
     headers: {
-      ...Object.fromEntries(request.headers.entries()),
+      ...nphiesRequestHeaders,
       'User-Agent': `BrainSAIT-SDK/${env.SDK_VERSION}`,
     },
     body: request.method !== 'GET' ? await request.arrayBuffer() : undefined,
   });
 
+  // Copy response headers manually
+  const nphiesResponseHeaders: Record<string, string> = {};
+  response.headers.forEach((value, key) => {
+    nphiesResponseHeaders[key] = value;
+  });
+
   return new Response(response.body, {
     status: response.status,
     headers: {
-      ...Object.fromEntries(response.headers.entries()),
+      ...nphiesResponseHeaders,
       ...corsHeaders,
     },
   });
@@ -363,6 +400,174 @@ async function cacheMaintenanceTask(_env: Env): Promise<void> {
   // ESLint disable: console needed for Cloudflare Workers logging
   // eslint-disable-next-line no-console
   console.log('Cache maintenance completed');
+}
+
+// Database request handler
+async function handleDatabaseRequest(
+  request: Request,
+  _env: Env,
+  _ctx: ExecutionContext
+): Promise<Response> {
+  const url = new URL(request.url);
+  const path = url.pathname.replace('/api/db/', '');
+
+  try {
+    // Mock database responses - in production, would connect to MongoDB Atlas
+    switch (path) {
+      case 'hospitals':
+        if (request.method === 'GET') {
+          const hospitals = [
+            {
+              hospital_id: 'kfmc-001',
+              name: 'King Fahd Medical City',
+              location: {
+                city: 'Riyadh',
+                region: 'Central',
+                coordinates: { lat: 24.7136, lng: 46.6753 },
+              },
+              license_number: 'RYD-001-2024',
+              capacity: { beds: 500, icu: 50, emergency: 30 },
+              specializations: ['Cardiology', 'Oncology', 'Neurology', 'Emergency'],
+              digital_maturity_level: 4,
+              vision2030_compliance: {
+                health_sector_transformation: true,
+                digital_health_adoption: 85,
+                ai_integration_level: 4,
+              },
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+          ];
+
+          return new Response(JSON.stringify({ success: true, data: hospitals }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          });
+        }
+        break;
+
+      case 'ai-models':
+        if (request.method === 'GET') {
+          const models = [
+            {
+              model_id: 'cardio-predict-001',
+              name: 'CardioPredict AI',
+              type: 'predictive',
+              version: '2.0.0',
+              healthcare_domain: 'cardiology',
+              performance_metrics: {
+                accuracy: 0.942,
+                precision: 0.921,
+                recall: 0.895,
+                f1_score: 0.908,
+              },
+              deployment_status: 'production',
+              vision2030_alignment: {
+                innovation_contribution: 9,
+                quality_improvement: 8,
+                efficiency_gain: 7,
+              },
+              created_at: new Date().toISOString(),
+              last_updated: new Date().toISOString(),
+            },
+          ];
+
+          return new Response(JSON.stringify({ success: true, data: models }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          });
+        }
+        break;
+
+      case 'vision2030-metrics':
+        if (request.method === 'GET') {
+          const metrics = [
+            {
+              metric_id: 'metrics_001',
+              hospital_id: 'kfmc-001',
+              vision2030_goals: {
+                health_sector_transformation: {
+                  digital_health_adoption: 85,
+                  ai_integration: 80,
+                  patient_experience: 90,
+                },
+                innovation_economy: {
+                  tech_adoption: 75,
+                  research_contribution: 70,
+                  startup_collaboration: 60,
+                },
+                sustainability: {
+                  resource_efficiency: 80,
+                  environmental_impact: 75,
+                  social_responsibility: 85,
+                },
+              },
+              overall_alignment_score: 78.3,
+              measurement_date: new Date().toISOString(),
+            },
+          ];
+
+          return new Response(JSON.stringify({ success: true, data: metrics }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          });
+        }
+        break;
+
+      case 'health':
+        return new Response(
+          JSON.stringify({
+            success: true,
+            data: {
+              status: 'healthy',
+              database: 'brainsait_platform',
+              collections: {
+                hospitals: 1,
+                ai_models: 1,
+                vision2030_metrics: 1,
+                patients: 0,
+              },
+              last_check: new Date().toISOString(),
+            },
+          }),
+          {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          }
+        );
+
+      default:
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'Database endpoint not found',
+          }),
+          {
+            status: 404,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          }
+        );
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: 'Method not allowed',
+      }),
+      {
+        status: 405,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      }
+    );
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: 'Database operation failed',
+        details: (error as Error).message,
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      }
+    );
+  }
 }
 
 // Health metrics collection

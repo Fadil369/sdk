@@ -54,3 +54,4 @@ export class Logger {
         return childLogger;
     }
 }
+//# sourceMappingURL=logger.js.map

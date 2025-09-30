@@ -1,6 +1,8 @@
 import { AxiosRequestConfig } from 'axios';
 import { default as default_2 } from 'react';
 import * as React_2 from 'react';
+import { ReactElement } from 'react';
+import { ReactNode } from 'react';
 
 export declare interface AccessContext {
     userId: string;
@@ -158,7 +160,7 @@ export declare interface AuditLoggerConfig {
     endpoint?: string;
 }
 
-export declare const BaseComponent: default_2.FC<BaseComponentProps>;
+export declare const BaseComponent: ({ id, className, style, children, disabled, loading, rtl, theme, glassMorphism, opacity, blur, borderRadius, border, shadow, ...props }: BaseComponentProps) => ReactElement;
 
 export declare interface BaseComponentProps extends ComponentProps, GlassMorphismProps {
     theme?: 'light' | 'dark';
@@ -316,14 +318,25 @@ export declare interface ClinicalRecommendation {
     priority: 'low' | 'medium' | 'high' | 'critical';
 }
 
-export declare type CommonTheme = 'light' | 'dark' | 'auto';
+/**
+ * Design tokens for the BrainSAIT healthcare UI kit. Consumers can override these
+ * tokens by setting the matching CSS custom properties before rendering the components.
+ */
+export declare const colorTokens: {
+    primary: string;
+    primaryAccent: string;
+    secondary: string;
+    success: string;
+    warning: string;
+    danger: string;
+    info: string;
+    textPrimary: string;
+    textSecondary: string;
+    glassLight: string;
+    glassDark: string;
+};
 
-export declare interface ComplianceComplianceValidationResult {
-    passed: boolean;
-    message: string;
-    details?: Record<string, unknown>;
-    recommendations?: string[];
-}
+export declare type CommonTheme = 'light' | 'dark' | 'auto';
 
 export declare interface ComplianceReport {
     overallCompliance: number;
@@ -342,6 +355,13 @@ export declare interface ComplianceReport {
         recommendations?: string[];
     }[];
     recommendations: string[];
+}
+
+export declare interface ComplianceValidationResult {
+    passed: boolean;
+    message: string;
+    details?: Record<string, unknown>;
+    recommendations?: string[];
 }
 
 export declare class ComplianceValidator {
@@ -369,12 +389,29 @@ export declare class ComplianceValidator {
      */
     validateCategory(context: ValidationContext, category: 'administrative' | 'physical' | 'technical'): Promise<ComplianceReport>;
     /**
-     * Quick validation for critical rules only
+     * Enhanced parallel validation for critical rules only
      */
     quickValidation(context: ValidationContext): Promise<{
         passed: boolean;
         criticalFailures: number;
         failedRules: string[];
+        performanceMetrics: {
+            executionTime: number;
+            rulesEvaluated: number;
+            averageRuleTime: number;
+        };
+    }>;
+    /**
+     * Advanced compliance validation with risk scoring
+     */
+    advancedValidation(context: ValidationContext): Promise<ComplianceReport & {
+        riskScore: number;
+        riskLevel: 'low' | 'medium' | 'high' | 'critical';
+        priorityRecommendations: string[];
+        performanceMetrics: {
+            executionTime: number;
+            rulesEvaluated: number;
+        };
     }>;
     /**
      * Get validation rule information
@@ -506,12 +543,21 @@ export declare function createValidationContext(options: {
     userRole?: string;
     permissions?: string[];
     sessionId?: string;
+    sessionInfo?: {
+        id: string;
+        ipAddress?: string;
+        userAgent?: string;
+    };
     ipAddress?: string;
     userAgent?: string;
     operationType?: 'create' | 'read' | 'update' | 'delete' | 'export';
     resource?: string;
     resourceId?: string;
     auditLogged?: boolean;
+    mfaVerified?: boolean;
+    ipWhitelisted?: boolean;
+    baaVerified?: boolean;
+    retentionPolicyChecked?: boolean;
     additionalMetadata?: Record<string, unknown>;
 }): ValidationContext;
 
@@ -666,10 +712,24 @@ export declare class EncryptionService {
      */
     listKeys(): Array<Omit<EncryptionKey, 'key'>>;
     /**
+     * Encrypt an object recursively
+     */
+    encryptObject(obj: Record<string, unknown>): Promise<Record<string, unknown>>;
+    /**
+     * Recursively decrypt an object's string values
+     */
+    decryptObject(encryptedObj: Record<string, unknown>): Promise<Record<string, unknown>>;
+    /**
      * Generate random base64 string
      */
     private generateRandomBase64;
 }
+
+/**
+ * Injects the base CSS needed for the BrainSAIT UI components. Calling this multiple
+ * times is safe—the stylesheet will only be appended to the document once.
+ */
+export declare const ensureGlobalUIStyles: () => void;
 
 export declare interface ErrorDetails {
     code: string;
@@ -1060,12 +1120,48 @@ declare interface FilterOption {
     icon?: string;
 }
 
-export declare const GlassMorphismButton: default_2.FC<GlassMorphismButtonProps>;
+/**
+ * Monitor frame rate for UI performance
+ */
+export declare class FrameRateMonitor {
+    private frameCount;
+    private lastTime;
+    private frameRates;
+    private isMonitoring;
+    private animationId?;
+    /**
+     * Start monitoring frame rate
+     */
+    start(): void;
+    /**
+     * Stop monitoring frame rate
+     */
+    stop(): void;
+    /**
+     * Get current average frame rate
+     */
+    getAverageFrameRate(): number;
+    /**
+     * Check if frame rate is acceptable for healthcare UI
+     */
+    isPerformanceAcceptable(): boolean;
+    /**
+     * Get performance status
+     */
+    getPerformanceStatus(): 'excellent' | 'good' | 'acceptable' | 'poor';
+}
+
+/**
+ * Global frame rate monitor instance
+ */
+export declare const frameRateMonitor: FrameRateMonitor;
+
+export declare const GlassMorphismButton: ({ type, onClick, children, icon, iconPosition, variant, size, fullWidth, animate, disabled, loading, rtl, ...baseProps }: GlassMorphismButtonProps) => ReactElement;
 
 export declare interface GlassMorphismButtonProps extends Omit<BaseComponentProps, 'onClick'> {
     type?: 'button' | 'submit' | 'reset';
     onClick?: (event: default_2.MouseEvent<HTMLButtonElement>) => void;
-    icon?: default_2.ReactNode;
+    icon?: ReactNode;
     iconPosition?: 'left' | 'right';
     fullWidth?: boolean;
     animate?: boolean;
@@ -1118,7 +1214,7 @@ declare interface GlassStyle extends React.CSSProperties {
     boxShadow: string;
 }
 
-export declare const HealthcareDashboard: default_2.FC<HealthcareDashboardProps>;
+export declare const HealthcareDashboard: ({ dashboard, onWidgetClick, onFilterChange, data, refreshInterval, isLoading, rtl, ...baseProps }: HealthcareDashboardProps) => ReactElement;
 
 declare interface HealthcareDashboard_2 {
     id: string;
@@ -1133,11 +1229,66 @@ declare interface HealthcareDashboard_2 {
 export declare interface HealthcareDashboardProps extends BaseComponentProps {
     dashboard: HealthcareDashboard_2;
     onWidgetClick?: (widget: DashboardWidget) => void;
-    onFilterChange?: (filters: Record<string, any>) => void;
-    data?: Record<string, any>;
+    onFilterChange?: (filters: Record<string, unknown>) => void;
+    data?: Record<string, unknown>;
     refreshInterval?: number;
     isLoading?: boolean;
 }
+
+/**
+ * Advanced performance profiler for healthcare operations
+ */
+export declare class HealthcarePerformanceProfiler {
+    private measurements;
+    private activeTimers;
+    /**
+     * Start timing an operation
+     */
+    startTimer(operationName: string): void;
+    /**
+     * End timing an operation and record the measurement
+     */
+    endTimer(operationName: string): number;
+    /**
+     * Get performance statistics for an operation
+     */
+    getStats(operationName: string): {
+        count: number;
+        average: number;
+        min: number;
+        max: number;
+        total: number;
+        p95: number;
+        p99: number;
+    } | null;
+    /**
+     * Get all operation statistics
+     */
+    getAllStats(): Record<string, ReturnType<HealthcarePerformanceProfiler['getStats']>>;
+    /**
+     * Clear all measurements
+     */
+    clear(): void;
+    /**
+     * Check if operation is performing well (under threshold)
+     */
+    isPerformingWell(operationName: string, thresholdMs: number): boolean;
+    /**
+     * Generate performance report for healthcare operations
+     */
+    generateHealthcareReport(): {
+        totalOperations: number;
+        slowOperations: string[];
+        fastOperations: string[];
+        recommendations: string[];
+        performanceScore: number;
+    };
+}
+
+/**
+ * Global healthcare performance profiler instance
+ */
+export declare const healthcareProfiler: HealthcarePerformanceProfiler;
 
 export declare interface HealthcareTheme {
     theme: 'light' | 'dark' | 'auto';
@@ -1312,7 +1463,12 @@ export declare interface MaskingRule {
 export declare const measureAsyncTime: <T>(fn: () => Promise<T>) => Promise<[T, number]>;
 
 /**
- * Performance utilities
+ * Decorator for measuring function performance
+ */
+export declare function measurePerformance(operationName: string): <T extends (...args: unknown[]) => unknown>(target: unknown, propertyKey: string, descriptor: TypedPropertyDescriptor<T>) => TypedPropertyDescriptor<T>;
+
+/**
+ * Enhanced performance utilities for healthcare applications
  */
 export declare const measureTime: <T>(fn: () => T) => [T, number];
 
@@ -1357,9 +1513,14 @@ declare interface NotificationConfig {
 export declare interface NotificationInstance extends NotificationConfig {
     id: string;
     timestamp: number;
+    priority?: 'low' | 'medium' | 'high' | 'critical';
+    category?: 'system' | 'security' | 'patient' | 'workflow' | 'compliance';
+    acknowledged?: boolean;
+    readAt?: number;
+    metadata?: Record<string, unknown>;
 }
 
-export declare const NotificationSystem: default_2.FC<NotificationSystemProps>;
+export declare const NotificationSystem: ({ maxNotifications, defaultDuration, position, rtl, ...baseProps }: NotificationSystemProps) => ReactElement;
 
 export declare interface NotificationSystemProps extends BaseComponentProps {
     maxNotifications?: number;
@@ -1541,7 +1702,7 @@ export declare interface PaginatedResponse<T> extends ApiResponse<T[]> {
     };
 }
 
-export declare const PatientCard: default_2.FC<PatientCardProps>;
+export declare const PatientCard: ({ patient, showPhoto, showIdentifiers, showContact, onPatientClick, compact, rtl, ...baseProps }: PatientCardProps) => ReactElement;
 
 export declare interface PatientCardProps extends BaseComponentProps {
     patient: UIPatientData;
@@ -2311,11 +2472,20 @@ export declare const showError: (title: string, message?: string, duration?: num
 
 export declare const showInfo: (title: string, message?: string, duration?: number) => string;
 
-export declare const showNotification: (config: Omit<NotificationConfig, "id">) => string;
+export declare const showNotification: (config: Omit<NotificationInstance, "id" | "timestamp">) => string;
 
 export declare const showSuccess: (title: string, message?: string, duration?: number) => string;
 
 export declare const showWarning: (title: string, message?: string, duration?: number) => string;
+
+export declare const spacingTokens: {
+    xs: string;
+    sm: string;
+    md: string;
+    lg: string;
+    xl: string;
+    '2xl': string;
+};
 
 /**
  * SSO integration capabilities (placeholder)
@@ -2324,6 +2494,12 @@ export declare interface SSOManager {
 }
 
 export declare const t: (key: string, locale?: "ar" | "en") => string;
+
+export declare const transitionTokens: {
+    base: string;
+    microInteraction: string;
+    fade: string;
+};
 
 export declare interface TranslationResult {
     translatedText: string;
@@ -2346,6 +2522,12 @@ export declare const translations: {
         patient: string;
         doctor: string;
     };
+};
+
+export declare const typographyTokens: {
+    sans: string;
+    display: string;
+    monospace: string;
 };
 
 export declare interface UIConfig {
@@ -2457,7 +2639,7 @@ export declare interface ValidationRule {
     category: 'administrative' | 'physical' | 'technical';
     severity: 'low' | 'medium' | 'high' | 'critical';
     required: boolean;
-    validate: (context: ValidationContext) => Promise<ComplianceComplianceValidationResult>;
+    validate: (context: ValidationContext) => Promise<ComplianceValidationResult>;
 }
 
 export declare interface WorkflowStep {

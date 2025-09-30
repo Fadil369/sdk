@@ -21,3 +21,4 @@ export const validateSaudiID = (id) => {
     const lastDigit = digits[9];
     return lastDigit !== undefined && checkDigit === lastDigit;
 };
+//# sourceMappingURL=validation.js.map

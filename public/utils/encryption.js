@@ -16,3 +16,4 @@ export const decrypt = (encryptedData, key) => {
     // Simple deobfuscation (replace with real decryption)
     return decoded.substring(0, decoded.length - keyLength.toString().length);
 };
+//# sourceMappingURL=encryption.js.map
