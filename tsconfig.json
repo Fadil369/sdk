@@ -28,18 +28,19 @@
     "noEmit": false,
     "jsx": "react-jsx",
   "types": ["@cloudflare/workers-types", "node", "react"],
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"],
-      "@/types/*": ["src/types/*"],
-      "@/utils/*": ["src/utils/*"],
-      "@/core/*": ["src/core/*"],
-      "@/fhir/*": ["src/fhir/*"],
-      "@/nphies/*": ["src/nphies/*"],
-      "@/security/*": ["src/security/*"],
-      "@/ai/*": ["src/ai/*"],
-      "@/ui/*": ["src/ui/*"]
-    }
+  "baseUrl": ".",
+  "paths": {
+    "@/*": ["src/*"],
+    "@/types/*": ["src/types/*"],
+    "@/utils/*": ["src/utils/*"],
+    "@/core/*": ["src/core/*"],
+    "@/fhir/*": ["src/fhir/*"],
+    "@/nphies/*": ["src/nphies/*"],
+    "@/security/*": ["src/security/*"],
+    "@/ai/*": ["src/ai/*"],
+    "@/ui/*": ["src/ui/*"],
+    "@/python/*": ["src/python/*"]
+  }
   },
   "include": [
     "src/**/*"

@@ -16,6 +16,7 @@ export * from './nphies';
 export * from './security';
 export * from './ai';
 export * from './ui';
+export * from './python';
 
 // Main SDK class
 export { BrainSAITHealthcareSDK } from './core/sdk';
