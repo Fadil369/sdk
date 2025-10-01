@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BrainSAIT Healthcare SDK · Enterprise Healthcare Platform</title>
-  <meta name="description" content="Enterprise Healthcare Platform for Saudi Arabia with Vision 2030 alignment. Production-ready FHIR, NPHIES, AI agents, and MongoDB Atlas integration.">
+  <title>BrainSAIT Healthcare SDK · Interactive Demo</title>
+  <meta name="description" content="Advanced Healthcare SDK for Saudi Arabia with Vision 2030 alignment. Explore interactive demos for FHIR, NPHIES, AI agents, and MongoDB Atlas.">
   <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/healthcare-ui.css">
+  <link rel="stylesheet" href="/assets/css/demo.css">
   <style>
     /* Skip link for keyboard navigation */
     .skip-link {
@@ -115,7 +116,7 @@
       </button>
       <nav aria-label="Main navigation">
         <ul id="primaryNav" class="primary-nav" role="list">
-          <li><a href="#console" aria-label="Jump to interactive console section">Console</a></li>
+          <li><a href="#demo" aria-label="Jump to interactive demo section">Demo</a></li>
           <li><a href="#features" aria-label="Jump to features section">Features</a></li>
           <li><a href="#api" aria-label="Jump to API documentation">API</a></li>
           <li><a href="https://github.com/Fadil369/sdk" target="_blank" rel="noopener noreferrer" aria-label="View source code on GitHub (opens in new tab)">GitHub <span aria-hidden="true">↗</span></a></li>
@@ -133,7 +134,7 @@
           Deploy FHIR R4, NPHIES, AI orchestration, and secure data exchange across Saudi Arabia with a single SDK tailored for clinical precision and rapid innovation.
         </p>
         <div class="cta-group" role="group" aria-label="Primary actions">
-          <a class="btn btn-primary" href="#console" aria-label="Launch interactive console"><span aria-hidden="true">🚀</span> Launch Console</a>
+          <a class="btn btn-primary" href="#demo" aria-label="Launch interactive demo console"><span aria-hidden="true">🚀</span> Launch Interactive Demo</a>
           <a class="btn btn-outline" href="#features" aria-label="Explore platform capabilities"><span aria-hidden="true">📋</span> Explore Capabilities</a>
           <a class="btn btn-outline" href="https://github.com/Fadil369/sdk" target="_blank" rel="noopener noreferrer" aria-label="View source code on GitHub (opens in new tab)"><span aria-hidden="true">💻</span> View Source</a>
         </div>
@@ -210,15 +211,14 @@
       </div>
     </section>
 
-    <section id="console" class="demo-section" aria-labelledby="console-heading">
+    <section id="demo" class="demo-section" aria-labelledby="demo-heading">
       <div class="container">
-        <h2 id="console-heading" class="section-title"><span aria-hidden="true">🎮</span> Interactive Console</h2>
+        <h2 id="demo-heading" class="section-title"><span aria-hidden="true">🎮</span> Interactive Demo Console</h2>
         <p class="sr-only">Use arrow keys to navigate between tabs, or tab key to move through interactive elements.</p>
-        <div class="tab-buttons" role="tablist" aria-label="Interactive console sections">
+        <div class="tab-buttons" role="tablist" aria-label="Interactive demo sections">
           <button id="tab-api" class="tab-button active" type="button" data-tab-target="api-demo" role="tab" aria-controls="api-demo" aria-selected="true" tabindex="0"><span aria-hidden="true">🔌</span> API</button>
           <button id="tab-fhir" class="tab-button" type="button" data-tab-target="fhir-demo" role="tab" aria-controls="fhir-demo" aria-selected="false" tabindex="-1"><span aria-hidden="true">🏥</span> FHIR</button>
           <button id="tab-ai" class="tab-button" type="button" data-tab-target="ai-demo" role="tab" aria-controls="ai-demo" aria-selected="false" tabindex="-1"><span aria-hidden="true">🤖</span> AI</button>
-          <button id="tab-python" class="tab-button" type="button" data-tab-target="python-demo" role="tab" aria-controls="python-demo" aria-selected="false" tabindex="-1"><span aria-hidden="true">🐍</span> Python SDK</button>
           <button id="tab-database" class="tab-button" type="button" data-tab-target="database-demo" role="tab" aria-controls="database-demo" aria-selected="false" tabindex="-1"><span aria-hidden="true">💾</span> Database</button>
         </div>
 
@@ -346,57 +346,6 @@
               </div>
             </div>
             <div id="ai-scenario-output" class="output-console" role="log" aria-live="polite" aria-atomic="false"></div>
-          </article>
-        </div>
-
-  <div id="python-demo" class="tab-content" role="tabpanel" aria-labelledby="tab-python" hidden>
-          <article class="interactive-panel">
-            <div class="panel-header">
-              <h3>🐍 Python SDK Integration - PyBrain & PyHeart</h3>
-              <p class="text-secondary">Unified healthcare platform combining AI intelligence (PyBrain) with integration layer (PyHeart). Production-ready packages available on PyPI.</p>
-            </div>
-            <div class="panel-actions" role="group" aria-label="Python SDK operations">
-              <button class="btn btn-primary" type="button" data-action="python-pybrain" aria-label="Demonstrate PyBrain AI capabilities"><span aria-hidden="true">🧠</span> PyBrain AI Engine</button>
-              <button class="btn btn-outline" type="button" data-action="python-pyheart" aria-label="Demonstrate PyHeart integration"><span aria-hidden="true">❤️</span> PyHeart Integration</button>
-              <button class="btn btn-outline" type="button" data-action="python-unified" aria-label="Show unified healthcare system"><span aria-hidden="true">🏥</span> Unified System Demo</button>
-              <button class="btn btn-outline" type="button" data-action="python-install" aria-label="View installation instructions"><span aria-hidden="true">📦</span> Installation Guide</button>
-            </div>
-            <div class="python-packages-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
-              <div class="package-card" style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
-                <h4 style="margin-bottom: 0.5rem; color: #60a5fa;">🧠 PyBrain v0.1.0</h4>
-                <p style="font-size: 0.875rem; color: #94a3b8; margin-bottom: 0.75rem;">The Intelligence Layer</p>
-                <ul style="font-size: 0.875rem; color: #cbd5e1; list-style: none; padding: 0;">
-                  <li>✓ AI-Powered Data Harmonization</li>
-                  <li>✓ Clinical NLP Engine</li>
-                  <li>✓ Predictive Analytics</li>
-                  <li>✓ Decision Support</li>
-                  <li>✓ Knowledge Graphs</li>
-                </ul>
-                <code style="display: block; margin-top: 0.75rem; padding: 0.5rem; background: rgba(0,0,0,0.3); border-radius: 4px; font-size: 0.75rem;">pip install pybrain</code>
-              </div>
-              <div class="package-card" style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
-                <h4 style="margin-bottom: 0.5rem; color: #f87171;">❤️ PyHeart v0.1.0</h4>
-                <p style="font-size: 0.875rem; color: #94a3b8; margin-bottom: 0.75rem;">The Integration Layer</p>
-                <ul style="font-size: 0.875rem; color: #cbd5e1; list-style: none; padding: 0;">
-                  <li>✓ Universal API Gateway</li>
-                  <li>✓ FHIR Client (Async/Sync)</li>
-                  <li>✓ Workflow Engine</li>
-                  <li>✓ Integration Hub</li>
-                  <li>✓ HIPAA/GDPR Compliance</li>
-                </ul>
-                <code style="display: block; margin-top: 0.75rem; padding: 0.5rem; background: rgba(0,0,0,0.3); border-radius: 4px; font-size: 0.75rem;">pip install pyheart</code>
-              </div>
-            </div>
-            <div id="python-loading" class="panel-loading" role="status" aria-live="polite" aria-atomic="true">
-              <span class="spinner" aria-hidden="true"></span>
-              <span>Running Python SDK…</span>
-            </div>
-            <div id="python-output" class="output-console" role="log" aria-live="polite" aria-atomic="false">
-              <div class="output-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <span class="text-secondary" style="font-size: 0.875rem;">Console Output</span>
-                <button class="btn-copy" type="button" data-copy-target="python-output" aria-label="Copy output to clipboard" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;">📋 Copy</button>
-              </div>
-            </div>
           </article>
         </div>
 
@@ -538,6 +487,6 @@ GET /nphies/claims</code></pre>
   </style>
 
   <script defer src="/index.umd.js"></script>
-  <script defer src="/assets/js/app.js"></script>
+  <script defer src="/assets/js/demo.js"></script>
 </body>
 </html>
