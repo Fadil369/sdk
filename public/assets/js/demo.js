@@ -935,6 +935,467 @@ async function executeAIModels() {
   ]);
 }
 
+// Analytics Dashboard Executors
+async function executeAnalyticsRealtime() {
+  if (typeof AnalyticsDashboard === 'undefined') {
+    return { error: 'AnalyticsDashboard module not loaded' };
+  }
+  const dashboard = new AnalyticsDashboard();
+  await dashboard.initialize();
+  return {
+    status: 'Real-time monitoring started',
+    message: 'Analytics dashboard is now streaming live metrics every 3 seconds.',
+    currentMetrics: dashboard.metrics,
+    historicalData: `${dashboard.historicalData.length} hours of historical data loaded`,
+  };
+}
+
+async function executeAnalyticsVision2030() {
+  if (typeof AnalyticsDashboard === 'undefined') {
+    return { error: 'AnalyticsDashboard module not loaded' };
+  }
+  const dashboard = new AnalyticsDashboard();
+  await dashboard.loadInitialData();
+  const kpis = dashboard.getVision2030KPIs();
+  return {
+    vision2030KPIs: kpis,
+    summary: 'Saudi Vision 2030 digital health transformation metrics',
+    overallProgress: `${Math.round((kpis.digitalTransformation.current / kpis.digitalTransformation.target) * 100)}% overall progress`,
+  };
+}
+
+async function executeAnalyticsPredictions() {
+  if (typeof AnalyticsDashboard === 'undefined') {
+    return { error: 'AnalyticsDashboard module not loaded' };
+  }
+  const dashboard = new AnalyticsDashboard();
+  await dashboard.loadInitialData();
+  const report = dashboard.generateReport();
+  return {
+    predictions: report.predictions,
+    healthScore: report.healthScore,
+    recommendations: report.recommendations,
+    summary: 'AI-powered predictive analytics for next-hour operational metrics',
+  };
+}
+
+async function executeAnalyticsExport() {
+  if (typeof AnalyticsDashboard === 'undefined') {
+    return { error: 'AnalyticsDashboard module not loaded' };
+  }
+  const dashboard = new AnalyticsDashboard();
+  await dashboard.loadInitialData();
+  const jsonData = dashboard.exportData('json');
+  const csvData = dashboard.exportData('csv');
+  return {
+    status: 'Export completed',
+    formats: ['JSON', 'CSV'],
+    jsonPreview: JSON.stringify(jsonData).substring(0, 200) + '...',
+    csvPreview: csvData.substring(0, 200) + '...',
+    message: 'Analytics data exported successfully in JSON and CSV formats',
+  };
+}
+
+// Clinical AI Executors
+async function executeClinicalRiskAssess() {
+  if (typeof AIClinicalSupport === 'undefined') {
+    return { error: 'AIClinicalSupport module not loaded' };
+  }
+  const clinicalAI = new AIClinicalSupport();
+  const patientData = {
+    age: 58,
+    gender: 'male',
+    vitals: { systolicBP: 145, diastolicBP: 92, heartRate: 88, temperature: 37.2 },
+    labs: { glucose: 145, hba1c: 6.8, cholesterol: 220, ldl: 145 },
+    medicalHistory: ['hypertension', 'type2_diabetes'],
+    medications: ['metformin', 'lisinopril'],
+    lifestyle: { smoking: true, bmi: 31.5 },
+  };
+  const riskAssessment = clinicalAI.assessPatientRisk(patientData);
+  return {
+    patient: 'Demo Patient (58yo Male)',
+    riskAssessment,
+    summary: 'Multi-domain clinical risk assessment completed',
+    highRiskDomains: Object.entries(riskAssessment).filter(([, v]) => v.riskLevel === 'high' || v.riskLevel === 'critical').map(([k]) => k),
+  };
+}
+
+async function executeClinicalDrugCheck() {
+  if (typeof AIClinicalSupport === 'undefined') {
+    return { error: 'AIClinicalSupport module not loaded' };
+  }
+  const clinicalAI = new AIClinicalSupport();
+  const medications = ['warfarin', 'aspirin', 'metformin'];
+  const interactions = clinicalAI.checkDrugInteractions(medications);
+  return {
+    medications,
+    interactions,
+    summary: `Checked ${medications.length} medications for drug-drug interactions`,
+    criticalInteractions: interactions.filter(i => i.severity === 'major' || i.severity === 'severe').length,
+  };
+}
+
+async function executeClinicalDiagnostic() {
+  if (typeof AIClinicalSupport === 'undefined') {
+    return { error: 'AIClinicalSupport module not loaded' };
+  }
+  const clinicalAI = new AIClinicalSupport();
+  const symptoms = ['chest pain', 'shortness of breath', 'diaphoresis'];
+  const vitals = { systolicBP: 145, diastolicBP: 92, heartRate: 110 };
+  const suggestions = clinicalAI.suggestDiagnosis(symptoms, vitals);
+  return {
+    presentingSymptoms: symptoms,
+    vitals,
+    diagnosticSuggestions: suggestions,
+    summary: 'AI-powered diagnostic decision support',
+    topDiagnosis: suggestions[0]?.condition || 'No diagnosis suggested',
+  };
+}
+
+async function executeClinicalPathway() {
+  if (typeof AIClinicalSupport === 'undefined') {
+    return { error: 'AIClinicalSupport module not loaded' };
+  }
+  const clinicalAI = new AIClinicalSupport();
+  const pathway = clinicalAI.getClinicalPathway('ami');
+  return {
+    pathwayType: 'Acute Myocardial Infarction (AMI)',
+    pathway,
+    summary: 'Evidence-based clinical pathway with step-by-step protocol',
+    totalSteps: pathway?.steps?.length || 0,
+  };
+}
+
+// Authentication Executors
+async function executeAuthLogin() {
+  if (typeof AuthenticationManager === 'undefined') {
+    return { error: 'AuthenticationManager module not loaded' };
+  }
+  const authManager = new AuthenticationManager();
+  const result = await authManager.login('demo.physician@brainsait.health', 'DemoPassword123!', 'password');
+  return {
+    authentication: 'successful',
+    user: result.user,
+    tokens: {
+      accessToken: result.tokens.accessToken.substring(0, 50) + '...',
+      refreshToken: result.tokens.refreshToken.substring(0, 50) + '...',
+      expiresIn: result.tokens.expiresIn,
+    },
+    session: result.session,
+    summary: 'JWT authentication completed successfully',
+  };
+}
+
+async function executeAuthOAuth() {
+  if (typeof AuthenticationManager === 'undefined') {
+    return { error: 'AuthenticationManager module not loaded' };
+  }
+  const authManager = new AuthenticationManager();
+  const result = await authManager.loginWithOAuth('google', 'demo_google_user_001');
+  return {
+    authentication: 'successful',
+    provider: 'Google OAuth2',
+    user: result.user,
+    tokens: {
+      accessToken: result.tokens.accessToken.substring(0, 50) + '...',
+      expiresIn: result.tokens.expiresIn,
+    },
+    summary: 'OAuth2 authentication flow completed',
+  };
+}
+
+async function executeAuthMFA() {
+  if (typeof AuthenticationManager === 'undefined') {
+    return { error: 'AuthenticationManager module not loaded' };
+  }
+  const authManager = new AuthenticationManager();
+  // First login
+  await authManager.login('demo.admin@brainsait.health', 'Admin123!', 'password');
+  // Then MFA
+  const mfaResult = await authManager.verifyMFA('123456');
+  return {
+    mfaVerification: 'successful',
+    method: 'TOTP',
+    result: mfaResult,
+    summary: 'Multi-factor authentication verified',
+  };
+}
+
+async function executeAuthBiometric() {
+  if (typeof AuthenticationManager === 'undefined') {
+    return { error: 'AuthenticationManager module not loaded' };
+  }
+  const authManager = new AuthenticationManager();
+  try {
+    const result = await authManager.authenticateWithBiometric('demo_user_001');
+    return {
+      authentication: 'successful',
+      method: 'WebAuthn Biometric',
+      result,
+      summary: 'Biometric authentication (Face ID / Touch ID) completed',
+    };
+  } catch (error) {
+    return {
+      status: 'simulated',
+      message: 'Biometric authentication requires HTTPS and supported hardware',
+      note: 'In production, this would use WebAuthn API for Face ID, Touch ID, or fingerprint authentication',
+    };
+  }
+}
+
+async function executeAuthRoles() {
+  if (typeof AuthenticationManager === 'undefined') {
+    return { error: 'AuthenticationManager module not loaded' };
+  }
+  const authManager = new AuthenticationManager();
+  const roles = Object.keys(authManager.rolePermissions).map(role => ({
+    role,
+    level: authManager.rolePermissions[role].level,
+    permissions: authManager.rolePermissions[role].permissions.slice(0, 5),
+    description: authManager.rolePermissions[role].description,
+  }));
+  return {
+    rbacSystem: 'Role-Based Access Control (RBAC)',
+    totalRoles: roles.length,
+    roles,
+    summary: '7 healthcare roles with granular permission management',
+  };
+}
+
+async function executeAuthSessions() {
+  if (typeof AuthenticationManager === 'undefined') {
+    return { error: 'AuthenticationManager module not loaded' };
+  }
+  const authManager = new AuthenticationManager();
+  // Login to create a session
+  await authManager.login('demo.physician@brainsait.health', 'DemoPassword123!', 'password');
+  const sessions = authManager.getActiveSessions();
+  return {
+    activeSessions: sessions.length,
+    sessions: sessions.map(s => ({
+      id: s.id,
+      userId: s.userId,
+      deviceInfo: s.deviceInfo,
+      lastActivity: s.lastActivity,
+      isActive: s.isActive,
+    })),
+    summary: 'Active session management with device tracking',
+  };
+}
+
+// Workflow Executors
+async function executeWorkflowTemplates() {
+  if (typeof FHIRWorkflowEngine === 'undefined') {
+    return { error: 'FHIRWorkflowEngine module not loaded' };
+  }
+  const workflowEngine = new FHIRWorkflowEngine();
+  const templates = Object.entries(workflowEngine.workflowTemplates).map(([key, template]) => ({
+    type: key,
+    name: template.name,
+    description: template.description,
+    steps: template.steps.length,
+    stepNames: template.steps.map(s => s.name),
+  }));
+  return {
+    workflowTemplates: templates,
+    totalTemplates: templates.length,
+    summary: 'Pre-built clinical workflow templates (Admission, Discharge, Medication, Lab)',
+  };
+}
+
+async function executeWorkflowCarePlan() {
+  if (typeof FHIRWorkflowEngine === 'undefined') {
+    return { error: 'FHIRWorkflowEngine module not loaded' };
+  }
+  const workflowEngine = new FHIRWorkflowEngine();
+  const carePlan = workflowEngine.createCarePlan('patient-001', 'practitioner-001', 'Diabetes Management Plan', [
+    { code: '33747003', display: 'Glycemic control', target: 'HbA1c < 7%' },
+    { code: '161832001', display: 'Weight management', target: 'BMI < 30' },
+  ]);
+  return {
+    resourceType: carePlan.resourceType,
+    id: carePlan.id,
+    status: carePlan.status,
+    title: carePlan.title,
+    goals: carePlan.goal,
+    summary: 'FHIR R4 CarePlan resource created with goals and activities',
+  };
+}
+
+async function executeWorkflowTask() {
+  if (typeof FHIRWorkflowEngine === 'undefined') {
+    return { error: 'FHIRWorkflowEngine module not loaded' };
+  }
+  const workflowEngine = new FHIRWorkflowEngine();
+  const task = workflowEngine.createTask('patient-001', 'practitioner-001', 'Review lab results', 'Review and interpret recent HbA1c results');
+  return {
+    resourceType: task.resourceType,
+    id: task.id,
+    status: task.status,
+    priority: task.priority,
+    description: task.description,
+    summary: 'FHIR R4 Task resource created for clinical task management',
+  };
+}
+
+async function executeWorkflowMedication() {
+  if (typeof FHIRWorkflowEngine === 'undefined') {
+    return { error: 'FHIRWorkflowEngine module not loaded' };
+  }
+  const workflowEngine = new FHIRWorkflowEngine();
+  const medOrder = workflowEngine.createMedicationOrder('patient-001', 'practitioner-001', {
+    code: '105075',
+    display: 'Metformin 500mg',
+  }, 'Take 1 tablet twice daily with meals');
+  return {
+    resourceType: medOrder.resourceType,
+    id: medOrder.id,
+    status: medOrder.status,
+    medication: medOrder.medicationCodeableConcept,
+    dosageInstruction: medOrder.dosageInstruction,
+    summary: 'FHIR R4 MedicationRequest resource created',
+  };
+}
+
+async function executeWorkflowLab() {
+  if (typeof FHIRWorkflowEngine === 'undefined') {
+    return { error: 'FHIRWorkflowEngine module not loaded' };
+  }
+  const workflowEngine = new FHIRWorkflowEngine();
+  const labOrder = workflowEngine.createLabOrder('patient-001', 'practitioner-001', {
+    code: '4548-4',
+    display: 'Hemoglobin A1c',
+  });
+  return {
+    resourceType: labOrder.resourceType,
+    id: labOrder.id,
+    status: labOrder.status,
+    code: labOrder.code,
+    summary: 'FHIR R4 ServiceRequest (lab order) resource created',
+  };
+}
+
+// Reporting Executors
+async function executeReportsTemplates() {
+  if (typeof ReportingEngine === 'undefined') {
+    return { error: 'ReportingEngine module not loaded' };
+  }
+  const reportingEngine = new ReportingEngine();
+  const templates = Object.entries(reportingEngine.reportTemplates).map(([key, template]) => ({
+    type: key,
+    name: template.name,
+    description: template.description,
+    sections: template.sections.length,
+  }));
+  return {
+    reportTemplates: templates,
+    totalTemplates: templates.length,
+    exportFormats: ['PDF', 'Excel (XLSX)', 'CSV'],
+    summary: '5 professional report templates (Patient Summary, Clinical Quality, Financial, Compliance, Vision 2030)',
+  };
+}
+
+async function executeReportsPatient() {
+  if (typeof ReportingEngine === 'undefined') {
+    return { error: 'ReportingEngine module not loaded' };
+  }
+  const reportingEngine = new ReportingEngine();
+  const sampleData = {
+    patient: { id: 'P001', name: 'Ahmed Al-Ali', age: 45, mrn: 'MRN-2024-001' },
+    vitals: { bp: '140/90', hr: 88, temp: 37.2 },
+    medications: ['Metformin 500mg BID', 'Lisinopril 10mg QD'],
+    diagnoses: ['Type 2 Diabetes Mellitus', 'Hypertension'],
+  };
+  const report = reportingEngine.generateReport('patient_summary', sampleData);
+  return {
+    reportType: 'Patient Summary',
+    generatedAt: report.generatedAt,
+    sections: report.sections,
+    data: sampleData,
+    summary: 'Comprehensive patient summary report generated',
+  };
+}
+
+async function executeReportsClinical() {
+  if (typeof ReportingEngine === 'undefined') {
+    return { error: 'ReportingEngine module not loaded' };
+  }
+  const reportingEngine = new ReportingEngine();
+  const sampleData = {
+    period: 'Q1 2024',
+    outcomes: { mortality: 2.1, readmission: 12.4, infectionRate: 1.8 },
+    safety: { adverseEvents: 45, medicationErrors: 12, falls: 8 },
+    efficiency: { avgLOS: 4.2, bedUtilization: 87, waitTime: 35 },
+  };
+  const report = reportingEngine.generateReport('clinical_quality', sampleData);
+  return {
+    reportType: 'Clinical Quality Metrics',
+    period: sampleData.period,
+    generatedAt: report.generatedAt,
+    keyMetrics: sampleData,
+    summary: 'Clinical quality and safety metrics report',
+  };
+}
+
+async function executeReportsVision2030() {
+  if (typeof ReportingEngine === 'undefined') {
+    return { error: 'ReportingEngine module not loaded' };
+  }
+  const reportingEngine = new ReportingEngine();
+  const sampleData = {
+    period: '2024',
+    digitalTransformation: { ehrAdoption: 98, paperlessOps: 92, telehealth: 85 },
+    aiIntegration: { diagnosticAI: 78, predictiveAnalytics: 82, nlpUsage: 88 },
+    qualityMetrics: { patientSafety: 94, outcomes: 91, experience: 89 },
+  };
+  const report = reportingEngine.generateReport('vision2030_progress', sampleData);
+  return {
+    reportType: 'Saudi Vision 2030 Progress',
+    period: sampleData.period,
+    generatedAt: report.generatedAt,
+    progress: sampleData,
+    summary: 'Vision 2030 digital health transformation progress report',
+  };
+}
+
+async function executeReportsCompliance() {
+  if (typeof ReportingEngine === 'undefined') {
+    return { error: 'ReportingEngine module not loaded' };
+  }
+  const reportingEngine = new ReportingEngine();
+  const sampleData = {
+    period: 'Q1 2024',
+    accessLogs: { total: 15432, authorized: 15389, unauthorized: 43 },
+    breaches: { total: 2, resolved: 2, pending: 0 },
+    training: { completed: 245, pending: 12, compliance: 95.3 },
+  };
+  const report = reportingEngine.generateReport('compliance_audit', sampleData);
+  return {
+    reportType: 'HIPAA Compliance Audit',
+    period: sampleData.period,
+    generatedAt: report.generatedAt,
+    complianceData: sampleData,
+    summary: 'HIPAA compliance and security audit report',
+  };
+}
+
+async function executeReportsExport() {
+  if (typeof ReportingEngine === 'undefined') {
+    return { error: 'ReportingEngine module not loaded' };
+  }
+  const reportingEngine = new ReportingEngine();
+  return {
+    status: 'Export capabilities ready',
+    formats: [
+      { format: 'PDF', library: 'jsPDF', status: 'Ready (requires jsPDF library in production)' },
+      { format: 'Excel', library: 'SheetJS', status: 'Ready (requires xlsx library in production)' },
+      { format: 'CSV', library: 'Native', status: 'Ready' },
+    ],
+    note: 'In production, integrate jsPDF and SheetJS libraries for full export functionality',
+    summary: 'Multi-format report export capabilities',
+  };
+}
+
 const actionRegistry = {
   'sdk-health': {
     loaderId: 'api-loading',
@@ -1016,6 +1477,161 @@ const actionRegistry = {
     outputId: 'db-output',
     successMessage: 'AI model registry loaded.',
     executor: executeAIModels,
+  },
+  // Analytics Dashboard Actions
+  'analytics-realtime': {
+    loaderId: 'analytics-loading',
+    outputId: 'analytics-output',
+    successMessage: 'Real-time monitoring started.',
+    executor: executeAnalyticsRealtime,
+  },
+  'analytics-vision2030': {
+    loaderId: 'analytics-loading',
+    outputId: 'analytics-output',
+    successMessage: 'Vision 2030 KPIs loaded.',
+    executor: executeAnalyticsVision2030,
+  },
+  'analytics-predictions': {
+    loaderId: 'analytics-loading',
+    outputId: 'analytics-output',
+    successMessage: 'Predictive analytics generated.',
+    executor: executeAnalyticsPredictions,
+  },
+  'analytics-export': {
+    loaderId: 'analytics-loading',
+    outputId: 'analytics-output',
+    successMessage: 'Analytics data exported.',
+    executor: executeAnalyticsExport,
+  },
+  // Clinical AI Actions
+  'clinical-risk-assess': {
+    loaderId: 'clinical-loading',
+    outputId: 'clinical-output',
+    successMessage: 'Risk assessment completed.',
+    executor: executeClinicalRiskAssess,
+  },
+  'clinical-drug-check': {
+    loaderId: 'clinical-loading',
+    outputId: 'clinical-output',
+    successMessage: 'Drug interaction check completed.',
+    executor: executeClinicalDrugCheck,
+  },
+  'clinical-diagnostic': {
+    loaderId: 'clinical-loading',
+    outputId: 'clinical-output',
+    successMessage: 'Diagnostic suggestions generated.',
+    executor: executeClinicalDiagnostic,
+  },
+  'clinical-pathway': {
+    loaderId: 'clinical-loading',
+    outputId: 'clinical-output',
+    successMessage: 'Clinical pathways loaded.',
+    executor: executeClinicalPathway,
+  },
+  // Authentication Actions
+  'auth-login': {
+    loaderId: 'auth-loading',
+    outputId: 'auth-output',
+    successMessage: 'Login successful.',
+    executor: executeAuthLogin,
+  },
+  'auth-oauth': {
+    loaderId: 'auth-loading',
+    outputId: 'auth-output',
+    successMessage: 'OAuth2 authentication initiated.',
+    executor: executeAuthOAuth,
+  },
+  'auth-mfa': {
+    loaderId: 'auth-loading',
+    outputId: 'auth-output',
+    successMessage: 'MFA verification completed.',
+    executor: executeAuthMFA,
+  },
+  'auth-biometric': {
+    loaderId: 'auth-loading',
+    outputId: 'auth-output',
+    successMessage: 'Biometric authentication completed.',
+    executor: executeAuthBiometric,
+  },
+  'auth-roles': {
+    loaderId: 'auth-loading',
+    outputId: 'auth-output',
+    successMessage: 'Role permissions retrieved.',
+    executor: executeAuthRoles,
+  },
+  'auth-sessions': {
+    loaderId: 'auth-loading',
+    outputId: 'auth-output',
+    successMessage: 'Active sessions retrieved.',
+    executor: executeAuthSessions,
+  },
+  // Workflow Actions
+  'workflow-templates': {
+    loaderId: 'workflow-loading',
+    outputId: 'workflow-output',
+    successMessage: 'Workflow templates loaded.',
+    executor: executeWorkflowTemplates,
+  },
+  'workflow-careplan': {
+    loaderId: 'workflow-loading',
+    outputId: 'workflow-output',
+    successMessage: 'Care plan created.',
+    executor: executeWorkflowCarePlan,
+  },
+  'workflow-task': {
+    loaderId: 'workflow-loading',
+    outputId: 'workflow-output',
+    successMessage: 'Task management demo completed.',
+    executor: executeWorkflowTask,
+  },
+  'workflow-medication': {
+    loaderId: 'workflow-loading',
+    outputId: 'workflow-output',
+    successMessage: 'Medication order created.',
+    executor: executeWorkflowMedication,
+  },
+  'workflow-lab': {
+    loaderId: 'workflow-loading',
+    outputId: 'workflow-output',
+    successMessage: 'Lab order created.',
+    executor: executeWorkflowLab,
+  },
+  // Reporting Actions
+  'reports-templates': {
+    loaderId: 'reports-loading',
+    outputId: 'reports-output',
+    successMessage: 'Report templates loaded.',
+    executor: executeReportsTemplates,
+  },
+  'reports-patient': {
+    loaderId: 'reports-loading',
+    outputId: 'reports-output',
+    successMessage: 'Patient summary report generated.',
+    executor: executeReportsPatient,
+  },
+  'reports-clinical': {
+    loaderId: 'reports-loading',
+    outputId: 'reports-output',
+    successMessage: 'Clinical quality report generated.',
+    executor: executeReportsClinical,
+  },
+  'reports-vision2030': {
+    loaderId: 'reports-loading',
+    outputId: 'reports-output',
+    successMessage: 'Vision 2030 progress report generated.',
+    executor: executeReportsVision2030,
+  },
+  'reports-compliance': {
+    loaderId: 'reports-loading',
+    outputId: 'reports-output',
+    successMessage: 'Compliance audit report generated.',
+    executor: executeReportsCompliance,
+  },
+  'reports-export': {
+    loaderId: 'reports-loading',
+    outputId: 'reports-output',
+    successMessage: 'Reports exported successfully.',
+    executor: executeReportsExport,
   },
 };
 

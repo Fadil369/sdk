@@ -220,6 +220,11 @@
           <button id="tab-fhir" class="tab-button" type="button" data-tab-target="fhir-demo" role="tab" aria-controls="fhir-demo" aria-selected="false" tabindex="-1"><span aria-hidden="true">🏥</span> FHIR</button>
           <button id="tab-ai" class="tab-button" type="button" data-tab-target="ai-demo" role="tab" aria-controls="ai-demo" aria-selected="false" tabindex="-1"><span aria-hidden="true">🤖</span> AI</button>
           <button id="tab-database" class="tab-button" type="button" data-tab-target="database-demo" role="tab" aria-controls="database-demo" aria-selected="false" tabindex="-1"><span aria-hidden="true">💾</span> Database</button>
+          <button id="tab-analytics" class="tab-button" type="button" data-tab-target="analytics-demo" role="tab" aria-controls="analytics-demo" aria-selected="false" tabindex="-1"><span aria-hidden="true">📊</span> Analytics</button>
+          <button id="tab-clinical" class="tab-button" type="button" data-tab-target="clinical-demo" role="tab" aria-controls="clinical-demo" aria-selected="false" tabindex="-1"><span aria-hidden="true">🩺</span> Clinical AI</button>
+          <button id="tab-auth" class="tab-button" type="button" data-tab-target="auth-demo" role="tab" aria-controls="auth-demo" aria-selected="false" tabindex="-1"><span aria-hidden="true">🔐</span> Auth</button>
+          <button id="tab-workflow" class="tab-button" type="button" data-tab-target="workflow-demo" role="tab" aria-controls="workflow-demo" aria-selected="false" tabindex="-1"><span aria-hidden="true">⚡</span> Workflows</button>
+          <button id="tab-reports" class="tab-button" type="button" data-tab-target="reports-demo" role="tab" aria-controls="reports-demo" aria-selected="false" tabindex="-1"><span aria-hidden="true">📑</span> Reports</button>
         </div>
 
         <div id="api-demo" class="tab-content is-active" role="tabpanel" aria-labelledby="tab-api">
@@ -372,6 +377,136 @@
             </div>
           </article>
         </div>
+
+  <div id="analytics-demo" class="tab-content" role="tabpanel" aria-labelledby="tab-analytics" hidden>
+          <article class="interactive-panel">
+            <div class="panel-header">
+              <h3>Real-Time Analytics Dashboard</h3>
+              <p class="text-secondary">Monitor system performance, Vision 2030 KPIs, and predictive insights in real-time.</p>
+            </div>
+            <div class="panel-actions" role="group" aria-label="Analytics operations">
+              <button class="btn btn-primary" type="button" data-action="analytics-realtime" aria-label="Start real-time monitoring"><span aria-hidden="true">📡</span> Start Real-Time Monitor</button>
+              <button class="btn btn-outline" type="button" data-action="analytics-vision2030" aria-label="View Vision 2030 KPIs"><span aria-hidden="true">🇸🇦</span> Vision 2030 KPIs</button>
+              <button class="btn btn-outline" type="button" data-action="analytics-predictions" aria-label="Generate predictive analytics"><span aria-hidden="true">🔮</span> Predictive Analytics</button>
+              <button class="btn btn-outline" type="button" data-action="analytics-export" aria-label="Export analytics data"><span aria-hidden="true">💾</span> Export Data</button>
+            </div>
+            <div id="analytics-loading" class="panel-loading" role="status" aria-live="polite" aria-atomic="true">
+              <span class="spinner" aria-hidden="true"></span>
+              <span>Loading analytics…</span>
+            </div>
+            <div id="analytics-output" class="output-console" role="log" aria-live="polite" aria-atomic="false">
+              <div class="output-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span class="text-secondary" style="font-size: 0.875rem;">Console Output</span>
+                <button class="btn-copy" type="button" data-copy-target="analytics-output" aria-label="Copy output to clipboard" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;">📋 Copy</button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+  <div id="clinical-demo" class="tab-content" role="tabpanel" aria-labelledby="tab-clinical" hidden>
+          <article class="interactive-panel">
+            <div class="panel-header">
+              <h3>AI Clinical Decision Support</h3>
+              <p class="text-secondary">Assess patient risks, check drug interactions, and receive diagnostic suggestions powered by AI.</p>
+            </div>
+            <div class="panel-actions" role="group" aria-label="Clinical AI operations">
+              <button class="btn btn-primary" type="button" data-action="clinical-risk-assess" aria-label="Perform risk assessment"><span aria-hidden="true">⚕️</span> Risk Assessment</button>
+              <button class="btn btn-outline" type="button" data-action="clinical-drug-check" aria-label="Check drug interactions"><span aria-hidden="true">💊</span> Drug Interactions</button>
+              <button class="btn btn-outline" type="button" data-action="clinical-diagnostic" aria-label="Get diagnostic suggestions"><span aria-hidden="true">🔬</span> Diagnostic Suggestions</button>
+              <button class="btn btn-outline" type="button" data-action="clinical-pathway" aria-label="View clinical pathways"><span aria-hidden="true">📋</span> Clinical Pathways</button>
+            </div>
+            <div id="clinical-loading" class="panel-loading" role="status" aria-live="polite" aria-atomic="true">
+              <span class="spinner" aria-hidden="true"></span>
+              <span>Processing clinical data…</span>
+            </div>
+            <div id="clinical-output" class="output-console" role="log" aria-live="polite" aria-atomic="false">
+              <div class="output-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span class="text-secondary" style="font-size: 0.875rem;">Console Output</span>
+                <button class="btn-copy" type="button" data-copy-target="clinical-output" aria-label="Copy output to clipboard" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;">📋 Copy</button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+  <div id="auth-demo" class="tab-content" role="tabpanel" aria-labelledby="tab-auth" hidden>
+          <article class="interactive-panel">
+            <div class="panel-header">
+              <h3>Authentication & Authorization</h3>
+              <p class="text-secondary">Test JWT tokens, OAuth2 flows, MFA, biometric auth, and role-based access control.</p>
+            </div>
+            <div class="panel-actions" role="group" aria-label="Authentication operations">
+              <button class="btn btn-primary" type="button" data-action="auth-login" aria-label="Simulate login"><span aria-hidden="true">🔓</span> Login (JWT)</button>
+              <button class="btn btn-outline" type="button" data-action="auth-oauth" aria-label="Test OAuth2 flow"><span aria-hidden="true">🔑</span> OAuth2 Login</button>
+              <button class="btn btn-outline" type="button" data-action="auth-mfa" aria-label="Verify MFA"><span aria-hidden="true">🔐</span> MFA Verification</button>
+              <button class="btn btn-outline" type="button" data-action="auth-biometric" aria-label="Test biometric auth"><span aria-hidden="true">👆</span> Biometric Auth</button>
+              <button class="btn btn-outline" type="button" data-action="auth-roles" aria-label="View role permissions"><span aria-hidden="true">👥</span> View Roles</button>
+              <button class="btn btn-outline" type="button" data-action="auth-sessions" aria-label="View active sessions"><span aria-hidden="true">📱</span> Active Sessions</button>
+            </div>
+            <div id="auth-loading" class="panel-loading" role="status" aria-live="polite" aria-atomic="true">
+              <span class="spinner" aria-hidden="true"></span>
+              <span>Authenticating…</span>
+            </div>
+            <div id="auth-output" class="output-console" role="log" aria-live="polite" aria-atomic="false">
+              <div class="output-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span class="text-secondary" style="font-size: 0.875rem;">Console Output</span>
+                <button class="btn-copy" type="button" data-copy-target="auth-output" aria-label="Copy output to clipboard" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;">📋 Copy</button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+  <div id="workflow-demo" class="tab-content" role="tabpanel" aria-labelledby="tab-workflow" hidden>
+          <article class="interactive-panel">
+            <div class="panel-header">
+              <h3>FHIR Workflow Engine</h3>
+              <p class="text-secondary">Automate clinical workflows, create care plans, manage tasks, and coordinate care delivery.</p>
+            </div>
+            <div class="panel-actions" role="group" aria-label="Workflow operations">
+              <button class="btn btn-primary" type="button" data-action="workflow-templates" aria-label="View workflow templates"><span aria-hidden="true">📋</span> Workflow Templates</button>
+              <button class="btn btn-outline" type="button" data-action="workflow-careplan" aria-label="Create care plan"><span aria-hidden="true">🏥</span> Create Care Plan</button>
+              <button class="btn btn-outline" type="button" data-action="workflow-task" aria-label="Manage tasks"><span aria-hidden="true">✅</span> Task Management</button>
+              <button class="btn btn-outline" type="button" data-action="workflow-medication" aria-label="Order medication"><span aria-hidden="true">💊</span> Medication Order</button>
+              <button class="btn btn-outline" type="button" data-action="workflow-lab" aria-label="Order lab test"><span aria-hidden="true">🔬</span> Lab Order</button>
+            </div>
+            <div id="workflow-loading" class="panel-loading" role="status" aria-live="polite" aria-atomic="true">
+              <span class="spinner" aria-hidden="true"></span>
+              <span>Processing workflow…</span>
+            </div>
+            <div id="workflow-output" class="output-console" role="log" aria-live="polite" aria-atomic="false">
+              <div class="output-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span class="text-secondary" style="font-size: 0.875rem;">Console Output</span>
+                <button class="btn-copy" type="button" data-copy-target="workflow-output" aria-label="Copy output to clipboard" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;">📋 Copy</button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+  <div id="reports-demo" class="tab-content" role="tabpanel" aria-labelledby="tab-reports" hidden>
+          <article class="interactive-panel">
+            <div class="panel-header">
+              <h3>Advanced Reporting Engine</h3>
+              <p class="text-secondary">Generate comprehensive reports, export in multiple formats, and schedule automated reporting.</p>
+            </div>
+            <div class="panel-actions" role="group" aria-label="Reporting operations">
+              <button class="btn btn-primary" type="button" data-action="reports-templates" aria-label="View report templates"><span aria-hidden="true">📄</span> Report Templates</button>
+              <button class="btn btn-outline" type="button" data-action="reports-patient" aria-label="Generate patient summary"><span aria-hidden="true">👤</span> Patient Summary</button>
+              <button class="btn btn-outline" type="button" data-action="reports-clinical" aria-label="Generate clinical quality report"><span aria-hidden="true">⚕️</span> Clinical Quality</button>
+              <button class="btn btn-outline" type="button" data-action="reports-vision2030" aria-label="Generate Vision 2030 report"><span aria-hidden="true">🇸🇦</span> Vision 2030 Progress</button>
+              <button class="btn btn-outline" type="button" data-action="reports-compliance" aria-label="Generate compliance audit"><span aria-hidden="true">📋</span> Compliance Audit</button>
+              <button class="btn btn-outline" type="button" data-action="reports-export" aria-label="Export reports"><span aria-hidden="true">💾</span> Export (PDF/Excel)</button>
+            </div>
+            <div id="reports-loading" class="panel-loading" role="status" aria-live="polite" aria-atomic="true">
+              <span class="spinner" aria-hidden="true"></span>
+              <span>Generating report…</span>
+            </div>
+            <div id="reports-output" class="output-console" role="log" aria-live="polite" aria-atomic="false">
+              <div class="output-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span class="text-secondary" style="font-size: 0.875rem;">Console Output</span>
+                <button class="btn-copy" type="button" data-copy-target="reports-output" aria-label="Copy output to clipboard" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;">📋 Copy</button>
+              </div>
+            </div>
+          </article>
+        </div>
       </div>
     </section>
 
@@ -470,6 +605,20 @@ GET /nphies/claims</code></pre>
       <p class="text-muted" style="margin-top: 1.75rem;"><small>© 2025 BrainSAIT. All rights reserved.</small></p>
     </div>
   </footer>
+
+  <!-- Toast notification container -->
+  <div id="toast-container" class="toast-container" role="region" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Load advanced feature libraries -->
+  <script src="/assets/js/analytics-dashboard.js"></script>
+  <script src="/assets/js/ai-clinical-support.js"></script>
+  <script src="/assets/js/auth-manager.js"></script>
+  <script src="/assets/js/fhir-workflow.js"></script>
+  <script src="/assets/js/reporting-engine.js"></script>
+  
+  <!-- Main demo script -->
+  <script src="/assets/js/demo.js"></script>
+  <script src="/index.umd.js"></script>
 
   <!-- Screen reader only class for accessibility -->
   <style>
