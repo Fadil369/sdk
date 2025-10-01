@@ -620,7 +620,7 @@ npm run dev
 
 If NO, list all critical issues:
 
-```
+```text
 Issue 1: [Description]
 Issue 2: [Description]
 ```
@@ -631,7 +631,7 @@ Issue 2: [Description]
 
 If NO, list all high-priority issues:
 
-```
+```text
 Issue 1: [Description]
 Issue 2: [Description]
 ```
@@ -642,7 +642,7 @@ Issue 2: [Description]
 
 List any minor issues:
 
-```
+```text
 Issue 1: [Description] - Severity: Low
 Issue 2: [Description] - Severity: Medium
 ```
@@ -665,7 +665,7 @@ Issue 2: [Description] - Severity: Medium
 
 **Conditions (if applicable):**
 
-```
+```text
 1. [Condition 1]
 2. [Condition 2]
 ```
@@ -704,8 +704,8 @@ Issue 2: [Description] - Severity: Medium
 
 **Test Coordinator:** BrainSAIT Engineering Team  
 **Slack Channel:** #sdk-modernization  
-**Email:** engineering@brainsait.com  
-**GitHub Issues:** https://github.com/Fadil369/sdk/issues
+**Email:** <engineering@brainsait.com>  
+**GitHub Issues:** <https://github.com/Fadil369/sdk/issues>
 
 **Questions During Testing:**
 
