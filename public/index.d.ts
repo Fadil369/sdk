@@ -90,6 +90,8 @@ export declare class AnalyticsManager {
     };
 }
 
+export declare function analyzeClinicalNote(note: string, options?: PythonBridgeOptions): Promise<PyBrainEntitiesResponse>;
+
 export declare class ApiClient {
     private client;
     private logger;
@@ -1716,6 +1718,29 @@ export declare interface NPHIESWarning {
     location?: string[];
 }
 
+export declare interface OrchestratedCarePlanInput {
+    note: string;
+    patient: PyBrainPatientProfile & {
+        id?: string;
+        name?: string;
+    };
+    context?: PyHeartWorkflowInput['context'];
+    careTeam?: string[];
+}
+
+export declare interface OrchestratedPythonCarePlan {
+    entities: PyBrainEntitiesResponse;
+    risk: PyBrainRiskResponse;
+    workflow: PyHeartWorkflowResult;
+}
+
+/**
+ * Convenience helper that runs entity extraction, risk scoring, and a
+ * PyHeart workflow sequentially. This is useful for end-to-end demos
+ * inside the SDK samples.
+ */
+export declare function orchestratePythonCarePlan(input: OrchestratedCarePlanInput, options?: PythonBridgeOptions): Promise<OrchestratedPythonCarePlan>;
+
 export declare interface PaginatedResponse<T> extends ApiResponse<T[]> {
     pagination: {
         page: number;
@@ -1924,6 +1949,74 @@ export declare interface PredictiveAnalytics {
     };
 }
 
+export declare function predictPatientRisk(patient: PyBrainPatientProfile, options?: PythonBridgeOptions): Promise<PyBrainRiskResponse>;
+
+export declare interface PyBrainEntitiesResponse {
+    entities: Record<string, string[]>;
+    meta: {
+        model: string;
+        modelType: string;
+    };
+}
+
+export declare interface PyBrainPatientProfile {
+    age?: number;
+    bmi?: number;
+    conditions?: string[];
+    medications?: string[];
+    smoking?: boolean;
+    [key: string]: unknown;
+}
+
+export declare interface PyBrainRiskResponse {
+    riskScore: number;
+    secondaryScores: {
+        readmission: number;
+        fall: number;
+    };
+}
+
+export declare interface PyHeartTaskResult {
+    status: string;
+    output?: unknown;
+    error?: string | null;
+    startedAt?: string | null;
+    completedAt?: string | null;
+}
+
+export declare interface PyHeartWorkflowInput {
+    patient: {
+        id?: string;
+        name?: string;
+        [key: string]: unknown;
+    };
+    riskScore: number;
+    context?: {
+        fhirServer?: string;
+        primaryPhysician?: string;
+        [key: string]: unknown;
+    };
+    careTeam?: string[];
+}
+
+export declare interface PyHeartWorkflowResult {
+    instanceId: string;
+    status: string;
+    variables: Record<string, unknown>;
+    tasks: Record<string, PyHeartTaskResult>;
+    riskScore: number;
+}
+
+/**
+ * Type contracts for the Python bridge that exposes PyBrain/PyHeart
+ * functionality to the TypeScript SDK.
+ */
+export declare interface PythonBridgeOptions {
+    pythonPath?: string;
+    timeoutMs?: number;
+    env?: NodeJS.ProcessEnv;
+}
+
 export declare class RBACManager {
     private roles;
     private users;
@@ -2070,6 +2163,8 @@ declare interface RTLStyle extends React.CSSProperties {
 }
 
 export declare const rtlTransform: (rtl: boolean, transform?: string) => React.CSSProperties;
+
+export declare function runRiskWorkflow(input: PyHeartWorkflowInput, options?: PythonBridgeOptions): Promise<PyHeartWorkflowResult>;
 
 export declare const SAUDI_REGIONS: readonly ["riyadh", "makkah", "madinah", "qassim", "eastern", "asir", "tabuk", "hail", "northern-borders", "jazan", "najran", "al-bahah", "al-jawf"];
 
