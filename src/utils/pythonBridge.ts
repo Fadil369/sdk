@@ -8,10 +8,10 @@
 import type { PythonBridgeOptions } from '@/types/python';
 
 function checkNodeJsEnvironment(): void {
-  if (typeof process === 'undefined' || !process.versions?.node) {
+  if (!process?.versions?.node) {
     throw new PythonBridgeError(
       'Python bridge is only available in Node.js environments. ' +
-      'Browser environments cannot execute Python code directly.'
+        'Browser environments cannot execute Python code directly.'
     );
   }
 }
@@ -44,9 +44,9 @@ export async function runPythonBridge<TPayload extends object, TResult = unknown
   options?: PythonBridgeOptions
 ): Promise<TResult> {
   checkNodeJsEnvironment();
-  
+
   const { spawn } = await import('node:child_process');
-  
+
   const pythonExecutable = options?.pythonPath ?? process.env.PYTHON_BRIDGE_PYTHON ?? 'python3';
   const bridgePath = await resolveBridgePath();
   const args = [bridgePath, '--package', packageName, '--action', action];
