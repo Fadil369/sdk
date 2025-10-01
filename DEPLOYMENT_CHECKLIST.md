@@ -12,6 +12,7 @@ This comprehensive checklist ensures a smooth deployment of the BrainSAIT Health
 - [ ] **Unit Tests**: All tests passing (`npm run test:ci`)
 - [ ] **Coverage**: Adequate test coverage (`npm run test:coverage`)
 - [x] **Build**: Production build successful (`npm run build`)
+- [ ] **Python Integration**: Python bridge functionality verified (if enabled)
 
 ### Security & Dependencies
 
@@ -105,6 +106,7 @@ wrangler pages deploy public --project-name=healthcare-sdk-production
 - [ ] **Authentication**: Auth flows working correctly
 - [ ] **Performance**: Load times within acceptable limits
 - [ ] **Mobile Responsiveness**: Mobile/tablet views functional
+- [ ] **Python Integration**: PyBrain/PyHeart bridge operational (if deployed)
 
 ## Monitoring & Rollback
 
