@@ -93,9 +93,9 @@
     "terser": "^5.44.0",
     "tsx": "^4.20.6",
     "typescript": "^5.2.2",
-    "vite": "^7.1.7",
+    "vite": "^7.1.8",
     "vite-plugin-dts": "^4.5.4",
-    "vitepress": "^0.1.1",
+    "vitepress": "^1.6.4",
     "vitest": "^0.34.6",
     "wrangler": "^4.40.2"
   },
