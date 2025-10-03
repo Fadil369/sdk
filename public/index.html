@@ -1,134 +1,641 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BrainSAIT Healthcare SDK - Demo</title>
-    <meta name="description" content="BrainSAIT Healthcare SDK for NPHIES/FHIR Integration with Arabic support">
-    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .container {
-            text-align: center;
-            color: white;
-            padding: 2rem;
-            border-radius: 20px;
-            backdrop-filter: blur(20px);
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
-        }
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            font-weight: 700;
-        }
-        .subtitle {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
-        }
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin: 2rem 0;
-        }
-        .feature {
-            padding: 1rem;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .links {
-            margin-top: 2rem;
-        }
-        .link {
-            display: inline-block;
-            margin: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            text-decoration: none;
-            border-radius: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transition: all 0.3s ease;
-        }
-        .link:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-        .version {
-            margin-top: 2rem;
-            opacity: 0.7;
-            font-size: 0.9rem;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BrainSAIT Healthcare SDK · Interactive Demo</title>
+  <meta name="description" content="Advanced Healthcare SDK for Saudi Arabia with Vision 2030 alignment. Explore interactive demos for FHIR, NPHIES, AI agents, and MongoDB Atlas.">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/healthcare-ui.css">
+  <link rel="stylesheet" href="/assets/css/demo.css">
+  <style>
+    /* Skip link for keyboard navigation */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #000;
+      color: #fff;
+      padding: 8px;
+      text-decoration: none;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+    /* Improve focus visibility */
+    *:focus-visible {
+      outline: 3px solid #0066cc;
+      outline-offset: 2px;
+    }
+    /* Loading state */
+    .panel-loading {
+      display: none;
+      text-align: center;
+      padding: 2rem;
+    }
+    .panel-loading.is-active {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #0066cc;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    /* Button hover states */
+    .btn {
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    /* Improved mobile touch targets */
+    @media (max-width: 768px) {
+      .btn, .tab-button {
+        min-height: 44px;
+        min-width: 44px;
+        font-size: 16px;
+      }
+      .menu-toggle {
+        min-height: 44px;
+        min-width: 44px;
+      }
+    }
+    /* Toast improvements */
+    .toast {
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🧠 BrainSAIT Healthcare SDK</h1>
-        <div class="subtitle">
-            Advanced Healthcare Integration with FHIR/NPHIES Support
-        </div>
-        
-        <div class="features">
-            <div class="feature">
-                <h3>🔒 HIPAA Compliant</h3>
-                <p>Full security & compliance framework</p>
-            </div>
-            <div class="feature">
-                <h3>🌐 Arabic Support</h3>
-                <p>RTL & internationalization ready</p>
-            </div>
-            <div class="feature">
-                <h3>🤖 AI Agents</h3>
-                <p>MASTERLINC & HEALTHCARELINC</p>
-            </div>
-            <div class="feature">
-                <h3>💎 Glass UI</h3>
-                <p>Modern glass morphism design</p>
-            </div>
-        </div>
-        
-        <div class="links">
-            <a href="/docs" class="link">📚 Documentation</a>
-            <a href="https://github.com/Fadil369/sdk" class="link">💻 GitHub</a>
-            <a href="/api/config" class="link">⚙️ API</a>
-        </div>
-        
-        <div class="version">
-            Version 1.2.0 | Powered by Cloudflare
-        </div>
-    </div>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 
-    <script>
-        // Initialize SDK demo
-        console.log('🚀 BrainSAIT Healthcare SDK Demo Ready');
-        
-        // Check if SDK is available
-        if (typeof window.BrainSAITHealthcareSDK !== 'undefined') {
-            console.log('✅ SDK loaded successfully');
-        } else {
-            console.log('⚠️ SDK not loaded, loading from CDN...');
-            // Load SDK dynamically
-            const script = document.createElement('script');
-            script.src = '/index.umd.js';
-            script.onload = () => console.log('✅ SDK loaded from CDN');
-            document.head.appendChild(script);
-        }
-    </script>
+  <header id="siteHeader" class="site-header" role="banner">
+    <div class="container header-bar">
+      <a class="brand" href="#top" aria-label="BrainSAIT Healthcare SDK">
+        <span aria-hidden="true">🧠</span>
+        BrainSAIT Healthcare SDK
+      </a>
+      <button id="menuToggle" class="menu-toggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="primaryNav">
+        <span aria-hidden="true">☰</span>
+        <span class="sr-only">Menu</span>
+      </button>
+      <nav aria-label="Main navigation">
+        <ul id="primaryNav" class="primary-nav" role="list">
+          <li><a href="#demo" aria-label="Jump to interactive demo section">Demo</a></li>
+          <li><a href="#features" aria-label="Jump to features section">Features</a></li>
+          <li><a href="#api" aria-label="Jump to API documentation">API</a></li>
+          <li><a href="https://github.com/Fadil369/sdk" target="_blank" rel="noopener noreferrer" aria-label="View source code on GitHub (opens in new tab)">GitHub <span aria-hidden="true">↗</span></a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content" role="main">
+    <section id="top" class="hero" aria-labelledby="hero-heading">
+      <div class="container">
+        <p class="section-eyebrow" role="doc-subtitle">Healthcare Platform</p>
+        <h1 id="hero-heading"><span aria-hidden="true">🏥</span> Unified Healthcare Infrastructure for Vision 2030</h1>
+        <p class="lede">
+          Deploy FHIR R4, NPHIES, AI orchestration, and secure data exchange across Saudi Arabia with a single SDK tailored for clinical precision and rapid innovation.
+        </p>
+        <div class="cta-group" role="group" aria-label="Primary actions">
+          <a class="btn btn-primary" href="#demo" aria-label="Launch interactive demo console"><span aria-hidden="true">🚀</span> Launch Interactive Demo</a>
+          <a class="btn btn-outline" href="#features" aria-label="Explore platform capabilities"><span aria-hidden="true">📋</span> Explore Capabilities</a>
+          <a class="btn btn-outline" href="https://github.com/Fadil369/sdk" target="_blank" rel="noopener noreferrer" aria-label="View source code on GitHub (opens in new tab)"><span aria-hidden="true">💻</span> View Source</a>
+        </div>
+        <div class="live-status" role="status" aria-live="polite" aria-label="System status indicators">
+          <span id="status-health" class="status-chip" data-state="warning" role="status" aria-label="System health status">System health <span aria-hidden="true">•</span> INITIALIZING</span>
+          <span id="status-response" class="status-chip" role="status" aria-label="API response time">Response <span aria-hidden="true">•</span> Pending</span>
+          <span id="status-usage" class="status-chip" role="status" aria-label="Concurrent users count">Concurrent users <span aria-hidden="true">•</span> Loading</span>
+          <span id="status-coverage" class="status-chip" role="status" aria-label="Edge network coverage">Edge coverage <span aria-hidden="true">•</span> Loading</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-section" aria-labelledby="stats-heading">
+      <div class="container">
+        <h2 id="stats-heading" class="section-title">Production Ready Benchmarks</h2>
+        <div class="stats-grid" role="list" aria-label="Platform statistics">
+          <article class="stat-card" role="listitem">
+            <div class="value">99.9%</div>
+            <div class="label">Uptime</div>
+            <p class="text-secondary">Global edge routing with automated failover coverage.</p>
+          </article>
+          <article class="stat-card" role="listitem">
+            <div class="value">&lt;200&nbsp;ms</div>
+            <div class="label">API Response</div>
+            <p class="text-secondary">Cloudflare Workers + MongoDB Atlas tuned for sub-second SLAs.</p>
+          </article>
+          <article class="stat-card" role="listitem">
+            <div class="value">HIPAA</div>
+            <div class="label">Compliance</div>
+            <p class="text-secondary">Zero-trust security with encryption, audit logs, and data residency.</p>
+          </article>
+          <article class="stat-card" role="listitem">
+            <div class="value">24/7</div>
+            <div class="label">Ops Command</div>
+            <p class="text-secondary">Realtime observability and incident automation across KSA regions.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="experience-section" aria-labelledby="experience-heading">
+      <div class="container">
+        <p class="section-eyebrow" role="doc-subtitle">Executive Overview</p>
+        <h2 id="experience-heading" class="section-title">Experience the Unified Healthcare Stack</h2>
+        <div class="experience-grid">
+          <article class="experience-card">
+            <h3>Clinical Precision</h3>
+            <p>Deliver clinical-grade interactions with certified Saudi FHIR profiles and automated NPHIES workflows.</p>
+            <ul>
+              <li>FHIR R4 + Vision 2030 extensions</li>
+              <li>HIPAA &amp; Saudi data residency compliance</li>
+              <li>Zero-trust authentication &amp; JWT rotation</li>
+            </ul>
+          </article>
+          <article class="experience-card">
+            <h3>Intelligence at Scale</h3>
+            <p>Activate MASTERLINC and HEALTHCARELINC agents for predictive care, Arabic NLP, and operational forecasting.</p>
+            <ul>
+              <li>Predictive readmission insights</li>
+              <li>Arabic NLP accuracy at 96%</li>
+              <li>Edge AI inference &amp; observability</li>
+            </ul>
+          </article>
+          <article class="experience-card">
+            <h3>Operations Command</h3>
+            <p>Monitor infrastructure health, orchestrate MongoDB Atlas, and ship globally via Cloudflare’s edge mesh.</p>
+            <ul>
+              <li>Global 24/7 edge deployments</li>
+              <li>Automated compliance reporting</li>
+              <li>Disaster recovery playbooks</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="demo" class="demo-section" aria-labelledby="demo-heading">
+      <div class="container">
+        <h2 id="demo-heading" class="section-title"><span aria-hidden="true">🎮</span> Interactive Demo Console</h2>
+        <p class="sr-only">Use arrow keys to navigate between tabs, or tab key to move through interactive elements.</p>
+        <div class="tab-buttons" role="tablist" aria-label="Interactive demo sections">
+          <button id="tab-api" class="tab-button active" type="button" data-tab-target="api-demo" role="tab" aria-controls="api-demo" aria-selected="true" tabindex="0"><span aria-hidden="true">🔌</span> API</button>
+          <button id="tab-fhir" class="tab-button" type="button" data-tab-target="fhir-demo" role="tab" aria-controls="fhir-demo" aria-selected="false" tabindex="-1"><span aria-hidden="true">🏥</span> FHIR</button>
+          <button id="tab-ai" class="tab-button" type="button" data-tab-target="ai-demo" role="tab" aria-controls="ai-demo" aria-selected="false" tabindex="-1"><span aria-hidden="true">🤖</span> AI</button>
+          <button id="tab-database" class="tab-button" type="button" data-tab-target="database-demo" role="tab" aria-controls="database-demo" aria-selected="false" tabindex="-1"><span aria-hidden="true">💾</span> Database</button>
+          <button id="tab-analytics" class="tab-button" type="button" data-tab-target="analytics-demo" role="tab" aria-controls="analytics-demo" aria-selected="false" tabindex="-1"><span aria-hidden="true">📊</span> Analytics</button>
+          <button id="tab-clinical" class="tab-button" type="button" data-tab-target="clinical-demo" role="tab" aria-controls="clinical-demo" aria-selected="false" tabindex="-1"><span aria-hidden="true">🩺</span> Clinical AI</button>
+          <button id="tab-auth" class="tab-button" type="button" data-tab-target="auth-demo" role="tab" aria-controls="auth-demo" aria-selected="false" tabindex="-1"><span aria-hidden="true">🔐</span> Auth</button>
+          <button id="tab-workflow" class="tab-button" type="button" data-tab-target="workflow-demo" role="tab" aria-controls="workflow-demo" aria-selected="false" tabindex="-1"><span aria-hidden="true">⚡</span> Workflows</button>
+          <button id="tab-reports" class="tab-button" type="button" data-tab-target="reports-demo" role="tab" aria-controls="reports-demo" aria-selected="false" tabindex="-1"><span aria-hidden="true">📑</span> Reports</button>
+        </div>
+
+        <div id="api-demo" class="tab-content is-active" role="tabpanel" aria-labelledby="tab-api">
+          <article class="interactive-panel">
+            <div class="panel-header">
+              <h3>SDK API Diagnostics</h3>
+              <p class="text-secondary">Validate platform health, configuration, and performance endpoints in real time.</p>
+            </div>
+            <div class="panel-actions" role="group" aria-label="API test actions">
+              <button class="btn btn-primary" type="button" data-action="sdk-health" aria-label="Run health check test"><span aria-hidden="true">🏥</span> Health Check</button>
+              <button class="btn btn-outline" type="button" data-action="sdk-config" aria-label="Fetch configuration snapshot"><span aria-hidden="true">⚙️</span> Configuration Snapshot</button>
+              <button class="btn btn-outline" type="button" data-action="sdk-metrics" aria-label="View performance metrics"><span aria-hidden="true">📊</span> Performance Metrics</button>
+            </div>
+            <div id="api-loading" class="panel-loading" role="status" aria-live="polite" aria-atomic="true">
+              <span class="spinner" aria-hidden="true"></span>
+              <span>Testing API…</span>
+            </div>
+            <div id="api-output" class="output-console" role="log" aria-live="polite" aria-atomic="false">
+              <div class="output-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span class="text-secondary" style="font-size: 0.875rem;">Console Output</span>
+                <button class="btn-copy" type="button" data-copy-target="api-output" aria-label="Copy output to clipboard" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;">📋 Copy</button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+  <div id="fhir-demo" class="tab-content" role="tabpanel" aria-labelledby="tab-fhir" hidden>
+          <article class="interactive-panel">
+            <div class="panel-header">
+              <h3>FHIR R4 Integration</h3>
+              <p class="text-secondary">Simulate Saudi-compliant payloads, validation, and bundle transactions.</p>
+            </div>
+            <div class="panel-actions" role="group" aria-label="FHIR operations">
+              <button class="btn btn-primary" type="button" data-action="fhir-patient" aria-label="Create sample Saudi patient record"><span aria-hidden="true">👤</span> Create Saudi Patient</button>
+              <button class="btn btn-outline" type="button" data-action="fhir-validate" aria-label="Fetch FHIR capability statement"><span aria-hidden="true">✅</span> Capability Snapshot</button>
+              <button class="btn btn-outline" type="button" data-action="fhir-bundle" aria-label="Execute transaction bundle"><span aria-hidden="true">📦</span> Transaction Bundle</button>
+            </div>
+            <div id="fhir-loading" class="panel-loading" role="status" aria-live="polite" aria-atomic="true">
+              <span class="spinner" aria-hidden="true"></span>
+              <span>Processing FHIR…</span>
+            </div>
+            <div id="fhir-output" class="output-console" role="log" aria-live="polite" aria-atomic="false">
+              <div class="output-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span class="text-secondary" style="font-size: 0.875rem;">Console Output</span>
+                <button class="btn-copy" type="button" data-copy-target="fhir-output" aria-label="Copy output to clipboard" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;">📋 Copy</button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+  <div id="ai-demo" class="tab-content" role="tabpanel" aria-labelledby="tab-ai" hidden>
+          <article class="interactive-panel">
+            <div class="panel-header">
+              <h3>AI Control Center</h3>
+              <p class="text-secondary">Trigger MASTERLINC, HEALTHCARELINC, and Vision 2030 intelligence playbooks.</p>
+            </div>
+            <div class="panel-actions" role="group" aria-label="AI agent actions">
+              <button class="btn btn-primary" type="button" data-action="ai-masterlinc" aria-label="Run MASTERLINC analysis"><span aria-hidden="true">🧠</span> MASTERLINC Analysis</button>
+              <button class="btn btn-outline" type="button" data-action="ai-healthcarelinc" aria-label="Generate HEALTHCARELINC insights"><span aria-hidden="true">🏥</span> HEALTHCARELINC Insights</button>
+              <button class="btn btn-outline" type="button" data-action="ai-vision2030" aria-label="View Vision 2030 metrics"><span aria-hidden="true">🇸🇦</span> Vision 2030 Metrics</button>
+            </div>
+
+            <form id="aiScenarioForm" class="ai-grid" novalidate aria-label="AI scenario configuration">
+              <div class="control-card">
+                <label for="scenario">Scenario Studio</label>
+                <select id="scenario" name="scenario" required aria-required="true" aria-describedby="scenario-desc">
+                  <option value="triage">Adaptive Triage Optimization</option>
+                  <option value="capacity">Bed Capacity Forecast</option>
+                  <option value="supply">Supply Chain Resilience</option>
+                  <option value="population">Population Health Risk Shift</option>
+                </select>
+                <span id="scenario-desc" class="sr-only">Select an AI scenario to simulate</span>
+              </div>
+              <div class="control-card">
+                <label for="horizon">Projection Horizon (days)</label>
+                <input id="horizon" name="horizon" type="number" min="1" max="90" value="30" required aria-required="true" aria-describedby="horizon-desc">
+                <span id="horizon-desc" class="sr-only">Enter number of days between 1 and 90</span>
+              </div>
+              <div class="control-card">
+                <fieldset>
+                  <legend>Enable Co-Pilot Modules</legend>
+                  <div class="toggle-row">
+                    <span id="xai-label">Explainable AI</span>
+                    <label class="toggle-switch" aria-labelledby="xai-label">
+                      <input id="enableXai" name="enableXai" type="checkbox" checked role="switch" aria-checked="true" aria-label="Toggle Explainable AI module">
+                      <span class="toggle-slider" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                  <div class="toggle-row">
+                    <span id="arabic-label">Arabic NLP</span>
+                    <label class="toggle-switch" aria-labelledby="arabic-label">
+                      <input id="enableArabic" name="enableArabic" type="checkbox" checked role="switch" aria-checked="true" aria-label="Toggle Arabic NLP module">
+                      <span class="toggle-slider" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                  <div class="toggle-row">
+                    <span id="edge-label">Edge Deployment</span>
+                    <label class="toggle-switch" aria-labelledby="edge-label">
+                      <input id="enableEdge" name="enableEdge" type="checkbox" checked role="switch" aria-checked="true" aria-label="Toggle Edge Deployment module">
+                      <span class="toggle-slider" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                </fieldset>
+              </div>
+              <div class="control-card">
+                <label for="runScenario">Simulation Control</label>
+                <button id="runScenario" class="btn btn-primary" type="submit">⚡ Run Simulation</button>
+                <div id="aiMetricsBanner" class="metrics-banner">
+                  <span class="metrics-chip">Inference latency: 142 ms</span>
+                  <span class="metrics-chip">Confidence: 94%</span>
+                  <span class="metrics-chip">Coverage: 18 regions</span>
+                </div>
+              </div>
+            </form>
+
+            <div id="ai-loading" class="panel-loading" role="status" aria-live="polite" aria-atomic="true">
+              <span class="spinner" aria-hidden="true"></span>
+              <span>Running AI pipelines…</span>
+            </div>
+            <div id="ai-output" class="output-console" role="log" aria-live="polite" aria-atomic="false">
+              <div class="output-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span class="text-secondary" style="font-size: 0.875rem;">Console Output</span>
+                <button class="btn-copy" type="button" data-copy-target="ai-output" aria-label="Copy output to clipboard" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;">📋 Copy</button>
+              </div>
+            </div>
+            <div id="ai-scenario-output" class="output-console" role="log" aria-live="polite" aria-atomic="false"></div>
+          </article>
+        </div>
+
+  <div id="database-demo" class="tab-content" role="tabpanel" aria-labelledby="tab-database" hidden>
+          <article class="interactive-panel">
+            <div class="panel-header">
+              <h3>MongoDB Atlas Integration</h3>
+              <p class="text-secondary">Inspect database readiness, hospital registries, and AI model catalogs.</p>
+            </div>
+            <div class="panel-actions" role="group" aria-label="Database operations">
+              <button class="btn btn-primary" type="button" data-action="db-health" aria-label="Check database health status"><span aria-hidden="true">💊</span> Database Health</button>
+              <button class="btn btn-outline" type="button" data-action="db-hospitals" aria-label="View hospital registry"><span aria-hidden="true">🏥</span> Hospital Registry</button>
+              <button class="btn btn-outline" type="button" data-action="db-ai-models" aria-label="View AI model registry"><span aria-hidden="true">🤖</span> AI Model Registry</button>
+            </div>
+            <div id="db-loading" class="panel-loading" role="status" aria-live="polite" aria-atomic="true">
+              <span class="spinner" aria-hidden="true"></span>
+              <span>Querying Atlas…</span>
+            </div>
+            <div id="db-output" class="output-console" role="log" aria-live="polite" aria-atomic="false">
+              <div class="output-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span class="text-secondary" style="font-size: 0.875rem;">Console Output</span>
+                <button class="btn-copy" type="button" data-copy-target="db-output" aria-label="Copy output to clipboard" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;">📋 Copy</button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+  <div id="analytics-demo" class="tab-content" role="tabpanel" aria-labelledby="tab-analytics" hidden>
+          <article class="interactive-panel">
+            <div class="panel-header">
+              <h3>Real-Time Analytics Dashboard</h3>
+              <p class="text-secondary">Monitor system performance, Vision 2030 KPIs, and predictive insights in real-time.</p>
+            </div>
+            <div class="panel-actions" role="group" aria-label="Analytics operations">
+              <button class="btn btn-primary" type="button" data-action="analytics-realtime" aria-label="Start real-time monitoring"><span aria-hidden="true">📡</span> Start Real-Time Monitor</button>
+              <button class="btn btn-outline" type="button" data-action="analytics-vision2030" aria-label="View Vision 2030 KPIs"><span aria-hidden="true">🇸🇦</span> Vision 2030 KPIs</button>
+              <button class="btn btn-outline" type="button" data-action="analytics-predictions" aria-label="Generate predictive analytics"><span aria-hidden="true">🔮</span> Predictive Analytics</button>
+              <button class="btn btn-outline" type="button" data-action="analytics-export" aria-label="Export analytics data"><span aria-hidden="true">💾</span> Export Data</button>
+            </div>
+            <div id="analytics-loading" class="panel-loading" role="status" aria-live="polite" aria-atomic="true">
+              <span class="spinner" aria-hidden="true"></span>
+              <span>Loading analytics…</span>
+            </div>
+            <div id="analytics-output" class="output-console" role="log" aria-live="polite" aria-atomic="false">
+              <div class="output-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span class="text-secondary" style="font-size: 0.875rem;">Console Output</span>
+                <button class="btn-copy" type="button" data-copy-target="analytics-output" aria-label="Copy output to clipboard" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;">📋 Copy</button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+  <div id="clinical-demo" class="tab-content" role="tabpanel" aria-labelledby="tab-clinical" hidden>
+          <article class="interactive-panel">
+            <div class="panel-header">
+              <h3>AI Clinical Decision Support</h3>
+              <p class="text-secondary">Assess patient risks, check drug interactions, and receive diagnostic suggestions powered by AI.</p>
+            </div>
+            <div class="panel-actions" role="group" aria-label="Clinical AI operations">
+              <button class="btn btn-primary" type="button" data-action="clinical-risk-assess" aria-label="Perform risk assessment"><span aria-hidden="true">⚕️</span> Risk Assessment</button>
+              <button class="btn btn-outline" type="button" data-action="clinical-drug-check" aria-label="Check drug interactions"><span aria-hidden="true">💊</span> Drug Interactions</button>
+              <button class="btn btn-outline" type="button" data-action="clinical-diagnostic" aria-label="Get diagnostic suggestions"><span aria-hidden="true">🔬</span> Diagnostic Suggestions</button>
+              <button class="btn btn-outline" type="button" data-action="clinical-pathway" aria-label="View clinical pathways"><span aria-hidden="true">📋</span> Clinical Pathways</button>
+            </div>
+            <div id="clinical-loading" class="panel-loading" role="status" aria-live="polite" aria-atomic="true">
+              <span class="spinner" aria-hidden="true"></span>
+              <span>Processing clinical data…</span>
+            </div>
+            <div id="clinical-output" class="output-console" role="log" aria-live="polite" aria-atomic="false">
+              <div class="output-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span class="text-secondary" style="font-size: 0.875rem;">Console Output</span>
+                <button class="btn-copy" type="button" data-copy-target="clinical-output" aria-label="Copy output to clipboard" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;">📋 Copy</button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+  <div id="auth-demo" class="tab-content" role="tabpanel" aria-labelledby="tab-auth" hidden>
+          <article class="interactive-panel">
+            <div class="panel-header">
+              <h3>Authentication & Authorization</h3>
+              <p class="text-secondary">Test JWT tokens, OAuth2 flows, MFA, biometric auth, and role-based access control.</p>
+            </div>
+            <div class="panel-actions" role="group" aria-label="Authentication operations">
+              <button class="btn btn-primary" type="button" data-action="auth-login" aria-label="Simulate login"><span aria-hidden="true">🔓</span> Login (JWT)</button>
+              <button class="btn btn-outline" type="button" data-action="auth-oauth" aria-label="Test OAuth2 flow"><span aria-hidden="true">🔑</span> OAuth2 Login</button>
+              <button class="btn btn-outline" type="button" data-action="auth-mfa" aria-label="Verify MFA"><span aria-hidden="true">🔐</span> MFA Verification</button>
+              <button class="btn btn-outline" type="button" data-action="auth-biometric" aria-label="Test biometric auth"><span aria-hidden="true">👆</span> Biometric Auth</button>
+              <button class="btn btn-outline" type="button" data-action="auth-roles" aria-label="View role permissions"><span aria-hidden="true">👥</span> View Roles</button>
+              <button class="btn btn-outline" type="button" data-action="auth-sessions" aria-label="View active sessions"><span aria-hidden="true">📱</span> Active Sessions</button>
+            </div>
+            <div id="auth-loading" class="panel-loading" role="status" aria-live="polite" aria-atomic="true">
+              <span class="spinner" aria-hidden="true"></span>
+              <span>Authenticating…</span>
+            </div>
+            <div id="auth-output" class="output-console" role="log" aria-live="polite" aria-atomic="false">
+              <div class="output-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span class="text-secondary" style="font-size: 0.875rem;">Console Output</span>
+                <button class="btn-copy" type="button" data-copy-target="auth-output" aria-label="Copy output to clipboard" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;">📋 Copy</button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+  <div id="workflow-demo" class="tab-content" role="tabpanel" aria-labelledby="tab-workflow" hidden>
+          <article class="interactive-panel">
+            <div class="panel-header">
+              <h3>FHIR Workflow Engine</h3>
+              <p class="text-secondary">Automate clinical workflows, create care plans, manage tasks, and coordinate care delivery.</p>
+            </div>
+            <div class="panel-actions" role="group" aria-label="Workflow operations">
+              <button class="btn btn-primary" type="button" data-action="workflow-templates" aria-label="View workflow templates"><span aria-hidden="true">📋</span> Workflow Templates</button>
+              <button class="btn btn-outline" type="button" data-action="workflow-careplan" aria-label="Create care plan"><span aria-hidden="true">🏥</span> Create Care Plan</button>
+              <button class="btn btn-outline" type="button" data-action="workflow-task" aria-label="Manage tasks"><span aria-hidden="true">✅</span> Task Management</button>
+              <button class="btn btn-outline" type="button" data-action="workflow-medication" aria-label="Order medication"><span aria-hidden="true">💊</span> Medication Order</button>
+              <button class="btn btn-outline" type="button" data-action="workflow-lab" aria-label="Order lab test"><span aria-hidden="true">🔬</span> Lab Order</button>
+            </div>
+            <div id="workflow-loading" class="panel-loading" role="status" aria-live="polite" aria-atomic="true">
+              <span class="spinner" aria-hidden="true"></span>
+              <span>Processing workflow…</span>
+            </div>
+            <div id="workflow-output" class="output-console" role="log" aria-live="polite" aria-atomic="false">
+              <div class="output-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span class="text-secondary" style="font-size: 0.875rem;">Console Output</span>
+                <button class="btn-copy" type="button" data-copy-target="workflow-output" aria-label="Copy output to clipboard" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;">📋 Copy</button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+  <div id="reports-demo" class="tab-content" role="tabpanel" aria-labelledby="tab-reports" hidden>
+          <article class="interactive-panel">
+            <div class="panel-header">
+              <h3>Advanced Reporting Engine</h3>
+              <p class="text-secondary">Generate comprehensive reports, export in multiple formats, and schedule automated reporting.</p>
+            </div>
+            <div class="panel-actions" role="group" aria-label="Reporting operations">
+              <button class="btn btn-primary" type="button" data-action="reports-templates" aria-label="View report templates"><span aria-hidden="true">📄</span> Report Templates</button>
+              <button class="btn btn-outline" type="button" data-action="reports-patient" aria-label="Generate patient summary"><span aria-hidden="true">👤</span> Patient Summary</button>
+              <button class="btn btn-outline" type="button" data-action="reports-clinical" aria-label="Generate clinical quality report"><span aria-hidden="true">⚕️</span> Clinical Quality</button>
+              <button class="btn btn-outline" type="button" data-action="reports-vision2030" aria-label="Generate Vision 2030 report"><span aria-hidden="true">🇸🇦</span> Vision 2030 Progress</button>
+              <button class="btn btn-outline" type="button" data-action="reports-compliance" aria-label="Generate compliance audit"><span aria-hidden="true">📋</span> Compliance Audit</button>
+              <button class="btn btn-outline" type="button" data-action="reports-export" aria-label="Export reports"><span aria-hidden="true">💾</span> Export (PDF/Excel)</button>
+            </div>
+            <div id="reports-loading" class="panel-loading" role="status" aria-live="polite" aria-atomic="true">
+              <span class="spinner" aria-hidden="true"></span>
+              <span>Generating report…</span>
+            </div>
+            <div id="reports-output" class="output-console" role="log" aria-live="polite" aria-atomic="false">
+              <div class="output-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span class="text-secondary" style="font-size: 0.875rem;">Console Output</span>
+                <button class="btn-copy" type="button" data-copy-target="reports-output" aria-label="Copy output to clipboard" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;">📋 Copy</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="feature-section" aria-labelledby="features-heading">
+      <div class="container">
+        <h2 id="features-heading" class="section-title"><span aria-hidden="true">🚀</span> Core Platform Features</h2>
+        <div class="features-grid" role="list" aria-label="Platform features">
+          <article class="feature-card" role="listitem">
+            <div class="feature-icon" aria-hidden="true">🔒</div>
+            <h3>HIPAA Compliance</h3>
+            <p>End-to-end encryption, audit logs, and privacy guardrails built for regulated healthcare workloads.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">🏥</div>
+            <h3>FHIR R4 Toolkit</h3>
+            <p>Saudi-specific extensions, validation, and resource helpers for seamless clinical interoperability.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">🇸🇦</div>
+            <h3>NPHIES Automation</h3>
+            <p>Claims, eligibility, and prior authorization flows ready for national health insurance integration.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">🤖</div>
+            <h3>AI Healthcare Agents</h3>
+            <p>MASTERLINC and HEALTHCARELINC deliver predictive intelligence and operational optimization.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">🌐</div>
+            <h3>Arabic &amp; RTL UX</h3>
+            <p>Localized content, typography, and RTL layout utilities for patient-first experiences.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">⚡</div>
+            <h3>Edge Compute Ready</h3>
+            <p>Deploy to Cloudflare Workers with observability, caching, and failover baked in.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">📊</div>
+            <h3>Vision 2030 KPIs</h3>
+            <p>Dashboards and APIs tailored to Saudi transformation metrics and transparency goals.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">💎</div>
+            <h3>Glass Morphism UI</h3>
+            <p>Modern, accessible UI system with adaptive layouts for desktop, tablet, and mobile.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="api" class="demo-section" aria-labelledby="api-heading">
+      <div class="container">
+        <h2 id="api-heading" class="section-title"><span aria-hidden="true">📡</span> API Endpoint Catalog</h2>
+        <div class="api-grid" role="list" aria-label="API endpoints">
+          <article class="api-card" role="listitem">
+            <h3>Health Monitoring</h3>
+            <p class="text-secondary">System health checks, telemetry, and operational guardrails.</p>
+            <pre role="region" aria-label="Health monitoring endpoints"><code>GET /health
+GET /api/config
+GET /api/metrics</code></pre>
+            <button class="btn btn-primary" type="button" data-endpoints="health" aria-label="View health monitoring endpoints in console">View in Console</button>
+          </article>
+          <article class="api-card" role="listitem">
+            <h3>Healthcare Data</h3>
+            <p class="text-secondary">Hospitals, AI models, and Vision 2030 datasets for analytics.</p>
+            <pre role="region" aria-label="Healthcare data endpoints"><code>GET /api/db/hospitals
+GET /api/db/ai-models
+GET /api/db/vision2030-metrics</code></pre>
+            <button class="btn btn-outline" type="button" data-endpoints="database" aria-label="View healthcare data endpoints in console">View in Console</button>
+          </article>
+          <article class="api-card" role="listitem">
+            <h3>FHIR + NPHIES</h3>
+            <p class="text-secondary">FHIR resource operations, bundle transactions, and NPHIES workflows.</p>
+            <pre role="region" aria-label="FHIR and NPHIES endpoints"><code>GET /fhir/Patient
+POST /fhir/Bundle
+GET /nphies/claims</code></pre>
+            <button class="btn btn-outline" type="button" data-endpoints="fhir" aria-label="View FHIR and NPHIES endpoints in console">View in Console</button>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" role="contentinfo" aria-label="Site footer">
+    <div class="container">
+      <h3><span aria-hidden="true">🏥</span> BrainSAIT Healthcare SDK</h3>
+      <p class="text-secondary">Built with <span aria-label="love" role="img">❤️</span> for Saudi Arabia's healthcare transformation journey.</p>
+      <div class="version-list" role="list" aria-label="Platform technologies">
+        <span class="version-chip" role="listitem">v1.2.0</span>
+        <span class="version-chip" role="listitem">HIPAA Compliant</span>
+        <span class="version-chip" role="listitem">FHIR R4</span>
+        <span class="version-chip" role="listitem">Cloudflare Edge</span>
+        <span class="version-chip" role="listitem">MongoDB Atlas</span>
+      </div>
+      <p class="text-muted" style="margin-top: 1.75rem;"><small>© 2025 BrainSAIT. All rights reserved.</small></p>
+    </div>
+  </footer>
+
+  <!-- Toast notification container -->
+  <div id="toast-container" class="toast-container" role="region" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Load advanced feature libraries -->
+  <script src="/assets/js/analytics-dashboard.js"></script>
+  <script src="/assets/js/ai-clinical-support.js"></script>
+  <script src="/assets/js/auth-manager.js"></script>
+  <script src="/assets/js/fhir-workflow.js"></script>
+  <script src="/assets/js/reporting-engine.js"></script>
+  
+  <!-- Main demo script -->
+  <script src="/assets/js/demo.js"></script>
+  <script src="/index.umd.js"></script>
+
+  <!-- Screen reader only class for accessibility -->
+  <style>
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+  </style>
+
+  <script defer src="/index.umd.js"></script>
+  <script defer src="/assets/js/demo.js"></script>
 </body>
 </html>

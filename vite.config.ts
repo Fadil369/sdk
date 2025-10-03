@@ -18,7 +18,7 @@ export default defineConfig({
       fileName: (format) => `index.${format === 'es' ? 'esm' : format}.js`,
     },
     rollupOptions: {
-      external: ['react', 'react-dom'],
+      external: ['react', 'react-dom', 'node:child_process', 'node:url', 'node:fs'],
       output: {
         globals: {
           react: 'React',
@@ -47,6 +47,7 @@ export default defineConfig({
       '@/security': resolve(__dirname, 'src/security'),
       '@/ai': resolve(__dirname, 'src/ai'),
       '@/ui': resolve(__dirname, 'src/ui'),
+      '@/python': resolve(__dirname, 'src/python'),
     },
   },
   test: {

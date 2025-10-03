@@ -1,8 +1,9 @@
 # Cloudflare Pages configuration for BrainSAIT Healthcare SDK
-name = "brainsait-healthcare-sdk-pages"
+name = "brainsait-healthcare-sdk"
+compatibility_date = "2024-01-01"
 pages_build_output_dir = "public"
 
-[vars]
+[env.production.vars]
 ENVIRONMENT = "production"
 SDK_VERSION = "1.2.0"
 FHIR_BASE_URL = "https://fhir.nphies.sa"
@@ -10,13 +11,16 @@ NPHIES_BASE_URL = "https://nphies.sa"
 LOG_LEVEL = "info"
 MONGODB_ATLAS_URI = "mongodb+srv://fadil_db_user:1rlK8vj6YF5reQoc@cluster0.ozzjwto.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 DATABASE_NAME = "brainsait_platform"
-
-[env.production.vars]
-ENVIRONMENT = "production"
 BASE_URL = "https://sdk-docs.brainsait.com"
 API_BASE_URL = "https://api.brainsait.com"
 
 [env.preview.vars]
 ENVIRONMENT = "preview"
+SDK_VERSION = "1.2.0"
+FHIR_BASE_URL = "https://fhir.nphies.sa"
+NPHIES_BASE_URL = "https://nphies.sa"
+LOG_LEVEL = "info"
+MONGODB_ATLAS_URI = "mongodb+srv://fadil_db_user:1rlK8vj6YF5reQoc@cluster0.ozzjwto.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+DATABASE_NAME = "brainsait_platform"
 BASE_URL = "https://sdk-docs-preview.brainsait.com"
 API_BASE_URL = "https://api-staging.brainsait.com"

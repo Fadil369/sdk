@@ -2,21 +2,40 @@
 
 A comprehensive Software Development Kit (SDK) for NPHIES/FHIR Integration with Healthcare Ecosystems in Saudi Arabia, featuring Arabic/HIPAA support, AI agents, and glass morphism UI components.
 
-## 🚀 Features
+## Features
 
-- **FHIR R4/R5 Support**: Complete integration with FHIR standards
-- **NPHIES Compliance**: Full support for Saudi Arabia's NPHIES system
-- **Arabic/RTL Support**: Native Arabic language and right-to-left layout support
-- **HIPAA Compliance**: Built-in security and audit features
-- **AI Agents**: Intelligent automation and decision support
-- **Glass Morphism UI**: Modern, performant UI components
-- **High Performance**: <2.5s API response times, 60fps UI target
-- **TypeScript First**: Full type safety and developer experience
+- **🏥 NPHIES Integration**: Complete NPHIES API support with Arabic language handling
+- **🔥 FHIR R4 Support**: Full FHIR R4 compliance with Saudi-specific extensions  
+- **🤖 AI Agents**: Integrated AI agents for clinical decision support
+- **🐍 Python Integration**: PyBrain & PyHeart packages for advanced AI and workflow capabilities
+- **🎨 Glass Morphism UI**: Modern Arabic-first UI components with glass morphism design
+- **🔒 HIPAA Compliance**: Built-in security and compliance features
+- **📱 Mobile Responsive**: Optimized for all device sizes
+- **🌐 Arabic RTL Support**: Native Arabic language and RTL layout support
+- **⚡ Edge Computing**: Cloudflare Workers integration for global performance
+- **🗄️ MongoDB Atlas**: Integrated database solutions for healthcare data
+- **🚀 Vision 2030 Ready**: Aligned with Saudi Arabia's digital transformation goals
 
 ## 📦 Installation
 
 ```bash
 npm install @brainsait/healthcare-sdk
+```
+
+### Python Integration Setup (Optional)
+
+For advanced AI and workflow features, install Python dependencies:
+
+```bash
+# Create virtual environment (recommended)
+python3 -m venv .venv-healthcare
+source .venv-healthcare/bin/activate  # On Windows: .venv-healthcare\Scripts\activate
+
+# Install required packages
+pip install numpy pydantic structlog httpx tenacity fastapi
+
+# Set Python path for the SDK (optional)
+export PYTHON_BRIDGE_PYTHON="./.venv-healthcare/bin/python"
 ```
 
 ## 🔧 Quick Start
@@ -64,11 +83,65 @@ const nphiesClient = sdk.nphies;
 const aiManager = sdk.ai;
 ```
 
+### Python Integration (PyBrain & PyHeart)
+
+The SDK includes advanced Python-based AI and workflow capabilities:
+
+```typescript
+import { 
+  analyzeClinicalNote, 
+  predictPatientRisk, 
+  runRiskWorkflow,
+  orchestratePythonCarePlan 
+} from '@brainsait/healthcare-sdk';
+
+// Extract clinical entities using PyBrain
+const entities = await analyzeClinicalNote(
+  'Patient presents with type 2 diabetes, prescribed metformin 500mg twice daily'
+);
+console.log('Extracted conditions:', entities.entities.conditions);
+// Output: ['Diabetes']
+
+// Predict patient risk scores
+const riskAnalysis = await predictPatientRisk({
+  age: 65,
+  bmi: 30,
+  conditions: ['diabetes', 'hypertension'],
+  medications: ['metformin', 'lisinopril']
+});
+console.log('Risk score:', riskAnalysis.riskScore); // 0.45
+
+// Run automated care workflows with PyHeart
+const workflow = await runRiskWorkflow({
+  patient: { id: '12345', name: 'أحمد المحمد' },
+  riskScore: 0.8,
+  careTeam: ['dr.hassan@hospital.sa'],
+  context: {
+    fhirServer: 'https://fhir.nphies.sa',
+    primaryPhysician: 'dr.fatima@clinic.sa'
+  }
+});
+console.log('Workflow status:', workflow.status); // 'completed'
+console.log('Care plan:', workflow.variables.care_plan); // 'priority-followup'
+
+// Orchestrate end-to-end care planning
+const carePlan = await orchestratePythonCarePlan({
+  note: 'Elderly patient with hypertension and chest pain',
+  patient: {
+    id: '67890',
+    name: 'فاطمة أحمد',
+    age: 72,
+    conditions: ['hypertension']
+  },
+  careTeam: ['care.coordinator@hospital.sa']
+});
+```
+
 ## 🏗️ Architecture
 
 The SDK is built with a modular architecture:
 
-```
+```text
 src/
 ├── core/           # Core SDK functionality
 ├── types/          # TypeScript type definitions
@@ -77,8 +150,35 @@ src/
 ├── nphies/         # NPHIES-specific implementations
 ├── security/       # Security and compliance features
 ├── ai/             # AI agents and ML capabilities
+├── python/         # Python integration layer
 └── ui/             # Glass morphism UI components
+
+python-integration/
+├── bridge.py       # Python ↔ TypeScript bridge
+└── README.md       # Python setup documentation
+
+pybrain-pyheart/
+├── pybrain-pkg/    # PyBrain: AI & Clinical NLP
+│   └── src/pybrain/
+└── pyheart-pkg/    # PyHeart: Workflows & Interoperability
+    └── src/pyheart/
 ```
+
+### Python Packages Overview
+
+#### PyBrain - Healthcare Intelligence
+
+- **Clinical NLP**: Extract entities from medical notes
+- **Risk Prediction**: AI-powered patient risk scoring
+- **Decision Support**: Evidence-based clinical recommendations
+- **Population Analytics**: Health trends and insights
+
+#### PyHeart - Workflow Engine
+
+- **Process Orchestration**: Automated healthcare workflows
+- **System Integration**: Universal healthcare data connectivity
+- **Event-Driven Architecture**: Real-time care coordination
+- **Compliance Engine**: HIPAA, GDPR automated compliance
 
 ## 🔐 Security & Compliance
 

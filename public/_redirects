@@ -1,7 +1,6 @@
-# Redirects for Cloudflare Pages
+# API calls will use relative paths to the same domain for now
+# Custom domain routing will be configured after DNS setup
 /docs/* /:splat 301
-/api/* https://workers.brainsait.com/sdk/:splat 200
-/sdk/* https://workers.brainsait.com/sdk/:splat 200
 
 # Fallback for SPA
 /* /index.html 200
