@@ -186,6 +186,16 @@ pybrain-pyheart/
 - **Encryption**: AES-256-GCM encryption for sensitive data
 - **Role-Based Access Control**: Fine-grained permission system
 - **Audit Trails**: Comprehensive logging for compliance
+- **Security Headers**: Industry-standard security headers implemented
+- **Secret Management**: Secure credential storage with Cloudflare Workers Secrets
+
+### 📋 Security Documentation
+
+- **[SECURITY.md](SECURITY.md)** - Security policy and vulnerability reporting
+- **[SECURITY_SETUP.md](SECURITY_SETUP.md)** - Step-by-step security setup guide
+- **[SECURITY_HEADERS.md](SECURITY_HEADERS.md)** - Security headers configuration and testing
+- **[DEPLOYMENT_SECURITY_CHECKLIST.md](DEPLOYMENT_SECURITY_CHECKLIST.md)** - Pre-deployment security checklist
+- **[DEPENDENCY_SECURITY.md](DEPENDENCY_SECURITY.md)** - Dependency vulnerability tracking
 
 ## 🌐 Internationalization
 
