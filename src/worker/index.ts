@@ -15,8 +15,35 @@ interface Env {
   NPHIES_BASE_URL: string;
   LOG_LEVEL: string;
   CLOUDFLARE_ACCOUNT_ID: string;
-  MONGODB_ATLAS_URI: string;
+  MONGODB_ATLAS_URI?: string; // Optional: Should be set via secrets
   DATABASE_NAME: string;
+}
+
+/**
+ * Validate required environment variables
+ * @returns Error message if validation fails, null if valid
+ */
+function validateEnvironment(env: Env): string | null {
+  const required = [
+    'ENVIRONMENT',
+    'SDK_VERSION',
+    'FHIR_BASE_URL',
+    'NPHIES_BASE_URL',
+    'DATABASE_NAME',
+  ];
+  const missing = required.filter(key => !env[key as keyof Env]);
+
+  if (missing.length > 0) {
+    return `Missing required environment variables: ${missing.join(', ')}`;
+  }
+
+  // Warn if sensitive credentials are missing (non-blocking)
+  if (!env.MONGODB_ATLAS_URI) {
+    // eslint-disable-next-line no-console
+    console.warn('MONGODB_ATLAS_URI not set. Database features will be unavailable.');
+  }
+
+  return null;
 }
 
 // CORS headers
@@ -41,6 +68,25 @@ const securityHeaders = {
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     try {
+      // Validate environment variables
+      const validationError = validateEnvironment(env);
+      if (validationError) {
+        return new Response(
+          JSON.stringify({
+            error: 'Configuration Error',
+            message: validationError,
+            hint: 'Check wrangler.toml and ensure all required environment variables are set',
+          }),
+          {
+            status: 500,
+            headers: {
+              'Content-Type': 'application/json',
+              ...corsHeaders,
+            },
+          }
+        );
+      }
+
       // Handle CORS preflight requests
       if (request.method === 'OPTIONS') {
         return new Response(null, {
@@ -101,13 +147,20 @@ export default {
         }
       );
     } catch (error) {
-      // ESLint disable: console needed for Cloudflare Workers debugging
+      // Log detailed error for debugging (only visible in Cloudflare logs)
       // eslint-disable-next-line no-console
       console.error('Worker error:', error);
+
+      // Return sanitized error message to client (avoid information disclosure)
+      const isDevelopment = env.ENVIRONMENT === 'development';
       return new Response(
         JSON.stringify({
           error: 'Internal Server Error',
-          message: error instanceof Error ? error.message : 'Unknown error',
+          message:
+            isDevelopment && error instanceof Error
+              ? error.message
+              : 'An unexpected error occurred. Please try again later.',
+          ...(isDevelopment && { timestamp: new Date().toISOString() }),
         }),
         {
           status: 500,
@@ -241,10 +294,17 @@ async function handleAPIRequest(
       },
     });
   } catch (error) {
+    // Log error for debugging
+    // eslint-disable-next-line no-console
+    console.error('API Error:', error);
+
+    // Return sanitized error
+    const isDevelopment = env.ENVIRONMENT === 'development';
     return new Response(
       JSON.stringify({
         error: 'API Error',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message:
+          isDevelopment && error instanceof Error ? error.message : 'Failed to process API request',
       }),
       {
         status: 400,
@@ -556,11 +616,16 @@ async function handleDatabaseRequest(
       }
     );
   } catch (error) {
+    // Log error for debugging
+    // eslint-disable-next-line no-console
+    console.error('Database operation failed:', error);
+
+    // Return sanitized error (don't expose internal details in production)
     return new Response(
       JSON.stringify({
         success: false,
         error: 'Database operation failed',
-        details: (error as Error).message,
+        message: 'An error occurred while accessing the database',
       }),
       {
         status: 500,

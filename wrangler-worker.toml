@@ -6,13 +6,14 @@ compatibility_flags = ["nodejs_compat"]
 workers_dev = true
 
 # Environment variables
+# SECURITY NOTE: Sensitive values like MONGODB_ATLAS_URI should be set via Cloudflare Workers secrets
+# Use: wrangler secret put MONGODB_ATLAS_URI
 [vars]
 ENVIRONMENT = "production"
 SDK_VERSION = "1.2.0"
 FHIR_BASE_URL = "https://fhir.nphies.sa"
 NPHIES_BASE_URL = "https://nphies.sa"
 LOG_LEVEL = "info"
-MONGODB_ATLAS_URI = "mongodb+srv://fadil_db_user:1rlK8vj6YF5reQoc@cluster0.ozzjwto.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 DATABASE_NAME = "brainsait_platform"
 
 # Development environment
@@ -26,7 +27,6 @@ SDK_VERSION = "1.2.0"
 FHIR_BASE_URL = "https://fhir-sandbox.nphies.sa"
 NPHIES_BASE_URL = "https://nphies-sandbox.sa"
 LOG_LEVEL = "debug"
-MONGODB_ATLAS_URI = "mongodb+srv://fadil_db_user:1rlK8vj6YF5reQoc@cluster0.ozzjwto.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 DATABASE_NAME = "brainsait_platform_dev"
 
 # Limits and optimization
